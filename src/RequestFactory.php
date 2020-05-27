@@ -32,34 +32,26 @@ class RequestFactory
 
     public function resolve(): OpenApi
     {
-        if (!$this->specName) {
-            throw new MissingSpecException('Cannot resolve schema without target spec.');
+        if ($this->specName) {
+            $file = $this->getFile();
+
+            switch (strtolower(substr($this->specName, -4))) {
+                case 'json':
+                    return Reader::readFromJsonFile($file);
+                    break;
+                case 'yaml':
+                    return Reader::readFromYamlFile($file);
+                    break;
+            }
         }
 
-        $file = $this->getFile();
-
-        $openapi = null;
-
-        switch (strtolower(substr($this->specName, -4))) {
-            case 'json':
-                $openapi = Reader::readFromJsonFile($file);
-                break;
-            case 'yaml':
-                $openapi = Reader::readFromYamlFile($file);
-                break;
-        }
-
-        if (!$openapi) {
-            throw new MissingSpecException('The spec source was invalid.');
-        }
-
-        return $openapi;
+        throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
     }
 
     protected function getFile()
     {
         if (!$source = Arr::get(config('spectator.sources', []), config('spectator.default'))) {
-            throw new MissingSpecException('A valid spec source must be defined.');
+            throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
         }
 
         if ($source['source'] === 'local') {
@@ -74,12 +66,12 @@ class RequestFactory
             $path = realpath("{$path}/{$file}");
 
             if (!file_exists($path)) {
-                throw new MissingSpecException('A valid spec source must be defined.');
+                throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
             }
 
             return $path;
         }
 
-        throw new MissingSpecException('A valid spec source was not found.');
+        throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
     }
 }

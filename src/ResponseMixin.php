@@ -6,13 +6,19 @@ use Illuminate\Support\Arr;
 use PHPUnit\Framework\Assert as PHPUnit;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
+use cebe\openapi\exceptions\UnresolvableReferenceException;
 
 class ResponseMixin
 {
     public function assertValidRequest()
     {
         return function () {
-            self::assertJsonMissing(['exception' => RequestValidationException::class]);
+            $contents = (array) $this->decodeResponseJson();
+
+            PHPUnit::assertFalse(
+                in_array(Arr::get($contents, 'exception'), [RequestValidationException::class, UnresolvableReferenceException::class]),
+                $this->decodeExceptionMessage($contents)
+            );
 
             return $this;
         };
@@ -21,7 +27,12 @@ class ResponseMixin
     public function assertInvalidRequest()
     {
         return function () {
-            self::assertJsonFragment(['exception' => RequestValidationException::class]);
+            $contents = (array) $this->decodeResponseJson();
+
+            PHPUnit::assertTrue(
+                !in_array(Arr::get($contents, 'exception'), [RequestValidationException::class, UnresolvableReferenceException::class]),
+                $this->decodeExceptionMessage($contents)
+            );
 
             return $this;
         };
@@ -30,7 +41,12 @@ class ResponseMixin
     public function assertValidResponse()
     {
         return function () {
-            self::assertJsonMissing(['exception' => ResponseValidationException::class]);
+            $contents = (array) $this->decodeResponseJson();
+
+            PHPUnit::assertFalse(
+                in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
+                $this->decodeExceptionMessage($contents)
+            );
 
             return $this;
         };
@@ -39,7 +55,12 @@ class ResponseMixin
     public function assertInvalidResponse()
     {
         return function () {
-            self::assertJsonFragment(['exception' => ResponseValidationException::class]);
+            $contents = (array) $this->decodeResponseJson();
+
+            PHPUnit::assertTrue(
+                in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
+                $this->decodeExceptionMessage($contents)
+            );
 
             return $this;
         };
@@ -67,6 +88,13 @@ class ResponseMixin
             ]);
 
             return $this;
+        };
+    }
+
+    protected function decodeExceptionMessage()
+    {
+        return function (array $contents = []) {
+            return Arr::get($contents, 'message', '');
         };
     }
 }

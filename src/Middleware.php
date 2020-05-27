@@ -12,6 +12,7 @@ use Spectator\Validation\ResponseValidator;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
+use cebe\openapi\exceptions\UnresolvableReferenceException;
 
 class Middleware
 {
@@ -28,14 +29,19 @@ class Middleware
             return $next($request);
         }
 
-        $operation = $this->operation($request);
-
         try {
+            $operation = $this->operation($request);
+
             RequestValidator::validate($request, $operation);
 
             $response = $next($request);
 
             ResponseValidator::validate($response, $operation);
+        } catch (UnresolvableReferenceException $exception) {
+            return Response::json([
+                'exception' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ], 500);
         } catch (RequestValidationException | ResponseValidationException $exception) {
             return Response::json([
                 'exception' => get_class($exception),

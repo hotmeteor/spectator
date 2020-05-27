@@ -64,7 +64,7 @@ class RequestFactoryTest extends TestCase
     public function test_throws_exception_on_invalid_source()
     {
         $this->expectException(MissingSpecException::class);
-        $this->expectExceptionMessage('A valid spec source must be defined.');
+        $this->expectExceptionMessage('Cannot resolve schema with missing or invalid spec.');
 
         Config::set('spectator.default', 'invalid');
 
@@ -80,7 +80,7 @@ class RequestFactoryTest extends TestCase
     public function test_throws_exception_on_missing_spec_name()
     {
         $this->expectException(MissingSpecException::class);
-        $this->expectExceptionMessage('Cannot resolve schema without target spec.');
+        $this->expectExceptionMessage('Cannot resolve schema with missing or invalid spec.');
 
         $factory = new RequestFactory();
 
@@ -90,7 +90,7 @@ class RequestFactoryTest extends TestCase
     public function test_throws_exception_on_invalid_spec_name()
     {
         $this->expectException(MissingSpecException::class);
-        $this->expectExceptionMessage('A valid spec source must be defined.');
+        $this->expectExceptionMessage('Cannot resolve schema with missing or invalid spec.');
 
         $name = 'Missing.v1.json';
 
@@ -104,7 +104,7 @@ class RequestFactoryTest extends TestCase
     public function test_throws_exception_on_invalid_spec_extension()
     {
         $this->expectException(MissingSpecException::class);
-        $this->expectExceptionMessage('The spec source was invalid.');
+        $this->expectExceptionMessage('Cannot resolve schema with missing or invalid spec.');
 
         $name = 'Invalid.v1.txt';
 
