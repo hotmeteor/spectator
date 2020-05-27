@@ -2,6 +2,8 @@
 Spectator provides light-weight OpenAPI testing tools you can use within your existing Laravel test suite.
 
 ![Tests](https://github.com/hotmeteor/spectator/workflows/Tests/badge.svg)
+[![Latest Version on Packagist](https://img.shields.io/packagist/vpre/hotmeteor/spectator.svg?style=flat-square)](https://packagist.org/packages/hotmeteor/spectator)
+![PHP from Packagist](https://img.shields.io/packagist/php-v/hotmeteor/spectator)
 
 ## Installation
 
