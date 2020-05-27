@@ -30,6 +30,9 @@
             "Spectator\\Tests\\": "tests/"
         }
     },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
     "extra": {
         "laravel": {
             "providers": [
