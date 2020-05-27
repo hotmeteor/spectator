@@ -1,5 +1,5 @@
 {
-    "name": "hotmeteor/spectator",
+    "name": "spurjobs/spectator",
     "description": "OpenAPI testing tools for your Laravel project",
     "type": "library",
     "license": "MIT",
@@ -17,7 +17,7 @@
     "authors": [
         {
             "name": "Adam Campbell",
-            "email": "adam@hotmeteor.com"
+            "email": "adam@spurjobs.com"
         }
     ],
     "autoload": {
