@@ -27,18 +27,19 @@ return [
     'sources' => [
         'local' => [
             'source' => 'local',
-            'folder' => env('SPEC_FOLDER'),
+            'base_folder' => env('SPEC_FOLDER'),
         ],
 
         'remote' => [
             'source' => 'remote',
-            'url' => env('SPEC_URL'),
+            'base_url' => env('SPEC_URL'),
         ],
 
         'github' => [
             'source' => 'github',
             'repo' => env('SPEC_GITHUB_REPO'),
             'token' => env('SPEC_GITHUB_TOKEN'),
+            'base_folder' => env('SPEC_FOLDER'),
         ],
     ],
 ];

@@ -56,7 +56,7 @@ class RequestFactory
         }
 
         if ($source['source'] === 'local') {
-            $path = $source['folder'];
+            $path = $source['base_folder'];
 
             if (!Str::endsWith($path, '/')) {
                 $path = $path.'/';
