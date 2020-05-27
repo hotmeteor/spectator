@@ -5,7 +5,7 @@ namespace Spectator;
 use cebe\openapi\Reader;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use cebe\openapi\SpecObjectInterface;
+use cebe\openapi\spec\OpenApi;
 use Illuminate\Support\Traits\Macroable;
 use Spectator\Exceptions\MissingSpecException;
 
@@ -30,7 +30,7 @@ class RequestFactory
         $this->specName = null;
     }
 
-    public function resolve(): SpecObjectInterface
+    public function resolve(): OpenApi
     {
         if (!$this->specName) {
             throw new MissingSpecException('Cannot resolve schema without target spec.');
@@ -38,12 +38,19 @@ class RequestFactory
 
         $file = $this->getFile();
 
-        $openapi = strtolower(substr($this->specName, -4)) === 'json'
-            ? Reader::readFromJsonFile($file)
-            : Reader::readFromYamlFile($file);
+        $openapi = null;
+
+        switch (strtolower(substr($this->specName, -4))) {
+            case 'json':
+                $openapi = Reader::readFromJsonFile($file);
+                break;
+            case 'yaml':
+                $openapi = Reader::readFromYamlFile($file);
+                break;
+        }
 
         if (!$openapi) {
-            throw new MissingSpecException('A valid spec source not be found.');
+            throw new MissingSpecException('The spec source was invalid.');
         }
 
         return $openapi;
@@ -64,7 +71,13 @@ class RequestFactory
 
             $file = str_replace('/', '', $this->specName);
 
-            return realpath("{$path}/{$file}");
+            $path = realpath("{$path}/{$file}");
+
+            if (!file_exists($path)) {
+                throw new MissingSpecException('A valid spec source must be defined.');
+            }
+
+            return $path;
         }
 
         throw new MissingSpecException('A valid spec source was not found.');

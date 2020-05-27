@@ -72,8 +72,6 @@ class Middleware
         }
 
         abort(405);
-
-        return null;
     }
 
     protected function handleException($passable, Exception $e)
