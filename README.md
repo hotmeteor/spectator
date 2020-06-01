@@ -16,7 +16,7 @@ composer require spurjobs/spectator
 Then, publish the config file of this package with this command:
 
 ```bash
-php artisan vendor:public --provider="Spectator\ServiceProvider"
+php artisan vendor:publish --provider="Spectator\ServiceProvider"
 ```
 
 The config file will be published in `config/spectator.php`.
