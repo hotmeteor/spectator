@@ -12,6 +12,6 @@ class ServiceProviderTest extends TestCase
     {
         $kernel = App::make(Kernel::class);
 
-        $this->assertTrue($kernel->hasMiddleware(Middleware::class));
+        $this->assertTrue(in_array(Middleware::class, $kernel->getMiddlewareGroups()['api'], true));
     }
 }
