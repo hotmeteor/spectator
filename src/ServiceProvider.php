@@ -28,7 +28,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     protected function registerMiddleware()
     {
-        $this->app[Kernel::class]->pushMiddleware(Middleware::class);
+        $this->app[Kernel::class]->appendMiddlewareToGroup('api', Middleware::class);
     }
 
     protected function decorateTestResponse()

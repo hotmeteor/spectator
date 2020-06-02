@@ -4,7 +4,6 @@ namespace Spectator\Validation;
 
 use JsonSchema\Validator;
 use cebe\openapi\spec\Operation;
-use Illuminate\Http\JsonResponse;
 use Spectator\Exceptions\ResponseValidationException;
 
 class ResponseValidator
@@ -13,13 +12,13 @@ class ResponseValidator
 
     protected $operation;
 
-    public function __construct(JsonResponse $response, Operation $operation)
+    public function __construct($response, Operation $operation)
     {
         $this->response = $response;
         $this->operation = $operation;
     }
 
-    public static function validate(JsonResponse $response, Operation $operation)
+    public static function validate($response, Operation $operation)
     {
         $instance = new self($response, $operation);
 
@@ -43,25 +42,27 @@ class ResponseValidator
             throw new ResponseValidationException("No response object matching returned status code [{$this->response->getStatusCode()}].");
         }
 
-        if (!array_key_exists($contentType, $responseObject->content)) {
-            throw new ResponseValidationException('Response did not match any specified media type.');
-        }
-
-        $jsonSchema = $responseObject->content[$contentType]->schema;
-        $validator = new Validator();
-
-        if ($jsonSchema->type === 'object' || $jsonSchema->type === 'array') {
-            if ($contentType === 'application/json') {
-                $body = json_decode($body);
-            } else {
-                throw new ResponseValidationException("Unable to map [{$contentType}] to schema type [object].");
+        if ($responseObject->content) {
+            if (!array_key_exists($contentType, $responseObject->content)) {
+                throw new ResponseValidationException('Response did not match any specified media type.');
             }
-        }
 
-        $validator->validate($body, $jsonSchema->getSerializableData());
+            $jsonSchema = $responseObject->content[$contentType]->schema;
+            $validator = new Validator();
 
-        if ($validator->isValid() !== true) {
-            throw ResponseValidationException::withSchemaErrors("The response from {$shortHandler} does not match your OpenAPI specification.", $validator->getErrors());
+            if ($jsonSchema->type === 'object' || $jsonSchema->type === 'array') {
+                if ($contentType === 'application/json') {
+                    $body = json_decode($body);
+                } else {
+                    throw new ResponseValidationException("Unable to map [{$contentType}] to schema type [object].");
+                }
+            }
+
+            $validator->validate($body, $jsonSchema->getSerializableData());
+
+            if ($validator->isValid() !== true) {
+                throw ResponseValidationException::withSchemaErrors("The response from {$shortHandler} does not match your OpenAPI specification.", $validator->getErrors());
+            }
         }
     }
 }

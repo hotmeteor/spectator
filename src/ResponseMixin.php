@@ -13,7 +13,7 @@ class ResponseMixin
     public function assertValidRequest()
     {
         return function () {
-            $contents = (array) $this->decodeResponseJson();
+            $contents = $this->getContent() ? $contents = (array) $this->decodeResponseJson() : [];
 
             PHPUnit::assertFalse(
                 in_array(Arr::get($contents, 'exception'), [RequestValidationException::class, UnresolvableReferenceException::class]),
@@ -41,7 +41,7 @@ class ResponseMixin
     public function assertValidResponse()
     {
         return function () {
-            $contents = (array) $this->decodeResponseJson();
+            $contents = $this->getContent() ? (array) $this->decodeResponseJson() : [];
 
             PHPUnit::assertFalse(
                 in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
@@ -93,7 +93,7 @@ class ResponseMixin
 
     protected function decodeExceptionMessage()
     {
-        return function (array $contents = []) {
+        return function ($contents) {
             return Arr::get($contents, 'message', '');
         };
     }
