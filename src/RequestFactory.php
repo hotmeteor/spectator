@@ -54,7 +54,7 @@ class RequestFactory
             throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
         }
 
-        $method = Str::snake("get_{$source['source']}_path");
+        $method = Str::camel("get_{$source['source']}_path");
 
         if (method_exists($this, $method)) {
             return $this->{$method}($source, str_replace('/', '', $this->specName));
@@ -63,7 +63,7 @@ class RequestFactory
         throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
     }
 
-    protected function getLocalSource(array $source, $file)
+    protected function getLocalPath(array $source, $file)
     {
         $path = $this->standardizePath($source['base_folder']);
 
@@ -76,7 +76,7 @@ class RequestFactory
         return $path;
     }
 
-    protected function getRemoteSource(array $source, $file)
+    protected function getRemotePath(array $source, $file)
     {
         $path = $this->standardizePath($source['base_url']);
 

@@ -19,5 +19,6 @@
     </filter>
     <php>
         <env name="SPEC_FOLDER" value="./tests/Fixtures"/>
+        <env name="SPEC_URL" value=""/>
     </php>
 </phpunit>

@@ -33,7 +33,7 @@ class RequestFactoryTest extends TestCase
         $this->assertNull($factory->getSpec());
     }
 
-    public function test_resolves_yaml_spec()
+    public function test_resolves_local_yaml_spec()
     {
         $name = 'Test.v1.yaml';
 
@@ -47,7 +47,7 @@ class RequestFactoryTest extends TestCase
         $this->assertSame('Test.v1', $spec->info->title);
     }
 
-    public function test_resolves_json_spec()
+    public function test_resolves_local_json_spec()
     {
         $name = 'Test.v1.json';
 
