@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Response;
 use Spectator\Validation\RequestValidator;
-use Illuminate\Contracts\Routing\Registrar;
 use Spectator\Validation\ResponseValidator;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
@@ -18,12 +17,10 @@ use cebe\openapi\exceptions\UnresolvableReferenceException;
 class Middleware
 {
     protected $spectator;
-    protected $router;
 
-    public function __construct(RequestFactory $spectator, Registrar $router)
+    public function __construct(RequestFactory $spectator)
     {
         $this->spectator = $spectator;
-        $this->router = $router;
     }
 
     public function handle(Request $request, Closure $next)
@@ -34,11 +31,15 @@ class Middleware
 
         $operation = $this->operation($request);
 
-        $this->validateRequest($operation, $request);
+        if ($invalid = $this->validateRequest($operation, $request)) {
+            return $invalid;
+        }
 
         $response = $next($request);
 
-        $this->validateResponse($operation, $response);
+        if ($invalid = $this->validateResponse($operation, $response)) {
+            return $invalid;
+        }
 
         $this->spectator->reset();
 
@@ -91,7 +92,7 @@ class Middleware
     {
         $openapi = $this->spectator->resolve();
 
-        $request_path = $this->router->substituteBindings($request->route())->uri();
+        $request_path = $request->route()->uri();
 
         if (!Str::startsWith($request_path, '/')) {
             $request_path = '/'.$request_path;
