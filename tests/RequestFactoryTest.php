@@ -74,7 +74,7 @@ class RequestFactoryTest extends TestCase
 
         $factory->using($name);
 
-        $spec = $factory->resolve();
+        $factory->resolve();
     }
 
     public function test_throws_exception_on_missing_spec_name()
@@ -84,7 +84,7 @@ class RequestFactoryTest extends TestCase
 
         $factory = new RequestFactory();
 
-        $spec = $factory->resolve();
+        $factory->resolve();
     }
 
     public function test_throws_exception_on_invalid_spec_name()
@@ -98,7 +98,7 @@ class RequestFactoryTest extends TestCase
 
         $factory->using($name);
 
-        $spec = $factory->resolve();
+        $factory->resolve();
     }
 
     public function test_throws_exception_on_invalid_spec_extension()
@@ -112,6 +112,6 @@ class RequestFactoryTest extends TestCase
 
         $factory->using($name);
 
-        $spec = $factory->resolve();
+        $factory->resolve();
     }
 }

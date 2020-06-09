@@ -54,24 +54,45 @@ class RequestFactory
             throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
         }
 
-        if ($source['source'] === 'local') {
-            $path = $source['base_folder'];
+        $method = Str::camel("get_{$source['source']}_path");
 
-            if (!Str::endsWith($path, '/')) {
-                $path = $path.'/';
-            }
-
-            $file = str_replace('/', '', $this->specName);
-
-            $path = realpath("{$path}/{$file}");
-
-            if (!file_exists($path)) {
-                throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
-            }
-
-            return $path;
+        if (method_exists($this, $method)) {
+            return $this->{$method}($source, str_replace('/', '', $this->specName));
         }
 
         throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
+    }
+
+    protected function getLocalPath(array $source, $file)
+    {
+        $path = $this->standardizePath($source['base_path']);
+
+        $path = realpath("{$path}{$file}");
+
+        if (!file_exists($path)) {
+            throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
+        }
+
+        return $path;
+    }
+
+    protected function getRemotePath(array $source, $file)
+    {
+        $path = $this->standardizePath($source['base_path']);
+
+        $params = Arr::get($source, 'params', '');
+
+        $path = "{$path}{$file}{$params}";
+
+        return $path;
+    }
+
+    protected function standardizePath($path)
+    {
+        if (!Str::endsWith($path, '/')) {
+            $path = $path.'/';
+        }
+
+        return $path;
     }
 }

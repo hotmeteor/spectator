@@ -18,6 +18,7 @@
         </whitelist>
     </filter>
     <php>
-        <env name="SPEC_FOLDER" value="./tests/Fixtures"/>
+        <env name="SPEC_PATH" value="./tests/Fixtures"/>
+        <env name="SPEC_URL_PARAMS" value=""/>
     </php>
 </phpunit>
