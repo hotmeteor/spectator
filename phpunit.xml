@@ -19,6 +19,6 @@
     </filter>
     <php>
         <env name="SPEC_PATH" value="./tests/Fixtures"/>
-        <env name="SPEC_URL" value=""/>
+        <env name="SPEC_URL_PARAMS" value=""/>
     </php>
 </phpunit>
