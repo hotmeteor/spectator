@@ -65,7 +65,7 @@ class RequestFactory
 
     protected function getLocalPath(array $source, $file)
     {
-        $path = $this->standardizePath($source['base_folder']);
+        $path = $this->standardizePath($source['base_path']);
 
         $path = realpath("{$path}{$file}");
 
@@ -78,7 +78,7 @@ class RequestFactory
 
     protected function getRemotePath(array $source, $file)
     {
-        $path = $this->standardizePath($source['base_url']);
+        $path = $this->standardizePath($source['base_path']);
 
         $params = Arr::get($source, 'params', '');
 

@@ -27,20 +27,20 @@ return [
     'sources' => [
         'local' => [
             'source' => 'local',
-            'base_folder' => env('SPEC_FOLDER'),
+            'base_path' => env('SPEC_PATH'),
         ],
 
         'remote' => [
             'source' => 'remote',
-            'base_url' => env('SPEC_URL'),
+            'base_path' => env('SPEC_PATH'),
             'params' => env('SPUR_URL_PARAMS', ''),
         ],
 
         'github' => [
             'source' => 'github',
+            'base_path' => env('SPEC_PATH'),
             'repo' => env('SPEC_GITHUB_REPO'),
             'token' => env('SPEC_GITHUB_TOKEN'),
-            'base_folder' => env('SPEC_FOLDER'),
         ],
     ],
 ];
