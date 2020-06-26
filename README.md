@@ -138,7 +138,7 @@ class ExampleTest extends TestCase
 When testing endpoints, there are a few new methods:
 ```php
 $this->assertValidRequest();
-$this->assertValidResponse();
+$this->assertValidResponse($status = null);
 $this->assertValidationMessage('Expected validation message');
 $this->assertErrorsContain('Check for single error');
 $this->assertErrorsContain(['Check for', 'Multiple Errors']);
@@ -155,6 +155,17 @@ $this
     ->assertValidResponse();
 ```
 That said, mixing functional and contract testing may become more difficult to manage and read later.
+
+Instead of using the built-in `->assertStatus($status)` method, you may also verify the response that is valid is actually the response you want to check. For example, you may receive a `200` **or** a `202` from a single endpoint, and you want to ensure you're validating the correct response.
+```php
+$this
+    ->actingAs($user)
+    ->postJson('/comments', [
+        'message' => 'Just over here spectating',
+    ])
+    ->assertValidRequest()
+    ->assertValidResponse(201);
+````
   
 ## Credits
 
