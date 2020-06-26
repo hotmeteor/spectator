@@ -106,11 +106,4 @@ class ResponseMixin
             return Arr::get($contents, 'message', '');
         };
     }
-
-    protected function decodeResponseStatusCode()
-    {
-        return function ($contents) {
-            return Arr::get($contents, 'message', '');
-        };
-    }
 }
