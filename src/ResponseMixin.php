@@ -40,13 +40,22 @@ class ResponseMixin
 
     public function assertValidResponse()
     {
-        return function () {
+        return function ($status = null) {
             $contents = $this->getContent() ? (array) $this->decodeResponseJson() : [];
 
             PHPUnit::assertFalse(
                 in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
                 $this->decodeExceptionMessage($contents)
             );
+
+            if ($status) {
+                $actual = $this->getStatusCode();
+
+                PHPUnit::assertTrue(
+                    $actual === $status,
+                    "Expected status code {$status} but received {$actual}."
+                );
+            }
 
             return $this;
         };
@@ -92,6 +101,13 @@ class ResponseMixin
     }
 
     protected function decodeExceptionMessage()
+    {
+        return function ($contents) {
+            return Arr::get($contents, 'message', '');
+        };
+    }
+
+    protected function decodeResponseStatusCode()
     {
         return function ($contents) {
             return Arr::get($contents, 'message', '');
