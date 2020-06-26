@@ -1,3 +1,5 @@
+<p align="center"><img src="https://spectator.s3.us-east-2.amazonaws.com/spectator-logo.png" width="300"></p>
+
 # Spectator
 Spectator provides light-weight OpenAPI testing tools you can use within your existing Laravel test suite.
 
