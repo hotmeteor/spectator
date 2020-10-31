@@ -2,8 +2,8 @@
 
 namespace Spectator\Validation;
 
-use JsonSchema\Validator;
 use Illuminate\Http\Request;
+use Opis\JsonSchema\Validator;
 use cebe\openapi\spec\Operation;
 use Spectator\Exceptions\RequestValidationException;
 
@@ -62,20 +62,20 @@ class RequestValidator
 
                 if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
                     $data = $route->parameters();
-                    $validator->validate($data[$parameter->name], $jsonSchema);
+                    $result = $validator->dataValidation($data[$parameter->name], $jsonSchema);
                 } elseif ($parameter->in === 'query' && $this->request->query->has($parameter->name)) {
                     $data = $this->request->query->get($parameter->name);
-                    $validator->validate($data, $jsonSchema);
+                    $result = $validator->dataValidation($data, $jsonSchema);
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
                     $data = $this->request->headers->get($parameter->name);
-                    $validator->validate($data, $jsonSchema);
+                    $result = $validator->dataValidation($data, $jsonSchema);
                 } elseif ($parameter->in === 'cookie' && $this->request->cookies->has($parameter->name)) {
                     $data = $this->request->cookies->get($parameter->name);
-                    $validator->validate($data, $jsonSchema);
+                    $result = $validator->dataValidation($data, $jsonSchema);
                 }
 
-                if (!$validator->isValid()) {
-                    throw RequestValidationException::withSchemaErrors("Parameter [{$parameter->name}] did not match provided JSON schema.", $validator->getErrors());
+                if (!$result->isValid()) {
+                    throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->getErrors());
                 }
             }
         }
@@ -112,10 +112,10 @@ class RequestValidator
             }
         }
 
-        $validator->validate($body, $jsonSchema->getSerializableData());
+        $result = $validator->dataValidation($body, $jsonSchema->getSerializableData());
 
-        if ($validator->isValid() !== true) {
-            throw RequestValidationException::withSchemaErrors('Request body did not match provided JSON schema.', $validator->getErrors());
+        if (!$result->isValid()) {
+            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->getErrors());
         }
     }
 }

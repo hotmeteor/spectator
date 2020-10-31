@@ -2,7 +2,7 @@
 
 namespace Spectator\Validation;
 
-use JsonSchema\Validator;
+use Opis\JsonSchema\Validator;
 use cebe\openapi\spec\Operation;
 use Spectator\Exceptions\ResponseValidationException;
 
@@ -47,10 +47,10 @@ class ResponseValidator
                 throw new ResponseValidationException('Response did not match any specified media type.');
             }
 
-            $jsonSchema = $responseObject->content[$contentType]->schema;
+            $schema = $responseObject->content[$contentType]->schema;
             $validator = new Validator();
 
-            if ($jsonSchema->type === 'object' || $jsonSchema->type === 'array') {
+            if ($schema->type === 'object' || $schema->type === 'array') {
                 if ($contentType === 'application/json') {
                     $body = json_decode($body);
                 } else {
@@ -58,10 +58,12 @@ class ResponseValidator
                 }
             }
 
-            $validator->validate($body, $jsonSchema->getSerializableData());
+            $result = $validator->dataValidation((object) $body, $schema->getSerializableData());
 
-            if ($validator->isValid() !== true) {
-                throw ResponseValidationException::withSchemaErrors("The response from {$shortHandler} does not match your OpenAPI specification.", $validator->getErrors());
+            if (!$result->isValid()) {
+                $error = $result->getFirstError();
+                $args = json_encode($error->keywordArgs());
+                throw ResponseValidationException::withError("{$shortHandler} does not match the spec: [ {$error->keyword()}: {$args} ]", $result->getErrors());
             }
         }
     }

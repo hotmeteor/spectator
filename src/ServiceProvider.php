@@ -3,6 +3,8 @@
 namespace Spectator;
 
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Foundation\Testing\TestResponse;
+use Illuminate\Testing\TestResponse as LegacyTestResponse;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
@@ -34,9 +36,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     protected function decorateTestResponse()
     {
         if (class_exists('\Illuminate\Foundation\Testing\TestResponse')) {
-            \Illuminate\Foundation\Testing\TestResponse::mixin(new ResponseMixin());
+            TestResponse::mixin(new ResponseMixin());
         } else {
-            \Illuminate\Testing\TestResponse::mixin(new ResponseMixin());
+            LegacyTestResponse::mixin(new ResponseMixin());
         }
     }
 

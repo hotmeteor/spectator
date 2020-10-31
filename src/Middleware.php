@@ -31,9 +31,9 @@ class Middleware
 
         $operation = $this->operation($request);
 
-        if ($invalid = $this->validateRequest($operation, $request)) {
-            return $invalid;
-        }
+//        if ($invalid = $this->validateRequest($operation, $request)) {
+//            return $invalid;
+//        }
 
         $response = $next($request);
 

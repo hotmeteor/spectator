@@ -6,8 +6,6 @@ return PhpCsFixer\Config::create()
     ->setUsingCache(false)
     ->setRiskyAllowed(true)
     ->setRules([
-        '@PHP70Migration' => true,
-        '@PHP71Migration' => true,
         '@PSR2' => true,
         '@Symfony' => true,
         'array_syntax' => ['syntax' => 'short'],

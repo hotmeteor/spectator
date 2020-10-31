@@ -38,10 +38,8 @@ class RequestFactory
             switch (strtolower(substr($this->specName, -4))) {
                 case 'json':
                     return Reader::readFromJsonFile($file);
-                    break;
                 case 'yaml':
                     return Reader::readFromYamlFile($file);
-                    break;
             }
         }
 
