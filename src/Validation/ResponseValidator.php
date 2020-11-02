@@ -4,6 +4,7 @@ namespace Spectator\Validation;
 
 use Opis\JsonSchema\Validator;
 use cebe\openapi\spec\Operation;
+use Opis\JsonSchema\Exception\SchemaKeywordException;
 use Spectator\Exceptions\ResponseValidationException;
 
 class ResponseValidator
@@ -58,7 +59,11 @@ class ResponseValidator
                 }
             }
 
-            $result = $validator->dataValidation((object) $body, $schema->getSerializableData());
+            try {
+                $result = $validator->dataValidation((object) $body, $schema->getSerializableData());
+            } catch (SchemaKeywordException $exception) {
+                throw ResponseValidationException::withError("{$shortHandler} has invalid schema: [ {$exception->getMessage()} ]");
+            }
 
             if (!$result->isValid()) {
                 $error = $result->getFirstError();
