@@ -3,6 +3,8 @@
 # Spectator
 Spectator provides light-weight OpenAPI testing tools you can use within your existing Laravel test suite.
 
+Write tests that verify your API spec doesn't drift from your implementation.
+
 ![Tests](https://github.com/spurjobs/spectator/workflows/Tests/badge.svg)
 [![Latest Version on Packagist](https://img.shields.io/packagist/vpre/spurjobs/spectator.svg?style=flat-square)](https://packagist.org/packages/spurjobs/spectator)
 ![PHP from Packagist](https://img.shields.io/packagist/php-v/spurjobs/spectator)
