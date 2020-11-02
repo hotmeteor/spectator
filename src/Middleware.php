@@ -10,6 +10,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Response;
 use Spectator\Validation\RequestValidator;
 use Spectator\Validation\ResponseValidator;
+use Spectator\Exceptions\InvalidPathException;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
@@ -108,10 +109,10 @@ class Middleware
                     return $pathItem->getOperations()[strtolower($request_method)];
                 }
 
-                abort(405, "[{$request_method}] not a valid method for [{$request_path}].");
+                throw new InvalidPathException("[{$request_method}] not a valid method for [{$request_path}].", 405);
             }
         }
 
-        abort(404, "Path [{$request_method} {$request_path}] not found in spec.");
+        throw new InvalidPathException("Path [{$request_method} {$request_path}] not found in spec.", 404);
     }
 }

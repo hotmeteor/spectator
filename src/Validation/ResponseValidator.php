@@ -49,7 +49,6 @@ class ResponseValidator
             }
 
             $schema = $responseObject->content[$contentType]->schema;
-            $validator = new Validator();
 
             if ($schema->type === 'object' || $schema->type === 'array') {
                 if ($contentType === 'application/json') {
@@ -59,10 +58,14 @@ class ResponseValidator
                 }
             }
 
+            $validator = $this->validator();
+
             try {
-                $result = $validator->dataValidation((object) $body, $schema->getSerializableData());
+                $result = $validator->dataValidation($body, $schema->getSerializableData(), -1);
             } catch (SchemaKeywordException $exception) {
                 throw ResponseValidationException::withError("{$shortHandler} has invalid schema: [ {$exception->getMessage()} ]");
+            } catch (\Exception $exception) {
+                throw ResponseValidationException::withError($exception->getMessage());
             }
 
             if (!$result->isValid()) {
@@ -71,5 +74,12 @@ class ResponseValidator
                 throw ResponseValidationException::withError("{$shortHandler} does not match the spec: [ {$error->keyword()}: {$args} ]", $result->getErrors());
             }
         }
+    }
+
+    protected function validator(): Validator
+    {
+        $validator = new Validator();
+
+        return $validator;
     }
 }

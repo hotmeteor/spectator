@@ -91,7 +91,7 @@ class ResponseMixin
 
             PHPUnit::assertSame(
                 $expected, $actual,
-                "The expected error [{$expected}] did not match the actual error of {$actual}."
+                'The expected error did not match the actual error.'
             );
 
             return $this;
