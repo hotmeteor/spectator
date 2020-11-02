@@ -25,12 +25,9 @@ The config file will be published in `config/spectator.php`.
 
 ### Sources
 
-**Sources** are references to where your API spec lives. Depending on the way you or your team works, or where your
- spec lives, you may want to configure different sources for different environments. 
+**Sources** are references to where your API spec lives. Depending on the way you or your team works, or where your spec lives, you may want to configure different sources for different environments. 
 
-As you can see from the config, there's three source types available: `local`, `remote`, and `github`. Each source
- requires the folder where your spec lives to be defined, not the spec file itself. This provides flexibility when
-  working with multiple APIs in one project, or an API fragmented across multiple spec files.
+As you can see from the config, there's three source types available: `local`, `remote`, and `github`. Each source requires the folder where your spec lives to be defined, not the spec file itself. This provides flexibility when working with multiple APIs in one project, or an API fragmented across multiple spec files.
 
 ## Testing
 
@@ -38,11 +35,7 @@ As you can see from the config, there's three source types available: `local`, `
 
 **Now, on to the good stuff.**
 
-At first, spec testing, or contract testing, may seem counter-intuitive, especially when compared with "feature" or
- "functional" testing as supported by Laravel's [HTTP Tests](https://laravel.com/docs/7.x/http-tests). While
-  functional tests are ensuring that your request validation, controller behavior, events, responses, etc. all behave
-   the way you expect when people interact with your API, contract tests are ensuring that **requests and responses
-    are spec-compliant**, and that's it. 
+At first, spec testing, or contract testing, may seem counter-intuitive, especially when compared with "feature" or "functional" testing as supported by Laravel's [HTTP Tests](https://laravel.com/docs/8.x/http-tests). While functional tests are ensuring that your request validation, controller behavior, events, responses, etc. all behave the way you expect when people interact with your API, contract tests are ensuring that **requests and responses are spec-compliant**, and that's it. 
     
 ### Writing Tests
 
@@ -92,19 +85,13 @@ class ExampleTest extends TestCase
 
         $response
             ->assertValidRequest()
-            ->assertValidResponse();
+            ->assertValidResponse(201);
     }
 }
 ```
-The contract testing is **not** verifying a correct response code, since there could be a variety of responses that
- come back, based on the conditions of the request. What it is testing is that both the request and the response is
-  valid according to the spec, in this case located in `Api.v1.json`.
+The test is verifying that both the request and the response are valid according to the spec, in this case located in `Api.v1.json`.
   
-Within your spec, each possible response should be documented. For example, a single `POST` endpoint may result in a
- `2xx`, `4xx`, or even `5xx` code response. Additionally, your endpoints will likely have particular parameter
-  validation that needs to be adhered to. This is what makes contract testing different from functional testing: in
-   functional testing, successful and failed responses are tested for outcomes; in contract testing, requests and
-    responses are tested for conformity and outcomes don't matter. 
+Within your spec, each possible response should be documented. For example, a single `POST` endpoint may result in a `2xx`, `4xx`, or even `5xx` code response. Additionally, your endpoints will likely have particular parameter validation that needs to be adhered to. This is what makes contract testing different from functional testing: in functional testing, successful and failed responses are tested for outcomes; in contract testing, requests and responses are tested for conformity and outcomes don't matter. 
   
 ## Usage
 
@@ -172,8 +159,7 @@ $this
 ## Credits
 
 - [Adam Campbell](https://github.com/hotmeteor)
-- Inspiration and borrowed code from the [Laravel OpenAPI
-](https://github.com/mdwheele/laravel-openapi) package by [Dustin Wheeler](https://github.com/mdwheele)
+- Inspired by [Laravel OpenAPI](https://github.com/mdwheele/laravel-openapi) package by [Dustin Wheeler](https://github.com/mdwheele)
 - [All Contributors](../../contributors)
 
 
