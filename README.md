@@ -91,7 +91,7 @@ class ExampleTest extends TestCase
     }
 }
 ```
-The test is verifying that both the request and the response are valid according to the spec, in this case located in `Api.v1.json`.
+The test is verifying that both the request and the response are valid according to the spec, in this case located in `Api.v1.json`. This type of testing promotes TDD: you can write endpoint contract tests against your endpoints _first_, and then ensure your spec and implementation are aligned.
   
 Within your spec, each possible response should be documented. For example, a single `POST` endpoint may result in a `2xx`, `4xx`, or even `5xx` code response. Additionally, your endpoints will likely have particular parameter validation that needs to be adhered to. This is what makes contract testing different from functional testing: in functional testing, successful and failed responses are tested for outcomes; in contract testing, requests and responses are tested for conformity and outcomes don't matter. 
   
