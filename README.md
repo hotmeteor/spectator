@@ -5,16 +5,16 @@ Spectator provides light-weight OpenAPI testing tools you can use within your ex
 
 Write tests that verify your API spec doesn't drift from your implementation.
 
-![Tests](https://github.com/spurjobs/spectator/workflows/Tests/badge.svg)
-[![Latest Version on Packagist](https://img.shields.io/packagist/vpre/spurjobs/spectator.svg?style=flat-square)](https://packagist.org/packages/spurjobs/spectator)
-![PHP from Packagist](https://img.shields.io/packagist/php-v/spurjobs/spectator)
+![Tests](https://github.com/spurwork/spectator/workflows/Tests/badge.svg)
+[![Latest Version on Packagist](https://img.shields.io/packagist/vpre/spurwork/spectator.svg?style=flat-square)](https://packagist.org/packages/spurwork/spectator)
+![PHP from Packagist](https://img.shields.io/packagist/php-v/spurwork/spectator)
 
 ## Installation
 
 You can install the package through Composer.
 
 ```bash
-composer require spurjobs/spectator
+composer require spurwork/spectator
 ```
 
 Then, publish the config file of this package with this command:
