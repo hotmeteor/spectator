@@ -5,16 +5,16 @@ Spectator provides light-weight OpenAPI testing tools you can use within your ex
 
 Write tests that verify your API spec doesn't drift from your implementation.
 
-![Tests](https://github.com/spurwork/spectator/workflows/Tests/badge.svg)
-[![Latest Version on Packagist](https://img.shields.io/packagist/vpre/spurwork/spectator.svg?style=flat-square)](https://packagist.org/packages/spurwork/spectator)
-![PHP from Packagist](https://img.shields.io/packagist/php-v/spurwork/spectator)
+![Tests](https://github.com/hotmeteor/spectator/workflows/Tests/badge.svg)
+[![Latest Version on Packagist](https://img.shields.io/packagist/vpre/hotmeteor/spectator.svg?style=flat-square)](https://packagist.org/packages/hotmeteor/spectator)
+![PHP from Packagist](https://img.shields.io/packagist/php-v/hotmeteor/spectator)
 
 ## Installation
 
 You can install the package through Composer.
 
 ```bash
-composer require spurwork/spectator
+composer require hotmeteor/spectator
 ```
 
 Then, publish the config file of this package with this command:
