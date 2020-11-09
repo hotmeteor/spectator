@@ -1,5 +1,5 @@
 {
-  "name": "spurwork/spectator",
+  "name": "hotmeteor/spectator",
   "description": "Testing helpers for your OpenAPI spec",
   "type": "library",
   "license": "MIT",
@@ -12,7 +12,7 @@
   "authors": [
     {
       "name": "Adam Campbell",
-      "email": "adam.campbell@spurwork.com"
+      "email": "adam@hotmeteor.com"
     }
   ],
   "require": {
