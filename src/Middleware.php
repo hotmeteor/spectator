@@ -38,7 +38,7 @@ class Middleware
 
         $response = $next($request);
 
-        if ($invalid = $this->validateResponse($operation, $response)) {
+        if ($invalid = $this->validateResponse($request->route()->uri(), $operation, $response)) {
             return $invalid;
         }
 
@@ -67,10 +67,10 @@ class Middleware
         }
     }
 
-    protected function validateResponse($operation, $response)
+    protected function validateResponse(string $uri, $operation, $response)
     {
         try {
-            ResponseValidator::validate($response, $operation);
+            ResponseValidator::validate($uri, $response, $operation);
         } catch (QueryException $exception) {
             throw $exception;
         } catch (UnresolvableReferenceException $exception) {
