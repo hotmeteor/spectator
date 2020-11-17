@@ -105,7 +105,7 @@ class RequestValidator
         $validator = new Validator();
 
         if ($jsonSchema->type === 'object' || $jsonSchema->type === 'array') {
-            if ($contentType === 'application/json') {
+            if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
                 $body = json_decode($body);
             } else {
                 throw new RequestValidationException("Unable to map [{$contentType}] to schema type [object].");

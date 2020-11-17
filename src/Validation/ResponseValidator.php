@@ -51,7 +51,7 @@ class ResponseValidator
             $schema = $responseObject->content[$contentType]->schema;
 
             if ($schema->type === 'object' || $schema->type === 'array') {
-                if ($contentType === 'application/json') {
+                if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
                     $body = json_decode($body);
                 } else {
                     throw new ResponseValidationException("Unable to map [{$contentType}] to schema type [object].");
