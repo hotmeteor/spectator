@@ -48,7 +48,7 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/users')
             ->assertValidRequest()
             ->assertInvalidResponse(400)
-            ->assertValidationMessage('get-users does not match the spec: [ type: {"expected":"number","used":"string"} ]');
+            ->assertValidationMessage('get-users json response field 0.id does not match the spec: [ type: {"expected":"number","used":"string"} ]');
 
         Route::get('/users', function () {
             return [
@@ -62,6 +62,6 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/users')
             ->assertValidRequest()
             ->assertInvalidResponse(400)
-            ->assertValidationMessage('get-users does not match the spec: [ format: {"type":"string","format":"email"} ]');
+            ->assertValidationMessage('get-users json response field 0.email does not match the spec: [ format: {"type":"string","format":"email"} ]');
     }
 }
