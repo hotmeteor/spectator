@@ -35,9 +35,10 @@ class RequestFactory
         if ($this->specName) {
             $file = $this->getFile();
 
-            switch (strtolower(substr($this->specName, -4))) {
+            switch (strtolower(pathinfo($this->specName, PATHINFO_EXTENSION))) {
                 case 'json':
                     return Reader::readFromJsonFile($file);
+                case 'yml':
                 case 'yaml':
                     return Reader::readFromYamlFile($file);
             }
