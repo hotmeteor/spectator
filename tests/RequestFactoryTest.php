@@ -47,6 +47,20 @@ class RequestFactoryTest extends TestCase
         $this->assertSame('Test.v1', $spec->info->title);
     }
 
+    public function test_resolves_yml_spec()
+    {
+        $name = 'Test.v1.yml';
+
+        $factory = new RequestFactory();
+
+        $factory->using($name);
+
+        $spec = $factory->resolve();
+
+        $this->assertInstanceOf(OpenApi::class, $spec);
+        $this->assertSame('Test.v1', $spec->info->title);
+    }
+
     public function test_resolves_json_spec()
     {
         $name = 'Test.v1.json';
