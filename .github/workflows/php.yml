@@ -14,16 +14,17 @@ jobs:
       fail-fast: true
       matrix:
         laravel: [ 6.*, 7.*, 8.* ]
+        php: [ 7.2, 7.3, 7.4, 8.0 ]
         include:
           - laravel: 6.*
             testbench: 4.*
-            php: [ 7.2, 7.3, 7.4, 8.0 ]
           - laravel: 7.*
             testbench: 5.*
-            php: [ 7.2, 7.3, 7.4, 8.0 ]
           - laravel: 8.*
             testbench: 6.*
-            php: [ 7.3, 7.4, 8.0 ]
+        exclude:
+          - laravel: 8.*
+            php: 7.2
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }}
 
