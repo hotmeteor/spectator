@@ -13,7 +13,7 @@ class ResponseMixin
     public function assertValidRequest()
     {
         return function () {
-            $contents = $this->getContent() ? $contents = (array) $this->decodeResponseJson() : [];
+            $contents = $this->getContent() ? $contents = (array) $this->json() : [];
 
             PHPUnit::assertFalse(
                 in_array(Arr::get($contents, 'exception'), [RequestValidationException::class, UnresolvableReferenceException::class]),
@@ -27,7 +27,7 @@ class ResponseMixin
     public function assertInvalidRequest()
     {
         return function () {
-            $contents = (array) $this->decodeResponseJson();
+            $contents = (array) $this->json();
 
             PHPUnit::assertTrue(
                 !in_array(Arr::get($contents, 'exception'), [RequestValidationException::class, UnresolvableReferenceException::class]),
@@ -41,7 +41,7 @@ class ResponseMixin
     public function assertValidResponse()
     {
         return function ($status = null) {
-            $contents = $this->getContent() ? (array) $this->decodeResponseJson() : [];
+            $contents = $this->getContent() ? (array) $this->json() : [];
 
             PHPUnit::assertFalse(
                 in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
@@ -64,7 +64,7 @@ class ResponseMixin
     public function assertInvalidResponse()
     {
         return function ($status = null) {
-            $contents = (array) $this->decodeResponseJson();
+            $contents = (array) $this->json();
 
             PHPUnit::assertTrue(
                 in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
