@@ -75,7 +75,8 @@ class ResponseValidator
             if (!$result->isValid()) {
                 $error = $result->getFirstError();
                 $args = json_encode($error->keywordArgs());
-                throw ResponseValidationException::withError("{$shortHandler} does not match the spec: [ {$error->keyword()}: {$args} ]", $result->getErrors());
+                $dataPointer = implode('.', $error->dataPointer());
+                throw ResponseValidationException::withError("{$shortHandler} json response field {$dataPointer} does not match the spec: [ {$error->keyword()}: {$args} ]", $result->getErrors());
             }
         }
     }
