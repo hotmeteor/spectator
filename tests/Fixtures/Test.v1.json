@@ -108,6 +108,28 @@
           }
         }
       }
+    },
+    "/path-without-operationId": {
+      "get": {
+        "summary": "Get route without operationId",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "int": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

@@ -9,19 +9,23 @@ use Spectator\Exceptions\ResponseValidationException;
 
 class ResponseValidator
 {
+    /** @var string request uri */
+    protected $uri;
+
     protected $response;
 
     protected $operation;
 
-    public function __construct($response, Operation $operation)
+    public function __construct(string $uri, $response, Operation $operation)
     {
+        $this->uri = $uri;
         $this->response = $response;
         $this->operation = $operation;
     }
 
-    public static function validate($response, Operation $operation)
+    public static function validate(string $uri, $response, Operation $operation)
     {
-        $instance = new self($response, $operation);
+        $instance = new self($uri, $response, $operation);
 
         $instance->handle();
     }
@@ -32,7 +36,7 @@ class ResponseValidator
         $body = $this->response->getContent();
         $responses = $this->operation->responses;
 
-        $shortHandler = class_basename($this->operation->operationId);
+        $shortHandler = class_basename($this->operation->operationId) ?: $this->uri;
 
         // Get matching response object based on status code.
         if ($responses[$this->response->getStatusCode()] !== null) {

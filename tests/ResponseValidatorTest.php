@@ -64,4 +64,20 @@ class ResponseValidatorTest extends TestCase
             ->assertInvalidResponse(400)
             ->assertValidationMessage('get-users does not match the spec: [ format: {"type":"string","format":"email"} ]');
     }
+
+    public function test_fallback_to_request_uri_if_operationId_not_given()
+    {
+        Spectator::using('Test.v1.json');
+
+        Route::get('/path-without-operationId', function () {
+            return [
+                'int' => 'not an int'
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/path-without-operationId')
+            ->assertValidRequest()
+            ->assertInvalidResponse(400)
+            ->assertValidationMessage('path-without-operationId does not match the spec: [ type: {"expected":"integer","used":"string"} ]');
+    }
 }
