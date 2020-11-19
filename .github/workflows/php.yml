@@ -13,15 +13,17 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [ 7.2, 7.3, 7.4, 8.0 ]
         laravel: [ 6.*, 7.*, 8.* ]
         include:
           - laravel: 6.*
             testbench: 4.*
+            php: [ 7.2, 7.3, 7.4, 8.0 ]
           - laravel: 7.*
             testbench: 5.*
+            php: [ 7.2, 7.3, 7.4, 8.0 ]
           - laravel: 8.*
             testbench: 6.*
+            php: [ 7.3, 7.4, 8.0 ]
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }}
 
@@ -36,12 +38,12 @@ jobs:
       uses: actions/cache@v2
       with:
         path: vendor
-        key: ${{ runner.os }}-node-${{ hashFiles('**/composer.lock') }}
+        key: ${{ runner.os }}-${{ matrix.php }}--${{ matrix.laravel }}--node-${{ hashFiles('**/composer.lock') }}
         restore-keys: |
-          ${{ runner.os }}-node-
+          ${{ runner.os }}-${{ matrix.php }}--${{ matrix.laravel }}-node-
 
     - name: Setup PHP
-      uses: shivammathur/setup-php@v1
+      uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php }}
         extensions: dom, fileinfo, libxml, mbstring
