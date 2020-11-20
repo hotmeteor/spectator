@@ -31,6 +31,23 @@ The config file will be published in `config/spectator.php`.
 
 As you can see from the config, there's three source types available: `local`, `remote`, and `github`. Each source requires the folder where your spec lives to be defined, not the spec file itself. This provides flexibility when working with multiple APIs in one project, or an API fragmented across multiple spec files.
 
+#### Example
+
+```env
+## Spectator config
+
+SPEC_SOURCE=local
+SPEC_PATH=/spec/reference
+```
+In your tests you will declare the spec file you want to test against:
+```php
+public function testBasicExample()
+{
+    Spectator::using('Api.v1.json');
+    
+    // ...
+```
+
 ## Testing
 
 ### Paradigm Shift
