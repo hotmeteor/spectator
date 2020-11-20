@@ -6,6 +6,7 @@ use Spectator\Spectator;
 use Spectator\Middleware;
 use Spectator\ServiceProvider;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Config;
 
 class ResponseValidatorTest extends TestCase
 {
@@ -71,13 +72,39 @@ class ResponseValidatorTest extends TestCase
 
         Route::get('/path-without-operationId', function () {
             return [
-                'int' => 'not an int'
+                'int' => 'not an int',
             ];
         })->middleware(Middleware::class);
 
         $this->getJson('/path-without-operationId')
             ->assertValidRequest()
             ->assertInvalidResponse(400)
-            ->assertValidationMessage('path-without-operationId json response field int does not match the spec: [ type: {"expected":"integer","used":"string"} ]');
+            ->assertValidationMessage('/path-without-operationId json response field int does not match the spec: [ type: {"expected":"integer","used":"string"} ]');
+    }
+
+    public function test_cannot_locate_path_without_path_prefix()
+    {
+        Spectator::using('Test.v2.json');
+
+        Route::get('/users', function () {
+            return [
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse(422)
+            ->assertValidationMessage('Path [GET /users] not found in spec.');
+
+        Config::set('spectator.path_prefix', 'v2');
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse(200);
     }
 }

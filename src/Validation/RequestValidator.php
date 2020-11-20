@@ -59,6 +59,7 @@ class RequestValidator
             if ($parameter->schema) {
                 $validator = new Validator();
                 $jsonSchema = $parameter->schema->getSerializableData();
+                $result = null;
 
                 if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
                     $data = $route->parameters();
@@ -74,7 +75,7 @@ class RequestValidator
                     $result = $validator->dataValidation($data, $jsonSchema);
                 }
 
-                if (!$result->isValid()) {
+                if (optional($result)->isValid() === false) {
                     throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->getErrors());
                 }
             }

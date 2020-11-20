@@ -3,14 +3,13 @@
 namespace Spectator;
 
 use Closure;
-use Exception;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Response;
 use Spectator\Validation\RequestValidator;
 use Spectator\Validation\ResponseValidator;
 use Spectator\Exceptions\InvalidPathException;
+use Spectator\Exceptions\MissingSpecException;
+use Spectator\Exceptions\InvalidMethodException;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
@@ -30,76 +29,59 @@ class Middleware
             return $next($request);
         }
 
-        $operation = $this->operation($request);
+        try {
+            $response = $this->validate($request, $next);
+        } catch (RequestValidationException $exception) {
+            return $this->formatResponse($exception, 400);
+        } catch (ResponseValidationException $exception) {
+            return $this->formatResponse($exception, 400);
+        } catch (InvalidMethodException $exception) {
+            return $this->formatResponse($exception, 405);
+        } catch (InvalidPathException $exception) {
+            return $this->formatResponse($exception, 422);
+        } catch (MissingSpecException $exception) {
+            return $this->formatResponse($exception, 500);
+        } catch (UnresolvableReferenceException $exception) {
+            return $this->formatResponse($exception, 500);
+        } catch (\Throwable $exception) {
+            return $this->formatResponse($exception, 500);
+        }
 
-//        if ($invalid = $this->validateRequest($operation, $request)) {
-//            return $invalid;
-//        }
+        return $response;
+    }
+
+    protected function formatResponse($exception, $code)
+    {
+        $errors = method_exists($exception, 'getErrors')
+            ? ['errors' => $exception->getErrors()]
+            : [];
+
+        return Response::json(array_merge([
+            'exception' => get_class($exception),
+            'message' => $exception->getMessage(),
+        ], $errors), $code);
+    }
+
+    protected function validate(Request $request, Closure $next)
+    {
+        $request_path = $this->resolvePath($request);
+
+        $operation = $this->operation($request_path, $request->method());
+
+        RequestValidator::validate($request, $operation);
 
         $response = $next($request);
 
-        if ($invalid = $this->validateResponse($request->route()->uri(), $operation, $response)) {
-            return $invalid;
-        }
+        ResponseValidator::validate($request_path, $response, $operation);
 
         $this->spectator->reset();
 
         return $response;
     }
 
-    protected function validateRequest($operation, $request)
-    {
-        try {
-            RequestValidator::validate($request, $operation);
-        } catch (UnresolvableReferenceException $exception) {
-            return Response::json([
-                'exception' => get_class($exception),
-                'message' => $exception->getMessage(),
-            ], 500);
-        } catch (RequestValidationException $exception) {
-            return Response::json([
-                'exception' => get_class($exception),
-                'message' => $exception->getMessage(),
-                'errors' => $exception->getErrors(),
-            ], 400);
-        } catch (Exception $exception) {
-            throw $exception;
-        }
-    }
-
-    protected function validateResponse(string $uri, $operation, $response)
-    {
-        try {
-            ResponseValidator::validate($uri, $response, $operation);
-        } catch (QueryException $exception) {
-            throw $exception;
-        } catch (UnresolvableReferenceException $exception) {
-            return Response::json([
-                'exception' => get_class($exception),
-                'message' => $exception->getMessage(),
-            ], 500);
-        } catch (ResponseValidationException $exception) {
-            return Response::json([
-                'exception' => get_class($exception),
-                'message' => $exception->getMessage(),
-                'errors' => $exception->getErrors(),
-            ], 400);
-        } catch (Exception $exception) {
-            throw $exception;
-        }
-    }
-
-    protected function operation(Request $request)
+    protected function operation($request_path, $request_method)
     {
         $openapi = $this->spectator->resolve();
-
-        $request_path = $request->route()->uri();
-
-        if (!Str::startsWith($request_path, '/')) {
-            $request_path = '/'.$request_path;
-        }
-
-        $request_method = $request->method();
 
         foreach ($openapi->paths as $path => $pathItem) {
             if ($path === $request_path) {
@@ -114,5 +96,19 @@ class Middleware
         }
 
         throw new InvalidPathException("Path [{$request_method} {$request_path}] not found in spec.", 404);
+    }
+
+    protected function resolvePath($request)
+    {
+        $separator = '/';
+
+        $parts = array_filter(array_map(function ($part) use ($separator) {
+            return str_replace($separator, '', $part);
+        }, [
+            config('spectator.path_prefix'),
+            $request->route()->uri(),
+        ]));
+
+        return $separator.implode($separator, $parts);
     }
 }

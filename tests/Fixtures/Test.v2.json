@@ -1,0 +1,138 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Test.v1",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "paths": {
+    "/v2/users": {
+      "get": {
+        "summary": "Get users",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "description": "User ID",
+                        "example": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "User name",
+                        "example": "Adam Campbell"
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "User email address",
+                        "format": "email",
+                        "example": "test@test.com"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": [
+                      {
+                        "id": 1,
+                        "name": "Adam Campbell",
+                        "email": "test@test.com"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-users",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "email"
+              ]
+            },
+            "in": "query",
+            "name": "order",
+            "allowEmptyValue": true
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create user",
+        "tags": [],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "operationId": "post-users",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Adam Campbell"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "test@test.com"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/path-without-operationId": {
+      "get": {
+        "summary": "Get route without operationId",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "int": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}

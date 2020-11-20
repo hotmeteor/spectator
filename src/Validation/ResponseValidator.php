@@ -63,6 +63,7 @@ class ResponseValidator
             }
 
             $validator = $this->validator();
+            $result = null;
 
             try {
                 $result = $validator->dataValidation($body, $schema->getSerializableData(), -1);
@@ -72,10 +73,11 @@ class ResponseValidator
                 throw ResponseValidationException::withError($exception->getMessage());
             }
 
-            if (!$result->isValid()) {
+            if (optional($result)->isValid() === false) {
                 $error = $result->getFirstError();
                 $args = json_encode($error->keywordArgs());
                 $dataPointer = implode('.', $error->dataPointer());
+
                 throw ResponseValidationException::withError("{$shortHandler} json response field {$dataPointer} does not match the spec: [ {$error->keyword()}: {$args} ]", $result->getErrors());
             }
         }

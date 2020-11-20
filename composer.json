@@ -1,52 +1,52 @@
 {
-  "name": "hotmeteor/spectator",
-  "description": "Testing helpers for your OpenAPI spec",
-  "type": "library",
-  "license": "MIT",
-  "keywords": [
-    "laravel",
-    "spectator",
-    "openapi",
-    "testing"
-  ],
-  "authors": [
-    {
-      "name": "Adam Campbell",
-      "email": "adam@hotmeteor.com"
+    "name": "hotmeteor/spectator",
+    "description": "Testing helpers for your OpenAPI spec",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "spectator",
+        "openapi",
+        "testing"
+    ],
+    "authors": [
+        {
+            "name": "Adam Campbell",
+            "email": "adam@hotmeteor.com"
+        }
+    ],
+    "require": {
+        "php": "^7.2|^8.0",
+        "ext-json": "*",
+        "cebe/php-openapi": "^1.4",
+        "illuminate/support": "^6.0|^7.0|^8.0",
+        "opis/json-schema": "^1.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^4.0|^5.0|^6.0",
+        "phpunit/phpunit": "^7.0|^8.0|^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Spectator\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Spectator\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Spectator\\ServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
     }
-  ],
-  "require": {
-    "php": "^7.2|^8.0",
-    "ext-json": "*",
-    "cebe/php-openapi": "^1.4",
-    "illuminate/support": "^6.0|^7.0|^8.0",
-    "opis/json-schema": "^1.0"
-  },
-  "require-dev": {
-    "orchestra/testbench": "^4.0|^5.0|^6.0",
-    "phpunit/phpunit": "^7.0|^8.0|^9.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Spectator\\": "src"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Spectator\\Tests\\": "tests/"
-    }
-  },
-  "scripts": {
-    "test": "vendor/bin/phpunit"
-  },
-  "extra": {
-    "laravel": {
-      "providers": [
-        "Spectator\\ServiceProvider"
-      ]
-    }
-  },
-  "config": {
-    "sort-packages": true
-  }
 }
