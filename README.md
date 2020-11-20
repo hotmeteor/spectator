@@ -14,7 +14,7 @@ Write tests that verify your API spec doesn't drift from your implementation.
 You can install the package through Composer.
 
 ```bash
-composer require hotmeteor/spectator
+composer require hotmeteor/spectator --dev
 ```
 
 Then, publish the config file of this package with this command:
