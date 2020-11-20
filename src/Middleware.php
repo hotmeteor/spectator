@@ -103,13 +103,6 @@ class Middleware
         throw new InvalidPathException("Path [{$request_method} {$request_path}] not found in spec.", 404);
     }
 
-    protected function mappedPaths($paths)
-    {
-        return array_map(function ($path) {
-            return $this->resolvePath($path);
-        }, $paths);
-    }
-
     protected function resolvePath($path)
     {
         $separator = '/';
