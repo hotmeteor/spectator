@@ -78,6 +78,6 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/path-without-operationId')
             ->assertValidRequest()
             ->assertInvalidResponse(400)
-            ->assertValidationMessage('path-without-operationId does not match the spec: [ type: {"expected":"integer","used":"string"} ]');
+            ->assertValidationMessage('path-without-operationId json response field int does not match the spec: [ type: {"expected":"integer","used":"string"} ]');
     }
 }
