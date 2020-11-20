@@ -3,6 +3,7 @@
 namespace Spectator;
 
 use Closure;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Spectator\Validation\RequestValidator;
@@ -64,7 +65,7 @@ class Middleware
 
     protected function validate(Request $request, Closure $next)
     {
-        $request_path = $this->resolvePath($request);
+        $request_path = $request->route()->uri();
 
         $operation = $this->operation($request_path, $request->method());
 
@@ -81,10 +82,14 @@ class Middleware
 
     protected function operation($request_path, $request_method)
     {
+        if (!Str::startsWith($request_path, '/')) {
+            $request_path = '/'.$request_path;
+        }
+
         $openapi = $this->spectator->resolve();
 
         foreach ($openapi->paths as $path => $pathItem) {
-            if ($path === $request_path) {
+            if ($this->resolvePath($path) === $request_path) {
                 $methods = array_keys($pathItem->getOperations());
 
                 if (in_array(strtolower($request_method), $methods, true)) {
@@ -98,7 +103,14 @@ class Middleware
         throw new InvalidPathException("Path [{$request_method} {$request_path}] not found in spec.", 404);
     }
 
-    protected function resolvePath($request)
+    protected function mappedPaths($paths)
+    {
+        return array_map(function ($path) {
+            return $this->resolvePath($path);
+        }, $paths);
+    }
+
+    protected function resolvePath($path)
     {
         $separator = '/';
 
@@ -106,7 +118,7 @@ class Middleware
             return str_replace($separator, '', $part);
         }, [
             config('spectator.path_prefix'),
-            $request->route()->uri(),
+            $path,
         ]));
 
         return $separator.implode($separator, $parts);

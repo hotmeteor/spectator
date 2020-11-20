@@ -10,7 +10,7 @@
     }
   ],
   "paths": {
-    "/v2/users": {
+    "/users": {
       "get": {
         "summary": "Get users",
         "tags": [],
