@@ -86,7 +86,7 @@ class ResponseValidatorTest extends TestCase
     {
         Spectator::using('Test.v2.json');
 
-        Route::get('/v2/users', function () {
+        Route::get('/api/v2/users', function () {
             return [
                 [
                     'id' => 1,
@@ -96,14 +96,14 @@ class ResponseValidatorTest extends TestCase
             ];
         })->middleware(Middleware::class);
 
-        $this->getJson('/v2/users')
+        $this->getJson('/api/v2/users')
             ->assertValidRequest()
             ->assertValidResponse(422)
-            ->assertValidationMessage('Path [GET /v2/users] not found in spec.');
+            ->assertValidationMessage('Path [GET /api/v2/users] not found in spec.');
 
-        Config::set('spectator.path_prefix', 'v2');
+        Config::set('spectator.path_prefix', '/api/v2/');
 
-        $this->getJson('/v2/users')
+        $this->getJson('/api/v2/users')
             ->assertValidRequest()
             ->assertValidResponse(200);
     }

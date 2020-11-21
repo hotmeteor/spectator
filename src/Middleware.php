@@ -108,7 +108,7 @@ class Middleware
         $separator = '/';
 
         $parts = array_filter(array_map(function ($part) use ($separator) {
-            return str_replace($separator, '', $part);
+            return trim($part, $separator);
         }, [
             config('spectator.path_prefix'),
             $path,
