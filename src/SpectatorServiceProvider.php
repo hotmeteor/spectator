@@ -2,12 +2,24 @@
 
 namespace Spectator;
 
+use LogicException;
+use Illuminate\Support\Facades\App;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Foundation\Testing\TestResponse;
-use Illuminate\Testing\TestResponse as LegacyTestResponse;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\Testing\TestResponse as LegacyTestResponse;
 
-class ServiceProvider extends \Illuminate\Support\ServiceProvider
+class SpectatorServiceProvider extends ServiceProvider
 {
+    public function boot()
+    {
+        if (App::runningUnitTests()) {
+            $this->publishConfig();
+            $this->registerMiddleware();
+            $this->decorateTestResponse();
+        }
+    }
+
     public function register()
     {
         $this->mergeConfig();
@@ -15,16 +27,10 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->app->singleton(RequestFactory::class);
     }
 
-    public function boot()
-    {
-        $this->publishConfig();
-        $this->registerMiddleware();
-        $this->decorateTestResponse();
-    }
-
     protected function mergeConfig()
     {
         $configPath = __DIR__.'/../config/spectator.php';
+
         $this->mergeConfigFrom($configPath, 'spectator');
     }
 
@@ -35,11 +41,21 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     protected function decorateTestResponse()
     {
-        if (class_exists('\Illuminate\Foundation\Testing\TestResponse')) {
-            TestResponse::mixin(new ResponseMixin());
-        } else {
-            LegacyTestResponse::mixin(new ResponseMixin());
+        // Laravel >= 7.0
+        if (class_exists(TestResponse::class)) {
+            TestResponse::mixin(new Assertions());
+
+            return;
         }
+
+        // Laravel <= 6.0
+        if (class_exists(LegacyTestResponse::class)) {
+            LegacyTestResponse::mixin(new Assertions());
+
+            return;
+        }
+
+        throw new LogicException('Could not detect TestResponse class.');
     }
 
     protected function getConfigPath()
@@ -50,6 +66,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     protected function publishConfig()
     {
         $configPath = __DIR__.'/../config/spectator.php';
+
         $this->publishes([$configPath => $this->getConfigPath()], 'config');
     }
 }

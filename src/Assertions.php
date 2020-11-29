@@ -8,7 +8,7 @@ use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
 
-class ResponseMixin
+class Assertions
 {
     public function assertValidRequest()
     {

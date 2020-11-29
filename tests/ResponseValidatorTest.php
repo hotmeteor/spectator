@@ -4,9 +4,9 @@ namespace Spectator\Tests;
 
 use Spectator\Spectator;
 use Spectator\Middleware;
-use Spectator\ServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Config;
+use Spectator\SpectatorServiceProvider;
 
 class ResponseValidatorTest extends TestCase
 {
@@ -14,7 +14,7 @@ class ResponseValidatorTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->register(ServiceProvider::class);
+        $this->app->register(SpectatorServiceProvider::class);
 
         Spectator::using('Test.v1.json');
     }

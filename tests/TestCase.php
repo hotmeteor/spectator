@@ -8,6 +8,6 @@ abstract class TestCase extends Orchestra
 {
     protected function getPackageProviders($app)
     {
-        return ['Spectator\ServiceProvider'];
+        return ['Spectator\SpectatorServiceProvider'];
     }
 }
