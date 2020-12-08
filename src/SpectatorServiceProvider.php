@@ -13,9 +13,8 @@ class SpectatorServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        $this->publishConfig();
-
-        if (App::runningUnitTests()) {
+        if (App::runningInConsole()) {
+            $this->publishConfig();
             $this->registerMiddleware();
             $this->decorateTestResponse();
         }
