@@ -42,7 +42,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Spectator\\SpectatorServiceProvider"
+        "Spectator\\ServiceProvider"
       ]
     }
   },
