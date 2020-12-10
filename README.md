@@ -20,7 +20,7 @@ composer require hotmeteor/spectator --dev
 Then, publish the config file of this package with this command:
 
 ```bash
-php artisan vendor:publish --provider="Spectator\ServiceProvider"
+php artisan vendor:publish --provider="Spectator\SpectatorServiceProvider"
 ```
 
 The config file will be published in `config/spectator.php`.
