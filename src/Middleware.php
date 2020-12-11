@@ -32,14 +32,14 @@ class Middleware
 
         try {
             $response = $this->validate($request, $next);
+        } catch (InvalidPathException $exception) {
+            return $this->formatResponse($exception, 422);
         } catch (RequestValidationException $exception) {
             return $this->formatResponse($exception, 400);
         } catch (ResponseValidationException $exception) {
             return $this->formatResponse($exception, 400);
         } catch (InvalidMethodException $exception) {
             return $this->formatResponse($exception, 405);
-        } catch (InvalidPathException $exception) {
-            return $this->formatResponse($exception, 422);
         } catch (MissingSpecException $exception) {
             return $this->formatResponse($exception, 500);
         } catch (UnresolvableReferenceException $exception) {

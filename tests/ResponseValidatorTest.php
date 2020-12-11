@@ -97,8 +97,7 @@ class ResponseValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/api/v2/users')
-            ->assertValidRequest()
-            ->assertValidResponse(422)
+            ->assertInvalidRequest()
             ->assertValidationMessage('Path [GET /api/v2/users] not found in spec.');
 
         Config::set('spectator.path_prefix', '/api/v2/');
@@ -106,5 +105,23 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/api/v2/users')
             ->assertValidRequest()
             ->assertValidResponse(200);
+    }
+
+    public function test_handle_nullable_in_oa3dot0()
+    {
+        Spectator::using('Nullable.3.0.json');
+
+        Route::get('/api/v1/users/1', function () {
+            return [
+                [
+                    'first_name' => 'Joe',
+                    'last_name' => 'Bloggs',
+                ],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/api/v1/users/1')
+            ->assertValidRequest()
+            ->assertValidResponse();
     }
 }
