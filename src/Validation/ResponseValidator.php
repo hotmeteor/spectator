@@ -2,14 +2,17 @@
 
 namespace Spectator\Validation;
 
+use Exception;
+use cebe\openapi\spec\Schema;
 use Opis\JsonSchema\Validator;
+use cebe\openapi\spec\Response;
 use cebe\openapi\spec\Operation;
+use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Exception\SchemaKeywordException;
 use Spectator\Exceptions\ResponseValidationException;
 
 class ResponseValidator
 {
-    /** @var string request uri */
     protected $uri;
 
     protected $response;
@@ -30,57 +33,119 @@ class ResponseValidator
         $instance->handle();
     }
 
+    /**
+     * @throws ResponseValidationException
+     */
     protected function handle()
     {
-        $contentType = $this->response->headers->get('Content-Type');
-        $body = $this->response->getContent();
-        $responses = $this->operation->responses;
-
-        $shortHandler = class_basename($this->operation->operationId) ?: $this->uri;
-
-        // Get matching response object based on status code.
-        if ($responses[$this->response->getStatusCode()] !== null) {
-            $responseObject = $responses[$this->response->getStatusCode()];
-        } elseif ($responses['default'] !== null) {
-            $responseObject = $responses['default'];
-        } else {
-            throw new ResponseValidationException("No response object matching returned status code [{$this->response->getStatusCode()}].");
-        }
+        $responseObject = $this->response();
 
         if ($responseObject->content) {
-            if (!array_key_exists($contentType, $responseObject->content)) {
-                throw new ResponseValidationException('Response did not match any specified media type.');
-            }
+            $this->parseResponse($responseObject);
+        }
+    }
 
-            $schema = $responseObject->content[$contentType]->schema;
+    /**
+     * @throws ResponseValidationException
+     */
+    protected function parseResponse(Response $response)
+    {
+        $contentType = $this->contentType();
 
-            if ($schema->type === 'object' || $schema->type === 'array') {
-                if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
-                    $body = json_decode($body);
-                } else {
-                    throw new ResponseValidationException("Unable to map [{$contentType}] to schema type [object].");
-                }
-            }
+        if (!array_key_exists($contentType, $response->content)) {
+            throw new ResponseValidationException('Response did not match any specified media type.');
+        }
 
-            $validator = $this->validator();
-            $result = null;
+        $schema = $response->content[$contentType]->schema;
 
-            try {
-                $result = $validator->dataValidation($body, $schema->getSerializableData(), -1);
-            } catch (SchemaKeywordException $exception) {
-                throw ResponseValidationException::withError("{$shortHandler} has invalid schema: [ {$exception->getMessage()} ]");
-            } catch (\Exception $exception) {
-                throw ResponseValidationException::withError($exception->getMessage());
-            }
+        $this->validateResponse(
+            $schema, $this->body($contentType, $schema->type)
+        );
+    }
 
-            if (optional($result)->isValid() === false) {
-                $error = $result->getFirstError();
-                $args = json_encode($error->keywordArgs());
-                $dataPointer = implode('.', $error->dataPointer());
+    /**
+     * @param $body
+     *
+     * @throws ResponseValidationException
+     */
+    protected function validateResponse(Schema $schema, $body)
+    {
+        $result = null;
+        $validator = $this->validator();
+        $shortHandler = $this->shortHandler();
 
-                throw ResponseValidationException::withError("{$shortHandler} json response field {$dataPointer} does not match the spec: [ {$error->keyword()}: {$args} ]", $result->getErrors());
+        try {
+            $result = $validator->dataValidation($body, $schema->getSerializableData(), -1);
+        } catch (SchemaKeywordException $exception) {
+            throw ResponseValidationException::withError("{$shortHandler} has invalid schema: [ {$exception->getMessage()} ]");
+        } catch (Exception $exception) {
+            throw ResponseValidationException::withError($exception->getMessage());
+        }
+
+        if ($result instanceof ValidationResult && $result->isValid() === false) {
+            $error = $result->getFirstError();
+            $args = json_encode($error->keywordArgs());
+            $dataPointer = implode('.', $error->dataPointer());
+
+            throw ResponseValidationException::withError("{$shortHandler} json response field {$dataPointer} does not match the spec: [ {$error->keyword()}: {$args} ]", $result->getErrors());
+        }
+    }
+
+    /**
+     * @throws ResponseValidationException
+     */
+    protected function response(): Response
+    {
+        $responses = $this->operation->responses;
+
+        if ($responses[$this->response->getStatusCode()] !== null) {
+            return $responses[$this->response->getStatusCode()];
+        }
+
+        if ($responses['default'] !== null) {
+            return $responses['default'];
+        }
+
+        throw new ResponseValidationException("No response object matching returned status code [{$this->response->getStatusCode()}].");
+    }
+
+    /**
+     * @return string
+     */
+    protected function contentType()
+    {
+        return $this->response->headers->get('Content-Type');
+    }
+
+    /**
+     * @param $contentType
+     * @param $schemaType
+     *
+     * @return mixed
+     *
+     * @throws ResponseValidationException
+     */
+    protected function body($contentType, $schemaType)
+    {
+        $body = $this->response->getContent();
+
+        if (in_array($schemaType, ['object', 'array'], true)) {
+            if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
+                return json_decode($body);
+            } else {
+                throw new ResponseValidationException("Unable to map [{$contentType}] to schema type [object].");
             }
         }
+
+        return $body;
+    }
+
+    /**
+     * @return string
+     */
+    protected function shortHandler()
+    {
+        return class_basename($this->operation->operationId) ?: $this->uri;
     }
 
     protected function validator(): Validator
