@@ -1,10 +1,9 @@
 <?php
 
-namespace Spectator\Tests\Fixtures;
+namespace Spectator\Tests;
 
 use Spectator\Spectator;
 use Spectator\Middleware;
-use Spectator\Tests\TestCase;
 use Illuminate\Support\Facades\Route;
 use Spectator\SpectatorServiceProvider;
 
@@ -32,6 +31,7 @@ class AssertionsTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/invalid')
-            ->assertInvalidRequest();
+            ->assertInvalidRequest()
+            ->assertValidationMessage('Path [GET /invalid] not found in spec.');
     }
 }
