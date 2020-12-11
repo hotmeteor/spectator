@@ -5,6 +5,7 @@ namespace Spectator;
 use Illuminate\Support\Arr;
 use PHPUnit\Framework\Assert as PHPUnit;
 use Spectator\Exceptions\InvalidPathException;
+use Spectator\Exceptions\MissingSpecException;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
@@ -18,9 +19,10 @@ class Assertions
 
             PHPUnit::assertFalse(
                 in_array(Arr::get($contents, 'exception'), [
+                    InvalidPathException::class,
+                    MissingSpecException::class,
                     RequestValidationException::class,
                     UnresolvableReferenceException::class,
-                    InvalidPathException::class,
                 ]),
                 $this->decodeExceptionMessage($contents)
             );
@@ -36,9 +38,10 @@ class Assertions
 
             PHPUnit::assertTrue(
                 in_array(Arr::get($contents, 'exception'), [
+                    InvalidPathException::class,
+                    MissingSpecException::class,
                     RequestValidationException::class,
                     UnresolvableReferenceException::class,
-                    InvalidPathException::class,
                 ]),
                 $this->decodeExceptionMessage($contents)
             );

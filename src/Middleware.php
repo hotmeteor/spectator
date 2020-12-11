@@ -19,6 +19,8 @@ class Middleware
 {
     protected $spectator;
 
+    protected $version = '3.0';
+
     public function __construct(RequestFactory $spectator)
     {
         $this->spectator = $spectator;
@@ -73,7 +75,7 @@ class Middleware
 
         $response = $next($request);
 
-        ResponseValidator::validate($request_path, $response, $operation);
+        ResponseValidator::validate($request_path, $response, $operation, $this->version);
 
         $this->spectator->reset();
 
@@ -87,6 +89,8 @@ class Middleware
         }
 
         $openapi = $this->spectator->resolve();
+
+        $this->version = $openapi->openapi;
 
         foreach ($openapi->paths as $path => $pathItem) {
             if ($this->resolvePath($path) === $request_path) {

@@ -3,6 +3,8 @@
 namespace Spectator\Validation;
 
 use Exception;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use cebe\openapi\spec\Schema;
 use Opis\JsonSchema\Validator;
 use cebe\openapi\spec\Response;
@@ -19,16 +21,19 @@ class ResponseValidator
 
     protected $operation;
 
-    public function __construct(string $uri, $response, Operation $operation)
+    protected $version;
+
+    public function __construct(string $uri, $response, Operation $operation, $version = '3.0')
     {
         $this->uri = $uri;
         $this->response = $response;
         $this->operation = $operation;
+        $this->version = $version;
     }
 
-    public static function validate(string $uri, $response, Operation $operation)
+    public static function validate(string $uri, $response, Operation $operation, $version = '3.0')
     {
-        $instance = new self($uri, $response, $operation);
+        $instance = new self($uri, $response, $operation, $version);
 
         $instance->handle();
     }
@@ -75,7 +80,7 @@ class ResponseValidator
         $shortHandler = $this->shortHandler();
 
         try {
-            $result = $validator->dataValidation($body, $schema->getSerializableData(), -1);
+            $result = $validator->dataValidation($body, $this->prepareData($schema->getSerializableData()), -1);
         } catch (SchemaKeywordException $exception) {
             throw ResponseValidationException::withError("{$shortHandler} has invalid schema: [ {$exception->getMessage()} ]");
         } catch (Exception $exception) {
@@ -153,5 +158,27 @@ class ResponseValidator
         $validator = new Validator();
 
         return $validator;
+    }
+
+    protected function prepareData($data)
+    {
+        if (!isset($data->properties)) {
+            return $data;
+        }
+
+        $clone = clone $data;
+
+        $v30 = Str::startsWith($this->version, '3.0');
+
+        foreach ($clone->properties as $key => $attributes) {
+            if ($v30 && isset($attributes->nullable)) {
+                $type = Arr::wrap($attributes->type);
+                $type[] = 'null';
+                $attributes->type = array_unique($type);
+                unset($attributes->nullable);
+            }
+        }
+
+        return $clone;
     }
 }
