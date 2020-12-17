@@ -8,6 +8,7 @@ use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
 
+/** @mixin \Illuminate\Testing\TestResponse|Illuminate\Foundation\Testing\TestResponse */
 class Assertions
 {
     public function assertValidRequest()
@@ -41,19 +42,31 @@ class Assertions
     public function assertValidResponse()
     {
         return function ($status = null) {
+            $original = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2];
+
             $contents = $this->getContent() ? (array) $this->json() : [];
 
-            PHPUnit::assertFalse(
-                in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
-                $this->decodeExceptionMessage($contents)
-            );
+            try {
+                PHPUnit::assertFalse(
+                    in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
+                    $this->decodeExceptionMessage($contents)
+                );
 
-            if ($status) {
-                $actual = $this->getStatusCode();
+                if ($status) {
+                    $actual = $this->getStatusCode();
 
-                PHPUnit::assertTrue(
-                    $actual === $status,
-                    "Expected status code {$status} but received {$actual}."
+                    PHPUnit::assertTrue(
+                        $actual === $status,
+                        "Expected status code {$status} but received {$actual}."
+                    );
+                }
+            } catch (\Exception $exception) {
+                throw new \ErrorException(
+                    $exception->getMessage(),
+                    $exception->getCode(),
+                    $severity = 1,
+                    $original['file'],
+                    $original['line']
                 );
             }
 
