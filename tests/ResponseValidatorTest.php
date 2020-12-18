@@ -10,6 +10,12 @@ use Spectator\SpectatorServiceProvider;
 
 class ResponseValidatorTest extends TestCase
 {
+    const NULLABLE_MISSING = 0;
+    const NULLABLE_EMPTY = 1;
+    const NULLABLE_VALID = 2;
+    const NULLABLE_INVALID = 3;
+    const NULLABLE_NULL = 4;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -97,8 +103,7 @@ class ResponseValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/api/v2/users')
-            ->assertValidRequest()
-            ->assertValidResponse(422)
+            ->assertInvalidRequest()
             ->assertValidationMessage('Path [GET /api/v2/users] not found in spec.');
 
         Config::set('spectator.path_prefix', '/api/v2/');
@@ -106,5 +111,124 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/api/v2/users')
             ->assertValidRequest()
             ->assertValidResponse(200);
+    }
+
+    /**
+     * @dataProvider nullableProvider
+     */
+    public function test_handle_nullables(
+        $version,
+        $state,
+        $is_valid
+    ) {
+        Spectator::using("Nullable.{$version}.json");
+
+        Route::get('/users/{user}', function () use ($state) {
+            $return = [
+                'first_name' => 'Joe',
+                'last_name' => 'Bloggs',
+            ];
+
+            if ($state === self::NULLABLE_EMPTY) {
+                $return['email'] = '';
+            }
+
+            if ($state === self::NULLABLE_VALID) {
+                $return['email'] = 'test@test.com';
+            }
+
+            if ($state === self::NULLABLE_INVALID) {
+                $return['email'] = [1, 2, 3];
+            }
+
+            if ($state === self::NULLABLE_NULL) {
+                $return['email'] = null;
+            }
+
+            return $return;
+        })->middleware(Middleware::class);
+
+        if ($is_valid) {
+            $this->getJson('/users/1')
+                ->assertValidRequest()
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/users/1')
+                ->assertValidRequest()
+                ->assertInvalidResponse();
+        }
+    }
+
+    public function nullableProvider()
+    {
+        $validResponse = true;
+        $invalidResponse = false;
+
+        $v30 = '3.0';
+        $v31 = '3.1';
+
+        return [
+            // OA 3.0.0
+            '3.0, missing' => [
+                $v30,
+                self::NULLABLE_MISSING,
+                $validResponse,
+            ],
+
+            '3.0, empty' => [
+                $v30,
+                self::NULLABLE_EMPTY,
+                $validResponse,
+            ],
+
+            '3.0, null' => [
+                $v30,
+                self::NULLABLE_NULL,
+                $validResponse,
+            ],
+
+            '3.0, valid' => [
+                $v30,
+                self::NULLABLE_VALID,
+                $validResponse,
+            ],
+
+            '3.0, invalid' => [
+                $v30,
+                self::NULLABLE_INVALID,
+                $invalidResponse,
+            ],
+
+            // OA 3.1.0
+            '3.1, missing' => [
+                $v31,
+                self::NULLABLE_MISSING,
+                $validResponse,
+            ],
+
+            '3.1, empty' => [
+                $v31,
+                self::NULLABLE_EMPTY,
+                $validResponse,
+            ],
+
+            '3.1, null' => [
+                $v31,
+                self::NULLABLE_NULL,
+                $validResponse,
+            ],
+
+            '3.1, valid' => [
+                $v31,
+                self::NULLABLE_VALID,
+                $validResponse,
+            ],
+
+            '3.1, invalid' => [
+                $v31,
+                self::NULLABLE_INVALID,
+                $invalidResponse,
+            ],
+        ];
     }
 }

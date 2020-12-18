@@ -5,6 +5,8 @@ namespace Spectator;
 use Closure;
 use Illuminate\Support\Arr;
 use PHPUnit\Framework\Assert as PHPUnit;
+use Spectator\Exceptions\InvalidPathException;
+use Spectator\Exceptions\MissingSpecException;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
@@ -19,7 +21,12 @@ class Assertions
                 $contents = $this->getContent() ? $contents = (array) $this->json() : [];
 
                 PHPUnit::assertFalse(
-                    in_array(Arr::get($contents, 'exception'), [RequestValidationException::class, UnresolvableReferenceException::class]),
+                    in_array(Arr::get($contents, 'exception'), [
+                        InvalidPathException::class,
+                        MissingSpecException::class,
+                        RequestValidationException::class,
+                        UnresolvableReferenceException::class,
+                    ]),
                     $this->decodeExceptionMessage($contents)
                 );
 
@@ -35,7 +42,12 @@ class Assertions
                 $contents = (array) $this->json();
 
                 PHPUnit::assertTrue(
-                    !in_array(Arr::get($contents, 'exception'), [RequestValidationException::class, UnresolvableReferenceException::class]),
+                    in_array(Arr::get($contents, 'exception'), [
+                        InvalidPathException::class,
+                        MissingSpecException::class,
+                        RequestValidationException::class,
+                        UnresolvableReferenceException::class,
+                    ]),
                     $this->decodeExceptionMessage($contents)
                 );
 
@@ -51,7 +63,10 @@ class Assertions
                 $contents = $this->getContent() ? (array) $this->json() : [];
 
                 PHPUnit::assertFalse(
-                    in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
+                    in_array(Arr::get($contents, 'exception'), [
+                        ResponseValidationException::class,
+                        UnresolvableReferenceException::class,
+                    ]),
                     $this->decodeExceptionMessage($contents)
                 );
 
@@ -76,7 +91,10 @@ class Assertions
                 $contents = (array) $this->json();
 
                 PHPUnit::assertTrue(
-                    in_array(Arr::get($contents, 'exception'), [ResponseValidationException::class, UnresolvableReferenceException::class]),
+                    in_array(Arr::get($contents, 'exception'), [
+                        ResponseValidationException::class,
+                        UnresolvableReferenceException::class,
+                    ]),
                     $this->decodeExceptionMessage($contents)
                 );
 
