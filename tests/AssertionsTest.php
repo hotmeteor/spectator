@@ -18,7 +18,7 @@ class AssertionsTest extends TestCase
         Spectator::using('Test.v1.json');
     }
 
-    public function test_asserts_invalid_path()
+    public function testAssertsInvalidPath()
     {
         Route::get('/invalid', function () {
             return [
@@ -33,5 +33,21 @@ class AssertionsTest extends TestCase
         $this->getJson('/invalid')
             ->assertInvalidRequest()
             ->assertValidationMessage('Path [GET /invalid] not found in spec.');
+    }
+
+    public function testExceptionPointsToMixinMethod()
+    {
+        $this->expectException(\ErrorException::class);
+        $this->expectExceptionCode(0);
+        $this->expectExceptionMessage('No response object matching returned status code [500].
+Failed asserting that true is false.');
+
+        Route::get('/users', function () {
+            throw new \Exception('Explosion');
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse(200);
     }
 }
