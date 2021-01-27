@@ -20,7 +20,7 @@ jobs:
             testbench: 5.*
           - laravel: 8.*
             testbench: 6.*
-
+            
     name: P${{ matrix.php }} - L${{ matrix.laravel }}
 
     steps:
