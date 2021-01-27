@@ -23,7 +23,7 @@
     "opis/json-schema": "^1.0"
   },
   "require-dev": {
-    "nunomaduro/collision": "^4.3|^5.1",
+    "nunomaduro/collision": "^4.0|^5.1",
     "orchestra/testbench": "^4.0|^5.0|^6.0",
     "phpunit/phpunit": "^7.0|^8.0|^9.0"
   },
