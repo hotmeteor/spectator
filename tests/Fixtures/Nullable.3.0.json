@@ -44,6 +44,26 @@
                       "type": "string",
                       "example": "test@test.com",
                       "nullable": true
+                    },
+                    "settings": {
+                      "type": "object",
+                      "properties": {
+                        "last_updated_at": {
+                          "type": "string",
+                          "example": "2020-10-10",
+                          "nullable": true
+                        },
+                        "notifications": {
+                          "type": "object",
+                          "properties": {
+                            "email": {
+                              "type": "string",
+                              "example": "daily",
+                              "nullable": true
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
