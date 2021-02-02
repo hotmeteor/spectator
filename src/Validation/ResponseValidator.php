@@ -170,15 +170,29 @@ class ResponseValidator
 
         $v30 = Str::startsWith($this->version, '3.0');
 
-        foreach ($clone->properties as $key => $attributes) {
-            if ($v30 && isset($attributes->nullable)) {
+        if ($v30) {
+            $clone->properties = $this->wrapAttributesToArray($clone->properties);
+        }
+
+
+        return $clone;
+    }
+
+    protected function wrapAttributesToArray($properties)
+    {
+        foreach ($properties as $key => $attributes) {
+            if (isset($attributes->nullable)) {
                 $type = Arr::wrap($attributes->type);
                 $type[] = 'null';
                 $attributes->type = array_unique($type);
                 unset($attributes->nullable);
             }
+
+            if ($attributes->type === 'object') {
+                $attributes->properties = $this->wrapAttributesToArray($attributes->properties);
+            }
         }
 
-        return $clone;
+        return $properties;
     }
 }

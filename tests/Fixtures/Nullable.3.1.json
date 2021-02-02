@@ -43,6 +43,24 @@
                     "email": {
                       "type": ["string", "null"],
                       "example": "test@test.com"
+                    },
+                    "settings": {
+                      "type": "object",
+                      "properties": {
+                        "last_updated_at": {
+                          "type": ["string", "null"],
+                          "example": "2020-10-10"
+                        },
+                        "notifications": {
+                          "type": "object",
+                          "properties": {
+                            "email": {
+                              "type": ["string", "null"],
+                              "example": "daily"
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }

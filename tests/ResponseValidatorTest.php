@@ -2,10 +2,10 @@
 
 namespace Spectator\Tests;
 
-use Spectator\Spectator;
-use Spectator\Middleware;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Route;
+use Spectator\Middleware;
+use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
 
 class ResponseValidatorTest extends TestCase
@@ -131,6 +131,8 @@ class ResponseValidatorTest extends TestCase
 
             if ($state === self::NULLABLE_EMPTY) {
                 $return['email'] = '';
+                $return['settings']['last_updated_at'] = '';
+                $return['settings']['notifications']['email'] = '';
             }
 
             if ($state === self::NULLABLE_VALID) {
@@ -139,10 +141,14 @@ class ResponseValidatorTest extends TestCase
 
             if ($state === self::NULLABLE_INVALID) {
                 $return['email'] = [1, 2, 3];
+                $return['settings']['last_updated_at'] = [1, 2, 3];
+                $return['settings']['notifications']['email'] = [1, 2, 3];
             }
 
             if ($state === self::NULLABLE_NULL) {
                 $return['email'] = null;
+                $return['settings']['last_updated_at'] = null;
+                $return['settings']['notifications']['email'] = null;
             }
 
             return $return;
