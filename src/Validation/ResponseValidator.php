@@ -191,6 +191,14 @@ class ResponseValidator
             if ($attributes->type === 'object') {
                 $attributes->properties = $this->wrapAttributesToArray($attributes->properties);
             }
+
+            if (
+                $attributes->type === 'array'
+                && isset($attributes->items)
+                && $attributes->items->type === 'object'
+            ) {
+                $attributes->items->properties = $this->wrapAttributesToArray($attributes->items->properties);
+            }
         }
 
         return $properties;
