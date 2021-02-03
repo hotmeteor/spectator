@@ -127,12 +127,16 @@ class ResponseValidatorTest extends TestCase
             $return = [
                 'first_name' => 'Joe',
                 'last_name' => 'Bloggs',
+                'posts' => [
+                    ['title' => 'My first post!']
+                ]
             ];
 
             if ($state === self::NULLABLE_EMPTY) {
                 $return['email'] = '';
                 $return['settings']['last_updated_at'] = '';
                 $return['settings']['notifications']['email'] = '';
+                $return['posts'][0]['body'] = '';
             }
 
             if ($state === self::NULLABLE_VALID) {
@@ -143,12 +147,14 @@ class ResponseValidatorTest extends TestCase
                 $return['email'] = [1, 2, 3];
                 $return['settings']['last_updated_at'] = [1, 2, 3];
                 $return['settings']['notifications']['email'] = [1, 2, 3];
+                $return['posts'][0]['body'] = [1, 2, 3];
             }
 
             if ($state === self::NULLABLE_NULL) {
                 $return['email'] = null;
                 $return['settings']['last_updated_at'] = null;
                 $return['settings']['notifications']['email'] = null;
+                $return['posts'][0]['body'] = null;
             }
 
             return $return;
