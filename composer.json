@@ -19,7 +19,7 @@
     "php": "^7.3|^8.0",
     "ext-json": "*",
     "cebe/php-openapi": "^1.4",
-    "laravel/framework": "^7.30.3|^8.0",
+    "laravel/framework": "^7.30.3|^8.24.0",
     "opis/json-schema": "^1.0"
   },
   "require-dev": {
