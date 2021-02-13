@@ -2,15 +2,15 @@
 
 namespace Spectator\Validation;
 
+use cebe\openapi\spec\Operation;
+use cebe\openapi\spec\Response;
+use cebe\openapi\spec\Schema;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use cebe\openapi\spec\Schema;
-use Opis\JsonSchema\Validator;
-use cebe\openapi\spec\Response;
-use cebe\openapi\spec\Operation;
-use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Exception\SchemaKeywordException;
+use Opis\JsonSchema\ValidationResult;
+use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
 
 class ResponseValidator
@@ -57,7 +57,7 @@ class ResponseValidator
     {
         $contentType = $this->contentType();
 
-        if (!array_key_exists($contentType, $response->content)) {
+        if (! array_key_exists($contentType, $response->content)) {
             throw new ResponseValidationException('Response did not match any specified media type.');
         }
 
@@ -162,7 +162,7 @@ class ResponseValidator
 
     protected function prepareData($data)
     {
-        if (!isset($data->properties)) {
+        if (! isset($data->properties)) {
             return $data;
         }
 
@@ -173,7 +173,6 @@ class ResponseValidator
         if ($v30) {
             $clone->properties = $this->wrapAttributesToArray($clone->properties);
         }
-
 
         return $clone;
     }

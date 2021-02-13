@@ -2,18 +2,18 @@
 
 namespace Spectator;
 
+use cebe\openapi\exceptions\UnresolvableReferenceException;
 use Closure;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
-use Spectator\Validation\RequestValidator;
-use Spectator\Validation\ResponseValidator;
+use Illuminate\Support\Str;
+use Spectator\Exceptions\InvalidMethodException;
 use Spectator\Exceptions\InvalidPathException;
 use Spectator\Exceptions\MissingSpecException;
-use Spectator\Exceptions\InvalidMethodException;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
-use cebe\openapi\exceptions\UnresolvableReferenceException;
+use Spectator\Validation\RequestValidator;
+use Spectator\Validation\ResponseValidator;
 
 class Middleware
 {
@@ -28,7 +28,7 @@ class Middleware
 
     public function handle(Request $request, Closure $next)
     {
-        if (!$this->spectator->getSpec()) {
+        if (! $this->spectator->getSpec()) {
             return $next($request);
         }
 
@@ -84,7 +84,7 @@ class Middleware
 
     protected function operation($request_path, $request_method)
     {
-        if (!Str::startsWith($request_path, '/')) {
+        if (! Str::startsWith($request_path, '/')) {
             $request_path = '/'.$request_path;
         }
 

@@ -3,9 +3,9 @@
 namespace Spectator;
 
 use cebe\openapi\Reader;
+use cebe\openapi\spec\OpenApi;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use cebe\openapi\spec\OpenApi;
 use Illuminate\Support\Traits\Macroable;
 use Spectator\Exceptions\MissingSpecException;
 
@@ -49,7 +49,7 @@ class RequestFactory
 
     protected function getFile()
     {
-        if (!$source = Arr::get(config('spectator.sources', []), config('spectator.default'))) {
+        if (! $source = Arr::get(config('spectator.sources', []), config('spectator.default'))) {
             throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
         }
 
@@ -68,7 +68,7 @@ class RequestFactory
 
         $path = realpath("{$path}{$file}");
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
         }
 
@@ -88,7 +88,7 @@ class RequestFactory
 
     protected function standardizePath($path)
     {
-        if (!Str::endsWith($path, '/')) {
+        if (! Str::endsWith($path, '/')) {
             $path = $path.'/';
         }
 

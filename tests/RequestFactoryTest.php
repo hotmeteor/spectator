@@ -2,10 +2,10 @@
 
 namespace Spectator\Tests;
 
-use Spectator\RequestFactory;
 use cebe\openapi\spec\OpenApi;
 use Illuminate\Support\Facades\Config;
 use Spectator\Exceptions\MissingSpecException;
+use Spectator\RequestFactory;
 
 class RequestFactoryTest extends TestCase
 {

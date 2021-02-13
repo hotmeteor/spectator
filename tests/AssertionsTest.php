@@ -2,9 +2,9 @@
 
 namespace Spectator\Tests;
 
-use Spectator\Spectator;
-use Spectator\Middleware;
 use Illuminate\Support\Facades\Route;
+use Spectator\Middleware;
+use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
 
 class AssertionsTest extends TestCase
