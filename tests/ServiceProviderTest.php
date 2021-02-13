@@ -2,9 +2,9 @@
 
 namespace Spectator\Tests;
 
-use Spectator\Middleware;
-use Illuminate\Support\Facades\App;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Support\Facades\App;
+use Spectator\Middleware;
 
 class ServiceProviderTest extends TestCase
 {

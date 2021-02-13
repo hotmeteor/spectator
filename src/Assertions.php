@@ -2,6 +2,7 @@
 
 namespace Spectator;
 
+use cebe\openapi\exceptions\UnresolvableReferenceException;
 use Closure;
 use Illuminate\Support\Arr;
 use PHPUnit\Framework\Assert as PHPUnit;
@@ -9,7 +10,6 @@ use Spectator\Exceptions\InvalidPathException;
 use Spectator\Exceptions\MissingSpecException;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
-use cebe\openapi\exceptions\UnresolvableReferenceException;
 
 /** @mixin \Illuminate\Testing\TestResponse|Illuminate\Foundation\Testing\TestResponse */
 class Assertions

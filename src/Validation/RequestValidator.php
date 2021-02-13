@@ -2,9 +2,9 @@
 
 namespace Spectator\Validation;
 
+use cebe\openapi\spec\Operation;
 use Illuminate\Http\Request;
 use Opis\JsonSchema\Validator;
-use cebe\openapi\spec\Operation;
 use Spectator\Exceptions\RequestValidationException;
 
 class RequestValidator
@@ -44,13 +44,13 @@ class RequestValidator
             // Verify presence, if required.
             if ($parameter->required === true) {
                 // Parameters can be found in query, header, path or cookie.
-                if ($parameter->in === 'path' && !$route->hasParameter($parameter->name)) {
+                if ($parameter->in === 'path' && ! $route->hasParameter($parameter->name)) {
                     throw new RequestValidationException("Missing required parameter {$parameter->name} in URL path.");
-                } elseif ($parameter->in === 'query' && !$this->request->query->has($parameter->name)) {
+                } elseif ($parameter->in === 'query' && ! $this->request->query->has($parameter->name)) {
                     throw new RequestValidationException("Missing required query parameter [?{$parameter->name}=].");
-                } elseif ($parameter->in === 'header' && !$this->request->headers->has($parameter->name)) {
+                } elseif ($parameter->in === 'header' && ! $this->request->headers->has($parameter->name)) {
                     throw new RequestValidationException("Missing required header [{$parameter->name}].");
-                } elseif ($parameter->in === 'cookie' && !$this->request->cookies->has($parameter->name)) {
+                } elseif ($parameter->in === 'cookie' && ! $this->request->cookies->has($parameter->name)) {
                     throw new RequestValidationException("Missing required cookie [{$parameter->name}].");
                 }
             }
@@ -98,7 +98,7 @@ class RequestValidator
             return;
         }
 
-        if (!array_key_exists($contentType, $requestBody->content)) {
+        if (! array_key_exists($contentType, $requestBody->content)) {
             throw new RequestValidationException('Request did not match any specified media type for request body.');
         }
 
@@ -115,7 +115,7 @@ class RequestValidator
 
         $result = $validator->dataValidation($body, $jsonSchema->getSerializableData());
 
-        if (!$result->isValid()) {
+        if (! $result->isValid()) {
             throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->getErrors());
         }
     }

@@ -2,12 +2,12 @@
 
 namespace Spectator;
 
-use LogicException;
-use Illuminate\Support\Facades\App;
-use Illuminate\Testing\TestResponse;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Foundation\Testing\TestResponse as LegacyTestResponse;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Testing\TestResponse;
+use LogicException;
 
 class SpectatorServiceProvider extends ServiceProvider
 {
