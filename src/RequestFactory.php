@@ -86,6 +86,13 @@ class RequestFactory
         return $path;
     }
 
+    protected function getGithubPath(array $source, $file)
+    {
+        $path = "https://{$source['token']}@raw.githubusercontent.com/{$source['repo']}/{$source['base_path']}/{$file}";
+
+        return $path;
+    }
+
     protected function standardizePath($path)
     {
         if (! Str::endsWith($path, '/')) {
