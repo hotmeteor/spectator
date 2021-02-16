@@ -10,7 +10,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
-use Spectator\Concerns\ValidatesRequests;
 use Spectator\Exceptions\InvalidMethodException;
 use Spectator\Exceptions\InvalidPathException;
 use Spectator\Exceptions\MissingSpecException;
@@ -42,7 +41,7 @@ class Middleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!$this->spectator->getSpec()) {
+        if (! $this->spectator->getSpec()) {
             return $next($request);
         }
 
@@ -50,11 +49,11 @@ class Middleware
             $response = $this->validate($request, $next);
         } catch (InvalidPathException $exception) {
             return $this->formatResponse($exception, 422);
-        } catch (RequestValidationException|ResponseValidationException $exception) {
+        } catch (RequestValidationException | ResponseValidationException $exception) {
             return $this->formatResponse($exception, 400);
         } catch (InvalidMethodException $exception) {
             return $this->formatResponse($exception, 405);
-        } catch (MissingSpecException|UnresolvableReferenceException|TypeErrorException|Throwable $exception) {
+        } catch (MissingSpecException | UnresolvableReferenceException | TypeErrorException | Throwable $exception) {
             return $this->formatResponse($exception, 500);
         }
 
@@ -111,8 +110,8 @@ class Middleware
      */
     protected function operation($request_path, $request_method): Operation
     {
-        if (!Str::startsWith($request_path, '/')) {
-            $request_path = '/' . $request_path;
+        if (! Str::startsWith($request_path, '/')) {
+            $request_path = '/'.$request_path;
         }
 
         $openapi = $this->spectator->resolve();
@@ -146,6 +145,6 @@ class Middleware
             return trim($part, $separator);
         }, [config('spectator.path_prefix'), $path]));
 
-        return $separator . implode($separator, $parts);
+        return $separator.implode($separator, $parts);
     }
 }

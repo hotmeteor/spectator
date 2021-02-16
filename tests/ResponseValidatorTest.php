@@ -120,8 +120,7 @@ class ResponseValidatorTest extends TestCase
         $version,
         $state,
         $is_valid
-    )
-    {
+    ) {
         Spectator::using("Nullable.{$version}.json");
 
         Route::get('/users/{user}', function () use ($state) {
