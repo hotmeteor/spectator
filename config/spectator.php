@@ -38,7 +38,7 @@ return [
 
         'github' => [
             'source' => 'github',
-            'base_path' => env('SPEC_PATH'),
+            'base_path' => env('SPEC_GITHUB_PATH'),
             'repo' => env('SPEC_GITHUB_REPO'),
             'token' => env('SPEC_GITHUB_TOKEN'),
         ],
