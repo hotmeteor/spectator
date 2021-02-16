@@ -31,7 +31,8 @@ The config file will be published in `config/spectator.php`.
 
 As you can see from the config, there's three source types available: `local`, `remote`, and `github`. Each source requires the folder where your spec lives to be defined, not the spec file itself. This provides flexibility when working with multiple APIs in one project, or an API fragmented across multiple spec files.
 
-#### Example
+---
+#### Local Example
 
 ```env
 ## Spectator config
@@ -39,6 +40,33 @@ As you can see from the config, there's three source types available: `local`, `
 SPEC_SOURCE=local
 SPEC_PATH=/spec/reference
 ```
+---
+#### Remote Example
+_This is using the raw access link from Github, but any remote source can be specified.  The SPUR_URL_PARAMS can be used to append any additional parameters required for the remote url._
+```env
+## Spectator config
+
+SPEC_PATH='https://raw.githubusercontent.com/path/to/repo
+SPUR_URL_PARAMS='?token=ABEDC3E5AQ3HMUBPPCDTTMDAFPMSM',
+```
+---
+#### Github Example
+_This uses the Github Personal Access Token which allows you access to a remote repo containing your contract._
+
+You can view instructions on how to obtain your Personal Access Token from Github at [this link](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) .
+
+**Important to note than the SPEC_GITHUB_PATH must included the branch (ex: main) and then the path to the directory containing your contract.**
+
+
+```env
+## Spectator config
+
+SPEC_GITHUB_PATH='main/contracts' 
+SPEC_GITHUB_REPO='orgOruser/repo'
+SPEC_GITHUB_TOKEN='your personal access token'
+```
+---
+#### Specifying Your File In Your Tests
 In your tests you will declare the spec file you want to test against:
 ```php
 public function testBasicExample()
