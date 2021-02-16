@@ -139,10 +139,9 @@ class Assertions
 
     protected function decodeExceptionMessage()
     {
-        return function ($contents)
-        {
-            if(Arr::get($contents, 'exception') === TypeErrorException::class) {
-                return "The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.";
+        return function ($contents) {
+            if (Arr::get($contents, 'exception') === TypeErrorException::class) {
+                return 'The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.';
             }
 
             return Arr::get($contents, 'message', '');
