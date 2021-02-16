@@ -128,8 +128,8 @@ class ResponseValidatorTest extends TestCase
                 'first_name' => 'Joe',
                 'last_name' => 'Bloggs',
                 'posts' => [
-                    ['title' => 'My first post!']
-                ]
+                    ['title' => 'My first post!'],
+                ],
             ];
 
             if ($state === self::NULLABLE_EMPTY) {
