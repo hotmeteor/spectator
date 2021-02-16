@@ -64,6 +64,23 @@
                           }
                         }
                       }
+                    },
+                    "posts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "example": "My first post"
+                          },
+                          "body": {
+                            "type": "string",
+                            "nullable": true,
+                            "example": "Welcome to my blog!"
+                          }
+                        }
+                      }
                     }
                   }
                 }

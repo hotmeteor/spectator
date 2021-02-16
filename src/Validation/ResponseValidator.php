@@ -187,8 +187,17 @@ class ResponseValidator
                 unset($attributes->nullable);
             }
 
-            if ($attributes->type === 'object') {
+            if ($attributes->type === 'object' && isset($attributes->properties)) {
                 $attributes->properties = $this->wrapAttributesToArray($attributes->properties);
+            }
+
+            if (
+                $attributes->type === 'array'
+                && isset($attributes->items)
+                && isset($attributes->items->properties)
+                && $attributes->items->type === 'object'
+            ) {
+                $attributes->items->properties = $this->wrapAttributesToArray($attributes->items->properties);
             }
         }
 
