@@ -46,8 +46,8 @@ _This is using the raw access link from Github, but any remote source can be spe
 ```env
 ## Spectator config
 
-SPEC_PATH='https://raw.githubusercontent.com/path/to/repo
-SPUR_URL_PARAMS='?token=ABEDC3E5AQ3HMUBPPCDTTMDAFPMSM',
+SPEC_PATH="https://raw.githubusercontent.com/path/to/repo"
+SPUR_URL_PARAMS="?token=ABEDC3E5AQ3HMUBPPCDTTMDAFPMSM"
 ```
 ---
 #### Github Example
