@@ -120,7 +120,8 @@ class ResponseValidatorTest extends TestCase
         $version,
         $state,
         $is_valid
-    ) {
+    )
+    {
         Spectator::using("Nullable.{$version}.json");
 
         Route::get('/users/{user}', function () use ($state) {
@@ -236,5 +237,17 @@ class ResponseValidatorTest extends TestCase
                 $invalidResponse,
             ],
         ];
+    }
+
+    public function test_handles_invalid_spec()
+    {
+        Spectator::using('Malformed.v1.yaml');
+
+        Route::get('/')->middleware(Middleware::class);
+
+        $this->getJson('/')
+            ->assertInvalidRequest()
+            ->assertInvalidResponse()
+            ->assertValidationMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
     }
 }
