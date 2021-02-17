@@ -2,10 +2,12 @@
 
 namespace Spectator;
 
+use cebe\openapi\exceptions\TypeErrorException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
 use Closure;
 use Illuminate\Support\Arr;
 use PHPUnit\Framework\Assert as PHPUnit;
+use Spectator\Concerns\HasExpectations;
 use Spectator\Exceptions\InvalidPathException;
 use Spectator\Exceptions\MissingSpecException;
 use Spectator\Exceptions\RequestValidationException;
@@ -14,21 +16,21 @@ use Spectator\Exceptions\ResponseValidationException;
 /** @mixin \Illuminate\Testing\TestResponse|Illuminate\Foundation\Testing\TestResponse */
 class Assertions
 {
+    use HasExpectations;
+
     public function assertValidRequest()
     {
         return function () {
             return $this->runAssertion(function () {
                 $contents = $this->getContent() ? $contents = (array) $this->json() : [];
 
-                PHPUnit::assertFalse(
-                    in_array(Arr::get($contents, 'exception'), [
-                        InvalidPathException::class,
-                        MissingSpecException::class,
-                        RequestValidationException::class,
-                        UnresolvableReferenceException::class,
-                    ]),
-                    $this->decodeExceptionMessage($contents)
-                );
+                $this->expectsFalse($contents, [
+                    InvalidPathException::class,
+                    MissingSpecException::class,
+                    RequestValidationException::class,
+                    TypeErrorException::class,
+                    UnresolvableReferenceException::class,
+                ]);
 
                 return $this;
             });
@@ -41,15 +43,13 @@ class Assertions
             return $this->runAssertion(function () {
                 $contents = (array) $this->json();
 
-                PHPUnit::assertTrue(
-                    in_array(Arr::get($contents, 'exception'), [
-                        InvalidPathException::class,
-                        MissingSpecException::class,
-                        RequestValidationException::class,
-                        UnresolvableReferenceException::class,
-                    ]),
-                    $this->decodeExceptionMessage($contents)
-                );
+                $this->expectsTrue($contents, [
+                    InvalidPathException::class,
+                    MissingSpecException::class,
+                    RequestValidationException::class,
+                    TypeErrorException::class,
+                    UnresolvableReferenceException::class,
+                ]);
 
                 return $this;
             });
@@ -62,13 +62,11 @@ class Assertions
             return $this->runAssertion(function () use ($status) {
                 $contents = $this->getContent() ? (array) $this->json() : [];
 
-                PHPUnit::assertFalse(
-                    in_array(Arr::get($contents, 'exception'), [
-                        ResponseValidationException::class,
-                        UnresolvableReferenceException::class,
-                    ]),
-                    $this->decodeExceptionMessage($contents)
-                );
+                $this->expectsFalse($contents, [
+                    ResponseValidationException::class,
+                    TypeErrorException::class,
+                    UnresolvableReferenceException::class,
+                ]);
 
                 if ($status) {
                     $actual = $this->getStatusCode();
@@ -90,13 +88,11 @@ class Assertions
             return $this->runAssertion(function () use ($status) {
                 $contents = (array) $this->json();
 
-                PHPUnit::assertTrue(
-                    in_array(Arr::get($contents, 'exception'), [
-                        ResponseValidationException::class,
-                        UnresolvableReferenceException::class,
-                    ]),
-                    $this->decodeExceptionMessage($contents)
-                );
+                $this->expectsTrue($contents, [
+                    ResponseValidationException::class,
+                    TypeErrorException::class,
+                    UnresolvableReferenceException::class,
+                ]);
 
                 if ($status) {
                     $actual = $this->getStatusCode();
@@ -116,7 +112,7 @@ class Assertions
     {
         return function ($expected) {
             return $this->runAssertion(function () use ($expected) {
-                $actual = $this->getData()->message;
+                $actual = $this->decodeExceptionMessage((array) $this->json());
 
                 PHPUnit::assertSame(
                     $expected, $actual,
@@ -144,6 +140,10 @@ class Assertions
     protected function decodeExceptionMessage()
     {
         return function ($contents) {
+            if (Arr::get($contents, 'exception') === TypeErrorException::class) {
+                return 'The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.';
+            }
+
             return Arr::get($contents, 'message', '');
         };
     }

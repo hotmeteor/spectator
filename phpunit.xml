@@ -10,6 +10,7 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
+         printerClass="NunoMaduro\Collision\Adapters\Phpunit\Printer"
 >
   <coverage processUncoveredFiles="true">
     <include>

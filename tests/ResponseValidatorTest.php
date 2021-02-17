@@ -243,4 +243,16 @@ class ResponseValidatorTest extends TestCase
             ],
         ];
     }
+
+    public function test_handles_invalid_spec()
+    {
+        Spectator::using('Malformed.v1.yaml');
+
+        Route::get('/')->middleware(Middleware::class);
+
+        $this->getJson('/')
+            ->assertInvalidRequest()
+            ->assertInvalidResponse()
+            ->assertValidationMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
+    }
 }
