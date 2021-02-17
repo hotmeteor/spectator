@@ -19,10 +19,10 @@ class SpectatorServiceProvider extends ServiceProvider
             $this->publishConfig();
             $this->registerMiddleware();
             $this->decorateTestResponse();
-        }
 
-        if (App::runningUnitTests()) {
-            $this->registerProviders();
+            if (App::runningUnitTests()) {
+                $this->registerProviders();
+            }
         }
     }
 
