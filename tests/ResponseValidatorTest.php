@@ -117,17 +117,18 @@ class ResponseValidatorTest extends TestCase
     public function testUncaughtExceptionsAreThrownWhenExceptionHandlingIsDisabled(): void
     {
         Route::get('/users', function () {
-            throw new Exception("Something went wrong in the codebase!");
+            throw new Exception('Something went wrong in the codebase!');
         })->middleware(Middleware::class);
 
         try {
             $this->withoutExceptionHandling()->getJson('/users');
         } catch (Exception $e) {
-            $this->assertEquals("Something went wrong in the codebase!", $e->getMessage());
+            $this->assertEquals('Something went wrong in the codebase!', $e->getMessage());
+
             return;
         }
 
-        $this->fail("Failed asserting an exception was thrown");
+        $this->fail('Failed asserting an exception was thrown');
     }
 
     /**
