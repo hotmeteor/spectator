@@ -114,7 +114,7 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function testUncaughtExceptionsAreThrownWhenExceptionHandlingIsDisabled(): void
+    public function test_uncaught_exceptions_are_thrown_when_exception_handling_is_disabled(): void
     {
         Route::get('/users', function () {
             throw new Exception('Something went wrong in the codebase!');
