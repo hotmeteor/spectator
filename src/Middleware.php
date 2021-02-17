@@ -18,7 +18,6 @@ use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Validation\RequestValidator;
 use Spectator\Validation\ResponseValidator;
-use Throwable;
 
 class Middleware
 {
