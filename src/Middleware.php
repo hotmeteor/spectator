@@ -41,7 +41,7 @@ class Middleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!$this->spectator->getSpec()) {
+        if (! $this->spectator->getSpec()) {
             return $next($request);
         }
 
@@ -116,7 +116,7 @@ class Middleware
      */
     protected function operation($request_path, $request_method): Operation
     {
-        if (!Str::startsWith($request_path, '/')) {
+        if (! Str::startsWith($request_path, '/')) {
             $request_path = '/' . $request_path;
         }
 
@@ -151,6 +151,6 @@ class Middleware
             return trim($part, $separator);
         }, [config('spectator.path_prefix'), $path]));
 
-        return $separator . implode($separator, $parts);
+        return $separator.implode($separator, $parts);
     }
 }
