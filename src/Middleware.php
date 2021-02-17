@@ -116,7 +116,7 @@ class Middleware
     protected function operation($request_path, $request_method): Operation
     {
         if (! Str::startsWith($request_path, '/')) {
-            $request_path = '/' . $request_path;
+            $request_path = '/'.$request_path;
         }
 
         $openapi = $this->spectator->resolve();
