@@ -2,6 +2,7 @@
 
 namespace Spectator\Tests;
 
+use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Spectator\Middleware;
@@ -111,6 +112,22 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/api/v2/users')
             ->assertValidRequest()
             ->assertValidResponse(200);
+    }
+
+    public function testUncaughtExceptionsAreThrownWhenExceptionHandlingIsDisabled(): void
+    {
+        Route::get('/users', function () {
+            throw new Exception("Something went wrong in the codebase!");
+        })->middleware(Middleware::class);
+
+        try {
+            $this->withoutExceptionHandling()->getJson('/users');
+        } catch (Exception $e) {
+            $this->assertEquals("Something went wrong in the codebase!", $e->getMessage());
+            return;
+        }
+
+        $this->fail("Failed asserting an exception was thrown");
     }
 
     /**
