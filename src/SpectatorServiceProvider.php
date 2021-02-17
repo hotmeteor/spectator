@@ -21,7 +21,7 @@ class SpectatorServiceProvider extends ServiceProvider
             $this->decorateTestResponse();
         }
 
-        if(App::runningUnitTests()) {
+        if (App::runningUnitTests()) {
             $this->registerProviders();
         }
     }
