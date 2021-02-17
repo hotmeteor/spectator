@@ -20,10 +20,10 @@
     "ext-json": "*",
     "cebe/php-openapi": "^1.4",
     "laravel/framework": "^7.30.3|^8.24.0",
+    "laravel/sanctum": "^2.9",
     "opis/json-schema": "^1.0"
   },
   "require-dev": {
-    "laravel/sanctum": "^2.9",
     "nunomaduro/collision": "^4.0|^5.1",
     "orchestra/testbench": "^5.0|^6.0",
     "phpunit/phpunit": "^8.0|^9.0"
