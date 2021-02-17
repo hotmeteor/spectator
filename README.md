@@ -203,8 +203,8 @@ $this
     ->assertValidResponse(201);
 ```
 
-When exceptions are thrown that are not specific to this package's purpose, e.g. typo's or missing imports, the output will be formatted by default with a rather short message and no stack trace.
-This can be changed by disabling Laravel's built in validation handler which allows for easier debugging when running tests.
+When exceptions are thrown that are not specific to this package's purpose, e.g. typos or missing imports, the output will be formatted by default with a rather short message and no stack trace.
+This can be changed by disabling Laravel's built-in validation handler which allows for easier debugging when running tests.
 
 This can be done in a few different ways:
 
