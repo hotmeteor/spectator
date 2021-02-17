@@ -292,7 +292,7 @@ class ResponseValidatorTest extends TestCase
             return [
                 Auth::user()->only(['id', 'name', 'email']),
             ];
-        })->middleware(['auth:sanctum', Middleware::class]);
+        })->middleware([Middleware::class, 'auth:sanctum']);
 
         $this->getJson('/users')
             ->assertValidRequest()
