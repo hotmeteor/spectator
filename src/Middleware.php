@@ -6,6 +6,7 @@ use cebe\openapi\exceptions\TypeErrorException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
 use cebe\openapi\spec\Operation;
 use Closure;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -17,21 +18,19 @@ use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Validation\RequestValidator;
 use Spectator\Validation\ResponseValidator;
-use Throwable;
 
 class Middleware
 {
+    protected $exceptionHandler;
+
     protected $spectator;
 
     protected $version = '3.0';
 
-    /**
-     * Middleware constructor.
-     * @param RequestFactory $spectator
-     */
-    public function __construct(RequestFactory $spectator)
+    public function __construct(RequestFactory $spectator, ExceptionHandler $exceptionHandler)
     {
         $this->spectator = $spectator;
+        $this->exceptionHandler = $exceptionHandler;
     }
 
     /**
@@ -53,8 +52,14 @@ class Middleware
             return $this->formatResponse($exception, 400);
         } catch (InvalidMethodException $exception) {
             return $this->formatResponse($exception, 405);
-        } catch (MissingSpecException | UnresolvableReferenceException | TypeErrorException | Throwable $exception) {
+        } catch (MissingSpecException | UnresolvableReferenceException | TypeErrorException $exception) {
             return $this->formatResponse($exception, 500);
+        } catch (\Throwable $exception) {
+            if ($this->exceptionHandler->shouldReport($exception)) {
+                return $this->formatResponse($exception, 500);
+            }
+
+            throw $exception;
         }
 
         return $response;

@@ -201,8 +201,44 @@ $this
     ])
     ->assertValidRequest()
     ->assertValidResponse(201);
-````
-  
+```
+
+When exceptions are thrown that are not specific to this package's purpose, e.g. typo's or missing imports, the output will be formatted by default with a rather short message and no stack trace.
+This can be changed by disabling Laravel's built in validation handler which allows for easier debugging when running tests.
+
+This can be done in a few different ways:
+
+```php
+class ExampleTestCase
+{
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        Spectator::using('Api.v1.json');
+
+        // Disable exception handling for all tests in this file
+        $this->withoutExceptionHandling();
+    }
+
+    // ...
+}
+```
+
+```php
+class ExampleTestCase
+{
+    public function test_some_contract_test_example(): void
+    {
+        // Only disable exception handling for this test
+        $this->withouthExceptionHandling();
+
+        // Test request and response ...
+
+    }
+}
+```
+
 ## Credits
 
 - [Adam Campbell](https://github.com/hotmeteor)
