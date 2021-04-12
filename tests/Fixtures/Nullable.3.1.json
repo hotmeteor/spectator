@@ -46,6 +46,7 @@
                     },
                     "website": {
                       "type": ["string", "null"],
+                      "format": "uri",
                       "example": "https://example.org"
                     },
                     "settings": {
