@@ -16,7 +16,7 @@
     }
   ],
   "require": {
-    "php": "^7.3|^8.0",
+    "php": "^7.4|^8.0",
     "ext-json": "*",
     "cebe/php-openapi": "^1.5",
     "laravel/framework": "^7.30.3|^8.24.0",
