@@ -63,8 +63,7 @@ class ResponseValidator
         $schema = $response->content[$contentType]->schema;
 
         $this->validateResponse(
-            $schema,
-            $this->body($contentType, $schema->type)
+            $schema, $this->body($contentType, $this->schemaType($schema))
         );
     }
 
@@ -115,6 +114,30 @@ class ResponseValidator
     }
 
     /**
+     * @return ?string
+     */
+    protected function schemaType(Schema $schema)
+    {
+        if($schema->type) {
+            return $schema->type;
+        }
+
+        if($schema->allOf) {
+            return 'allOf';
+        }
+
+        if($schema->anyOf) {
+            return 'anyOf';
+        }
+
+        if($schema->oneOf) {
+            return 'oneOf';
+        }
+
+        return null;
+    }
+
+    /**
      * @param $contentType
      * @param $schemaType
      *
@@ -126,7 +149,7 @@ class ResponseValidator
     {
         $body = $this->response->getContent();
 
-        if (in_array($schemaType, ['object', 'array'], true)) {
+        if (in_array($schemaType, ['object', 'array', 'allOf'], true)) {
             if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
                 return json_decode($body);
             } else {

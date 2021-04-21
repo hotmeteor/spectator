@@ -138,7 +138,8 @@ class ResponseValidatorTest extends TestCase
         $version,
         $state,
         $is_valid
-    ) {
+    )
+    {
         Spectator::using("Nullable.{$version}.json");
 
         Route::get('/users/{user}', function () use ($state) {
@@ -274,13 +275,30 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
     }
 
+    // https://swagger.io/docs/specification/data-models/inheritance-and-polymorphism/
     public function test_handles_components_allOf()
     {
-        Spectator::using('Components.v1.yaml');
+        Spectator::using('Components.v1.json');
 
-        Route::get('/users')->middleware(Middleware::class);
+        Route::get('/item', function () {
+            return [
+                'name' => 'Table'
+            ];
+        })->middleware(Middleware::class);
 
-        $this->getJson('/')
+        $this->getJson('/item')
+            ->assertValidRequest()
+            ->assertInvalidResponse();
+
+        Route::get('/item', function () {
+            return [
+                'name' => 'Table',
+                'type' => 1234,
+                'description' => 'Furniture'
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/item')
             ->assertValidRequest()
             ->assertValidResponse();
     }
