@@ -56,7 +56,7 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/users')
             ->assertValidRequest()
             ->assertInvalidResponse(400)
-            ->assertValidationMessage('get-users json response field 0.id does not match the spec: [ type: {"expected":"number","used":"string"} ]');
+            ->assertValidationMessage('get-users json response field 0.id does not match the spec: [ type: {"expected":"number","type":"string"} ]');
 
         Route::get('/users', function () {
             return [
@@ -70,7 +70,7 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/users')
             ->assertValidRequest()
             ->assertInvalidResponse(400)
-            ->assertValidationMessage('get-users json response field 0.email does not match the spec: [ format: {"type":"string","format":"email"} ]');
+            ->assertValidationMessage('get-users json response field 0.email does not match the spec: [ format: {"format":"email","type":"string"} ]');
     }
 
     public function test_fallback_to_request_uri_if_operationId_not_given()
@@ -86,7 +86,7 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/path-without-operationId')
             ->assertValidRequest()
             ->assertInvalidResponse(400)
-            ->assertValidationMessage('path-without-operationId json response field int does not match the spec: [ type: {"expected":"integer","used":"string"} ]');
+            ->assertValidationMessage('path-without-operationId json response field int does not match the spec: [ type: {"expected":"integer","type":"string"} ]');
     }
 
     public function test_cannot_locate_path_without_path_prefix()
@@ -272,5 +272,16 @@ class ResponseValidatorTest extends TestCase
             ->assertInvalidRequest()
             ->assertInvalidResponse()
             ->assertValidationMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
+    }
+
+    public function test_handles_components_allOf()
+    {
+        Spectator::using('Components.v1.yaml');
+
+        Route::get('/users')->middleware(Middleware::class);
+
+        $this->getJson('/')
+            ->assertValidRequest()
+            ->assertValidResponse();
     }
 }

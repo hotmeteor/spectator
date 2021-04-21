@@ -58,21 +58,23 @@ class RequestValidator
             // Validate schemas, if provided. Required or not.
             if ($parameter->schema) {
                 $validator = new Validator();
+
                 $jsonSchema = $parameter->schema->getSerializableData();
+
                 $result = null;
 
                 if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
                     $data = $route->parameters();
-                    $result = $validator->dataValidation($data[$parameter->name], $jsonSchema);
+                    $result = $validator->validate($data[$parameter->name], $jsonSchema);
                 } elseif ($parameter->in === 'query' && $this->request->query->has($parameter->name)) {
                     $data = $this->request->query->get($parameter->name);
-                    $result = $validator->dataValidation($data, $jsonSchema);
+                    $result = $validator->validate($data, $jsonSchema);
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
                     $data = $this->request->headers->get($parameter->name);
-                    $result = $validator->dataValidation($data, $jsonSchema);
+                    $result = $validator->validate($data, $jsonSchema);
                 } elseif ($parameter->in === 'cookie' && $this->request->cookies->has($parameter->name)) {
                     $data = $this->request->cookies->get($parameter->name);
-                    $result = $validator->dataValidation($data, $jsonSchema);
+                    $result = $validator->validate($data, $jsonSchema);
                 }
 
                 if (optional($result)->isValid() === false) {
@@ -113,10 +115,10 @@ class RequestValidator
             }
         }
 
-        $result = $validator->dataValidation($body, $jsonSchema->getSerializableData());
+        $result = $validator->validate($body, $jsonSchema->getSerializableData());
 
         if (! $result->isValid()) {
-            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->getErrors());
+            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error()->subErrors());
         }
     }
 }

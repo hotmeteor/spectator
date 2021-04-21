@@ -5,9 +5,9 @@ namespace Spectator\Validation;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Response;
 use cebe\openapi\spec\Schema;
-use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Opis\JsonSchema\Errors\ValidationError;
 use Opis\JsonSchema\Exception\SchemaKeywordException;
 use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Validator;
@@ -57,14 +57,15 @@ class ResponseValidator
     {
         $contentType = $this->contentType();
 
-        if (! array_key_exists($contentType, $response->content)) {
+        if (!array_key_exists($contentType, $response->content)) {
             throw new ResponseValidationException('Response did not match any specified media type.');
         }
 
         $schema = $response->content[$contentType]->schema;
 
         $this->validateResponse(
-            $schema, $this->body($contentType, $schema->type)
+            $schema,
+            $this->body($contentType, $schema->type)
         );
     }
 
@@ -75,24 +76,16 @@ class ResponseValidator
      */
     protected function validateResponse(Schema $schema, $body)
     {
-        $result = null;
         $validator = $this->validator();
         $shortHandler = $this->shortHandler();
 
-        try {
-            $result = $validator->dataValidation($body, $this->prepareData($schema->getSerializableData()), -1);
-        } catch (SchemaKeywordException $exception) {
-            throw ResponseValidationException::withError("{$shortHandler} has invalid schema: [ {$exception->getMessage()} ]");
-        } catch (Exception $exception) {
-            throw ResponseValidationException::withError($exception->getMessage());
-        }
+        $result = $validator->validate($body, $this->prepareData($schema->getSerializableData()));
 
         if ($result instanceof ValidationResult && $result->isValid() === false) {
-            $error = $result->getFirstError();
-            $args = json_encode($error->keywordArgs());
-            $dataPointer = implode('.', $error->dataPointer());
-
-            throw ResponseValidationException::withError("{$shortHandler} json response field {$dataPointer} does not match the spec: [ {$error->keyword()}: {$args} ]", $result->getErrors());
+            $error = $this->firstError($result->error());
+            $args = json_encode($error->args());
+            $dataPointer = implode('.', $error->data()->path());
+            throw ResponseValidationException::withError("{$shortHandler} json response field {$dataPointer} does not match the spec: [ {$error->keyword()}: {$args} ]", $error->message());
         }
     }
 
@@ -162,7 +155,7 @@ class ResponseValidator
 
     protected function prepareData($data)
     {
-        if (! isset($data->properties)) {
+        if (!isset($data->properties)) {
             return $data;
         }
 
@@ -202,5 +195,28 @@ class ResponseValidator
         }
 
         return $properties;
+    }
+
+    protected function firstError(ValidationError $error): ValidationError
+    {
+        if (count($error->subErrors())) {
+            return $this->firstError($error->subErrors()[0]);
+        }
+
+        return $error;
+    }
+
+    protected function arrayKeysRecursive($array): array
+    {
+        $flat = [];
+
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $flat = array_merge($flat, $this->arrayKeysRecursive($value));
+            } else {
+                $flat[] = $key;
+            }
+        }
+        return $flat;
     }
 }

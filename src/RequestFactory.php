@@ -11,6 +11,10 @@ use Spectator\Exceptions\MissingSpecException;
 
 class RequestFactory
 {
+    /**
+     * @method static void assertValidRequest()
+     */
+
     use Macroable;
 
     protected $specName = null;
