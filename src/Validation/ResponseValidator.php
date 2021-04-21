@@ -8,7 +8,6 @@ use cebe\openapi\spec\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Opis\JsonSchema\Errors\ValidationError;
-use Opis\JsonSchema\Exception\SchemaKeywordException;
 use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
@@ -57,7 +56,7 @@ class ResponseValidator
     {
         $contentType = $this->contentType();
 
-        if (!array_key_exists($contentType, $response->content)) {
+        if (! array_key_exists($contentType, $response->content)) {
             throw new ResponseValidationException('Response did not match any specified media type.');
         }
 
@@ -155,7 +154,7 @@ class ResponseValidator
 
     protected function prepareData($data)
     {
-        if (!isset($data->properties)) {
+        if (! isset($data->properties)) {
             return $data;
         }
 
@@ -217,6 +216,7 @@ class ResponseValidator
                 $flat[] = $key;
             }
         }
+
         return $flat;
     }
 }
