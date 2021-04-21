@@ -138,8 +138,7 @@ class ResponseValidatorTest extends TestCase
         $version,
         $state,
         $is_valid
-    )
-    {
+    ) {
         Spectator::using("Nullable.{$version}.json");
 
         Route::get('/users/{user}', function () use ($state) {
@@ -282,7 +281,7 @@ class ResponseValidatorTest extends TestCase
 
         Route::get('/item', function () {
             return [
-                'name' => 'Table'
+                'name' => 'Table',
             ];
         })->middleware(Middleware::class);
 
@@ -294,7 +293,7 @@ class ResponseValidatorTest extends TestCase
             return [
                 'name' => 'Table',
                 'type' => 1234,
-                'description' => 'Furniture'
+                'description' => 'Furniture',
             ];
         })->middleware(Middleware::class);
 
