@@ -14,7 +14,6 @@ class RequestFactory
     /**
      * @method static void assertValidRequest()
      */
-
     use Macroable;
 
     protected $specName = null;
