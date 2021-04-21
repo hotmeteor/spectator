@@ -13,7 +13,9 @@ use Spectator\Exceptions\MissingSpecException;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 
-/** @mixin \Illuminate\Testing\TestResponse|Illuminate\Foundation\Testing\TestResponse */
+/**
+ * @mixin \Illuminate\Testing\TestResponse|Illuminate\Foundation\Testing\TestResponse
+ */
 class Assertions
 {
     use HasExpectations;
@@ -115,7 +117,8 @@ class Assertions
                 $actual = $this->decodeExceptionMessage((array) $this->json());
 
                 PHPUnit::assertSame(
-                    $expected, $actual,
+                    $expected,
+                    $actual,
                     'The expected error did not match the actual error.'
                 );
 

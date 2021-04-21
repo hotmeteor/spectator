@@ -8,10 +8,10 @@ abstract class SchemaValidationException extends Exception
 {
     private $errors = [];
 
-    public static function withError($message, $errors = [])
+    public static function withError($message, $errors)
     {
         $instance = new static($message);
-        $instance->errors = $errors;
+        $instance->errors = (array) $errors;
 
         return $instance;
     }
