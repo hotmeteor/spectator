@@ -118,19 +118,19 @@ class ResponseValidator
      */
     protected function schemaType(Schema $schema)
     {
-        if($schema->type) {
+        if ($schema->type) {
             return $schema->type;
         }
 
-        if($schema->allOf) {
+        if ($schema->allOf) {
             return 'allOf';
         }
 
-        if($schema->anyOf) {
+        if ($schema->anyOf) {
             return 'anyOf';
         }
 
-        if($schema->oneOf) {
+        if ($schema->oneOf) {
             return 'oneOf';
         }
 
