@@ -33,7 +33,7 @@ return [
         'remote' => [
             'source' => 'remote',
             'base_path' => env('SPEC_PATH'),
-            'params' => env('SPUR_URL_PARAMS', ''),
+            'params' => env('SPEC_URL_PARAMS', ''),
         ],
 
         'github' => [
