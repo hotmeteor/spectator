@@ -42,12 +42,12 @@ SPEC_PATH=/spec/reference
 ```
 ---
 #### Remote Example
-_This is using the raw access link from Github, but any remote source can be specified.  The SPUR_URL_PARAMS can be used to append any additional parameters required for the remote url._
+_This is using the raw access link from Github, but any remote source can be specified.  The SPEC_URL_PARAMS can be used to append any additional parameters required for the remote url._
 ```env
 ## Spectator config
 
 SPEC_PATH="https://raw.githubusercontent.com/path/to/repo"
-SPUR_URL_PARAMS="?token=ABEDC3E5AQ3HMUBPPCDTTMDAFPMSM"
+SPEC_URL_PARAMS="?token=ABEDC3E5AQ3HMUBPPCDTTMDAFPMSM"
 ```
 ---
 #### Github Example
