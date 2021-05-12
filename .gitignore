@@ -4,3 +4,4 @@
 composer.lock
 /assets/
 /phpunit.xml.bak
+.idea
