@@ -59,7 +59,7 @@ class RequestFactory
         $method = Str::camel("get_{$source['source']}_path");
 
         if (method_exists($this, $method)) {
-            return $this->{$method}($source, str_replace('/', '', $this->specName));
+            return $this->{$method}($source, $this->specName);
         }
 
         throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
