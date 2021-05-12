@@ -78,7 +78,7 @@ class RequestValidator
                 }
 
                 if (optional($result)->isValid() === false) {
-                    throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->getErrors());
+                    throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->error());
                 }
             }
         }
