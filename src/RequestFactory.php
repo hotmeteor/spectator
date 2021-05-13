@@ -59,10 +59,9 @@ class RequestFactory
         $method = Str::camel("get_{$source['source']}_path");
 
         if (method_exists($this, $method)) {
-
             $file = $this->specName;
 
-            if(Str::startsWith($file, '/')) {
+            if (Str::startsWith($file, '/')) {
                 $file = Str::replaceFirst('/', '', $this->specName);
             }
 
