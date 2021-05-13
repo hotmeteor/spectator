@@ -39,8 +39,7 @@ class AssertionsTest extends TestCase
     {
         $this->expectException(\ErrorException::class);
         $this->expectExceptionCode(0);
-        $this->expectExceptionMessage('No response object matching returned status code [500].
-Failed asserting that true is false.');
+        $this->expectExceptionMessage('No response object matching returned status code [500].');
 
         Route::get('/users', function () {
             throw new \Exception('Explosion');

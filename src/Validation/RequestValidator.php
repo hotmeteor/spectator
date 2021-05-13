@@ -78,7 +78,7 @@ class RequestValidator
                 }
 
                 if (optional($result)->isValid() === false) {
-                    throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->error()->subErrors());
+                    throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->error());
                 }
             }
         }
@@ -118,7 +118,7 @@ class RequestValidator
         $result = $validator->validate($body, $jsonSchema->getSerializableData());
 
         if (! $result->isValid()) {
-            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error()->subErrors());
+            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error());
         }
     }
 }
