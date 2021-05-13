@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000"
+      "url": "http://localhost:3000/v1"
     }
   ],
   "paths": {
@@ -107,51 +107,6 @@
             }
           }
         }
-      }
-    },
-    "/path-without-operationId": {
-      "get": {
-        "summary": "Get route without operationId",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "int": {
-                      "type": "integer"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/path-with-prefix": {
-      "get": {
-        "summary": "Get route with path prefix",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "int": {
-                      "type": "integer"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "operationId": "path-with-prefix"
       }
     }
   },

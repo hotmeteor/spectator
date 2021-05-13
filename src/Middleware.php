@@ -148,7 +148,7 @@ class Middleware
 
         $parts = array_filter(array_map(function ($part) use ($separator) {
             return trim($part, $separator);
-        }, [config('spectator.path_prefix'), $path]));
+        }, [$this->spectator->getPathPrefix(), $path]));
 
         return $separator.implode($separator, $parts);
     }
