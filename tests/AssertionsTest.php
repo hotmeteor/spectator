@@ -60,7 +60,7 @@ class AssertionsTest extends TestCase
             throw ValidationException::withMessages([
                 'email' => [
                     'The provided email address is already taken.',
-                ]
+                ],
             ]);
         })->middleware(Middleware::class);
 
