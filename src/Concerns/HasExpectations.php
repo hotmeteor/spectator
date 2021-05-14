@@ -54,7 +54,7 @@ trait HasExpectations
 
             $message = trim(Arr::get($contents, 'message'));
 
-            if (isset($contents['errors']) && count($contents['errors']) > 0 && ! config('spectator.suppress_errors')) {
+            if (isset($contents['specErrors']) && count($contents['specErrors']) > 0 && ! config('spectator.suppress_errors')) {
                 $output = new ConsoleOutput();
 
                 $table = new Table($output);
@@ -71,7 +71,7 @@ trait HasExpectations
                     ),
                 ]);
 
-                $errors = array_filter($contents['errors'], fn ($item) => $item !== $message);
+                $errors = array_filter($contents['specErrors'], fn ($item) => $item !== $message);
 
                 foreach ($errors as $error) {
                     $table->addRow(["<fg=red>⨯</> <fg=white>{$error}</>"]);

@@ -80,6 +80,9 @@
         "responses": {
           "201": {
             "description": "Created"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
           }
         },
         "operationId": "post-users",
