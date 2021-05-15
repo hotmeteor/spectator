@@ -73,7 +73,7 @@ class Middleware
     protected function formatResponse($exception, $code): JsonResponse
     {
         $errors = method_exists($exception, 'getErrors')
-            ? ['errors' => $exception->getErrors()]
+            ? ['specErrors' => $exception->getErrors()]
             : [];
 
         return Response::json(array_merge([
