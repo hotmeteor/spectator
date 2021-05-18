@@ -2,8 +2,10 @@
 
 namespace Spectator\Tests;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Spectator\Middleware;
 use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
@@ -74,4 +76,79 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest()
             ->assertValidResponse();
     }
+
+    public function test_resolve_route_model_binding()
+    {
+        Spectator::using('Test.v1.json');
+
+        Route::get('/users/{user}', function () {
+            return [
+                'id' => 1,
+                'name' => 'Jim',
+                'email' => 'test@test.test',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users/1')
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
+    public function test_resolve_route_model_explicit_binding()
+    {
+        Spectator::using('Test.v1.json');
+
+        Route::bind('postUuid', TestUser::class);
+
+        Route::get('/posts/{postUuid}', function () {
+            return [
+                'id' => 1,
+                'title' => 'My Post',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/posts/'.Str::uuid()->toString())
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
+    public function test_cannot_resolve_route_model_explicit_binding_with_invalid_format()
+    {
+        Spectator::using('Test.v1.json');
+
+        Route::bind('postUuid', TestUser::class);
+
+        Route::get('/posts/{postUuid}', function () {
+            return [
+                'id' => 1,
+                'title' => 'My Post',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/posts/invalid')
+            ->assertInvalidRequest()
+            ->assertValidResponse(400);
+    }
+
+    public function test_resolve_route_model_binding_with_multiple_parameters()
+    {
+        Spectator::using('Test.v1.json');
+
+        Route::bind('postUuid', TestUser::class);
+
+        Route::get('/posts/{postUuid}/comments/{comment}', function () {
+            return [
+                'id' => 1,
+                'message' => 'My Comment',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/posts/'.Str::uuid()->toString().'/comments/1')
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+}
+
+class TestUser extends Model
+{
 }

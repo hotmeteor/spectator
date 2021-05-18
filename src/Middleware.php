@@ -4,7 +4,7 @@ namespace Spectator;
 
 use cebe\openapi\exceptions\TypeErrorException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
-use cebe\openapi\spec\Operation;
+use cebe\openapi\spec\PathItem;
 use Closure;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\JsonResponse;
@@ -93,13 +93,13 @@ class Middleware
     {
         $request_path = $request->route()->uri();
 
-        $operation = $this->operation($request_path, $request->method());
+        $pathItem = $this->pathItem($request_path, $request->method());
 
-        RequestValidator::validate($request, $operation);
+        RequestValidator::validate($request, $pathItem, $request->method());
 
         $response = $next($request);
 
-        ResponseValidator::validate($request_path, $response, $operation, $this->version);
+        ResponseValidator::validate($request_path, $response, $pathItem->{strtolower($request->method())}, $this->version);
 
         $this->spectator->reset();
 
@@ -109,11 +109,11 @@ class Middleware
     /**
      * @param $request_path
      * @param $request_method
-     * @return Operation
+     * @return PathItem
      * @throws InvalidPathException
      * @throws MissingSpecException
      */
-    protected function operation($request_path, $request_method): Operation
+    protected function pathItem($request_path, $request_method): PathItem
     {
         if (! Str::startsWith($request_path, '/')) {
             $request_path = '/'.$request_path;
@@ -127,8 +127,9 @@ class Middleware
             if ($this->resolvePath($path) === $request_path) {
                 $methods = array_keys($pathItem->getOperations());
 
+                // Check if the method exists for this path, and if so return the full PathItem
                 if (in_array(strtolower($request_method), $methods, true)) {
-                    return $pathItem->getOperations()[strtolower($request_method)];
+                    return $pathItem;
                 }
 
                 throw new InvalidPathException("[{$request_method}] not a valid method for [{$request_path}].", 405);
