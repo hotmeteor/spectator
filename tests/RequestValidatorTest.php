@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 use Spectator\Middleware;
 use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
-use stdClass;
 
 class RequestValidatorTest extends TestCase
 {
