@@ -3,6 +3,7 @@
 namespace Spectator\Validation;
 
 use cebe\openapi\spec\Operation;
+use cebe\openapi\spec\PathItem;
 use Illuminate\Http\Request;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
@@ -11,17 +12,20 @@ class RequestValidator
 {
     protected $request;
 
-    protected $operation;
+    protected $pathItem;
 
-    public function __construct(Request $request, Operation $operation)
+    protected $method;
+
+    public function __construct(Request $request, PathItem $pathItem, $method)
     {
         $this->request = $request;
-        $this->operation = $operation;
+        $this->pathItem = $pathItem;
+        $this->method = strtolower($method);
     }
 
-    public static function validate(Request $request, Operation $operation)
+    public static function validate(Request $request, PathItem $pathItem, $method)
     {
-        $instance = new self($request, $operation);
+        $instance = new self($request, $pathItem, $method);
 
         $instance->handle();
     }
@@ -30,7 +34,7 @@ class RequestValidator
     {
         $this->validateParameters();
 
-        if ($this->operation->requestBody !== null) {
+        if ($this->operation()->requestBody !== null) {
             $this->validateBody();
         }
     }
@@ -38,9 +42,10 @@ class RequestValidator
     protected function validateParameters()
     {
         $route = $this->request->route();
-        $parameters = $this->operation->parameters;
+        $parameters = $this->pathItem->parameters;
 
         foreach ($parameters as $parameter) {
+
             // Verify presence, if required.
             if ($parameter->required === true) {
                 // Parameters can be found in query, header, path or cookie.
@@ -88,7 +93,7 @@ class RequestValidator
     {
         $contentType = $this->request->header('Content-Type');
         $body = $this->request->getContent();
-        $requestBody = $this->operation->requestBody;
+        $requestBody = $this->operation()->requestBody;
 
         if ($requestBody->required === true) {
             if (empty($body)) {
@@ -118,7 +123,12 @@ class RequestValidator
         $result = $validator->validate($body, $jsonSchema->getSerializableData());
 
         if (! $result->isValid()) {
-            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error()->subErrors());
+            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error());
         }
+    }
+
+    protected function operation(): Operation
+    {
+        return $this->pathItem->{$this->method};
     }
 }

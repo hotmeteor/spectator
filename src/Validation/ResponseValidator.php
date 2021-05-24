@@ -7,7 +7,6 @@ use cebe\openapi\spec\Response;
 use cebe\openapi\spec\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Opis\JsonSchema\Errors\ValidationError;
 use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
@@ -75,15 +74,13 @@ class ResponseValidator
     protected function validateResponse(Schema $schema, $body)
     {
         $validator = $this->validator();
-        $shortHandler = $this->shortHandler();
 
         $result = $validator->validate($body, $this->prepareData($schema->getSerializableData()));
 
         if ($result instanceof ValidationResult && $result->isValid() === false) {
-            $error = $this->firstError($result->error());
-            $args = json_encode($error->args());
-            $dataPointer = implode('.', $error->data()->path());
-            throw ResponseValidationException::withError("{$shortHandler} json response field {$dataPointer} does not match the spec: [ {$error->keyword()}: {$args} ]", $error->message());
+            $message = $result->error()->message();
+
+            throw ResponseValidationException::withError($message, $result->error());
         }
     }
 
@@ -217,15 +214,6 @@ class ResponseValidator
         }
 
         return $properties;
-    }
-
-    protected function firstError(ValidationError $error): ValidationError
-    {
-        if (count($error->subErrors())) {
-            return $this->firstError($error->subErrors()[0]);
-        }
-
-        return $error;
     }
 
     protected function arrayKeysRecursive($array): array

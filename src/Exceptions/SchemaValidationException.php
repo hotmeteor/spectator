@@ -2,27 +2,60 @@
 
 namespace Spectator\Exceptions;
 
-use Exception;
+use Opis\JsonSchema\Errors\ErrorFormatter;
+use Opis\JsonSchema\Errors\ValidationError;
+use Symfony\Component\Console\Exception\ExceptionInterface;
 
-abstract class SchemaValidationException extends Exception
+abstract class SchemaValidationException extends \Exception implements ExceptionInterface
 {
-    private $errors = [];
+    /**
+     * @var
+     */
+    protected array $errors = [];
 
-    public static function withError($message, $errors)
+    /**
+     * @param string $message
+     * @param ValidationError $error
+     * @return static
+     */
+    public static function withError(string $message, ValidationError $error)
     {
         $instance = new static($message);
-        $instance->errors = (array) $errors;
+
+        $formatter = new ErrorFormatter();
+
+        $instance->errors = $formatter->formatFlat($error);
 
         return $instance;
     }
 
-    public function getRawErrors()
+    /**
+     * @param ValidationError $error
+     */
+    protected function setErrors(ValidationError $error)
+    {
+        $formatter = new ErrorFormatter();
+
+        $this->errors = $formatter->formatFlat($error);
+    }
+
+    /**
+     * Return the exception errors.
+     *
+     * @return array
+     */
+    public function getErrors()
     {
         return $this->errors;
     }
 
-    public function getErrors()
+    /**
+     * Check if the exception has errors.
+     *
+     * @return bool
+     */
+    public function hasErrors(): bool
     {
-        return json_encode($this->errors, JSON_PRETTY_PRINT).PHP_EOL;
+        return count($this->errors) > 0;
     }
 }
