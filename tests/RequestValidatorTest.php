@@ -147,6 +147,112 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest()
             ->assertValidResponse();
     }
+
+    /**
+     * @dataProvider nullableProvider
+     */
+    public function test_handle_nullables(
+        $version,
+        $state,
+        $is_valid
+    ) {
+//        Spectator::using("Nullable.{$version}.json");
+
+        Route::post('/users')->middleware(Middleware::class);
+
+        $payload = [
+            'name' => 'Adam Campbell',
+            'email' => 'adam@hotmeteor.com',
+        ];
+
+        if ($state === self::NULLABLE_MISSING) {
+            // Well... it's missing.
+        }
+
+        if ($state === self::NULLABLE_EMPTY_STRING) {
+            $payload['nickname'] = '';
+        }
+
+        if ($state === self::NULLABLE_VALID) {
+            $payload['nickname'] = 'hotmeteor';
+        }
+
+        if ($state === self::NULLABLE_NULL) {
+            $payload['nickname'] = null;
+        }
+
+        if ($is_valid) {
+            $this->postJson('/users', $payload)
+                ->assertValidRequest()
+                ->assertValidResponse();
+        } else {
+            $this->postJson('/users', $payload)
+                ->assertInvalidRequest()
+                ->assertValidResponse();
+        }
+    }
+
+    public function nullableProvider()
+    {
+        $validResponse = true;
+        $invalidResponse = false;
+
+        $v30 = '3.0';
+        $v31 = '3.1';
+
+        return [
+            // OA 3.0.0
+            '3.0, missing' => [
+                $v30,
+                self::NULLABLE_MISSING,
+                $validResponse,
+            ],
+
+            '3.0, empty' => [
+                $v30,
+                self::NULLABLE_EMPTY_STRING,
+                $validResponse,
+            ],
+
+            '3.0, null' => [
+                $v30,
+                self::NULLABLE_NULL,
+                $validResponse,
+            ],
+
+            '3.0, valid' => [
+                $v30,
+                self::NULLABLE_VALID,
+                $validResponse,
+            ],
+
+            // OA 3.1.0
+            '3.1, missing' => [
+                $v31,
+                self::NULLABLE_MISSING,
+                $validResponse,
+            ],
+
+            '3.1, empty' => [
+                $v31,
+                self::NULLABLE_EMPTY_STRING,
+                $validResponse,
+            ],
+
+            '3.1, null' => [
+                $v31,
+                self::NULLABLE_NULL,
+                $validResponse,
+            ],
+
+            '3.1, valid' => [
+                $v31,
+                self::NULLABLE_VALID,
+                $validResponse,
+            ],
+
+        ];
+    }
 }
 
 class TestUser extends Model

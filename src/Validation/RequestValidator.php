@@ -8,17 +8,13 @@ use Illuminate\Http\Request;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
 
-class RequestValidator
+class RequestValidator extends AbstractValidator
 {
-    use SchemaValidator;
-
     protected $request;
 
     protected $pathItem;
 
     protected $method;
-
-    protected $version;
 
     public function __construct(Request $request, PathItem $pathItem, $method, $version = '3.0')
     {

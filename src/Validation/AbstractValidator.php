@@ -2,12 +2,19 @@
 
 namespace Spectator\Validation;
 
-use cebe\openapi\spec\Operation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
-trait SchemaValidator
+abstract class AbstractValidator
 {
+    protected $version;
+
+    /**
+     * Check if properties exist, and if so, prepare them based on version.
+     *
+     * @param $data
+     * @return mixed
+     */
     protected function prepareData($data)
     {
         if (! isset($data->properties)) {
@@ -25,6 +32,12 @@ trait SchemaValidator
         return $clone;
     }
 
+    /**
+     * Wrap attributes in array and resolve nullable properties.
+     *
+     * @param $properties
+     * @return mixed
+     */
     protected function wrapAttributesToArray($properties)
     {
         foreach ($properties as $key => $attributes) {

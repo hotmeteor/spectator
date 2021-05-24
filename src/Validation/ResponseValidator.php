@@ -9,17 +9,13 @@ use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
 
-class ResponseValidator
+class ResponseValidator extends AbstractValidator
 {
-    use SchemaValidator;
-
     protected $uri;
 
     protected $response;
 
     protected $operation;
-
-    protected $version;
 
     public function __construct(string $uri, $response, Operation $operation, $version = '3.0')
     {
