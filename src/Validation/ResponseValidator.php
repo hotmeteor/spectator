@@ -5,14 +5,14 @@ namespace Spectator\Validation;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Response;
 use cebe\openapi\spec\Schema;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
 
 class ResponseValidator
 {
+    use SchemaValidator;
+
     protected $uri;
 
     protected $response;
@@ -170,50 +170,6 @@ class ResponseValidator
         $validator = new Validator();
 
         return $validator;
-    }
-
-    protected function prepareData($data)
-    {
-        if (! isset($data->properties)) {
-            return $data;
-        }
-
-        $clone = clone $data;
-
-        $v30 = Str::startsWith($this->version, '3.0');
-
-        if ($v30) {
-            $clone->properties = $this->wrapAttributesToArray($clone->properties);
-        }
-
-        return $clone;
-    }
-
-    protected function wrapAttributesToArray($properties)
-    {
-        foreach ($properties as $key => $attributes) {
-            if (isset($attributes->nullable)) {
-                $type = Arr::wrap($attributes->type);
-                $type[] = 'null';
-                $attributes->type = array_unique($type);
-                unset($attributes->nullable);
-            }
-
-            if ($attributes->type === 'object' && isset($attributes->properties)) {
-                $attributes->properties = $this->wrapAttributesToArray($attributes->properties);
-            }
-
-            if (
-                $attributes->type === 'array'
-                && isset($attributes->items)
-                && isset($attributes->items->properties)
-                && $attributes->items->type === 'object'
-            ) {
-                $attributes->items->properties = $this->wrapAttributesToArray($attributes->items->properties);
-            }
-        }
-
-        return $properties;
     }
 
     protected function arrayKeysRecursive($array): array
