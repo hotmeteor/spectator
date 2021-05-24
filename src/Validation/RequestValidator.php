@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
 
-class RequestValidator
+class RequestValidator extends AbstractValidator
 {
     protected $request;
 
@@ -16,11 +16,12 @@ class RequestValidator
 
     protected $method;
 
-    public function __construct(Request $request, PathItem $pathItem, $method)
+    public function __construct(Request $request, PathItem $pathItem, $method, $version = '3.0')
     {
         $this->request = $request;
         $this->pathItem = $pathItem;
         $this->method = strtolower($method);
+        $this->version = $version;
     }
 
     public static function validate(Request $request, PathItem $pathItem, $method)
@@ -120,7 +121,7 @@ class RequestValidator
             }
         }
 
-        $result = $validator->validate($body, $jsonSchema->getSerializableData());
+        $result = $validator->validate($body, $this->prepareData($jsonSchema->getSerializableData()));
 
         if (! $result->isValid()) {
             throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error());

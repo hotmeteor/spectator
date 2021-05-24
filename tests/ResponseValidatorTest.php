@@ -11,12 +11,6 @@ use Spectator\SpectatorServiceProvider;
 
 class ResponseValidatorTest extends TestCase
 {
-    const NULLABLE_MISSING = 0;
-    const NULLABLE_EMPTY = 1;
-    const NULLABLE_VALID = 2;
-    const NULLABLE_INVALID = 3;
-    const NULLABLE_NULL = 4;
-
     public function setUp(): void
     {
         parent::setUp();
@@ -150,7 +144,7 @@ class ResponseValidatorTest extends TestCase
                 ],
             ];
 
-            if ($state === self::NULLABLE_EMPTY) {
+            if ($state === self::NULLABLE_EMPTY_STRING) {
                 $return['email'] = '';
                 $return['settings']['last_updated_at'] = '';
                 $return['settings']['notifications']['email'] = '';
@@ -207,7 +201,7 @@ class ResponseValidatorTest extends TestCase
 
             '3.0, empty' => [
                 $v30,
-                self::NULLABLE_EMPTY,
+                self::NULLABLE_EMPTY_STRING,
                 $validResponse,
             ],
 
@@ -238,7 +232,7 @@ class ResponseValidatorTest extends TestCase
 
             '3.1, empty' => [
                 $v31,
-                self::NULLABLE_EMPTY,
+                self::NULLABLE_EMPTY_STRING,
                 $validResponse,
             ],
 

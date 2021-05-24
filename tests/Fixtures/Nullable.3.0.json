@@ -90,6 +90,50 @@
         },
         "operationId": "get-users-user"
       }
+    },
+    "/users": {
+      "post": {
+        "summary": "Create user",
+        "tags": [],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Adam Campbell"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "test@test.com"
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "example": "hotmeteor",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "name",
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "operationId": "create-user"
+      }
     }
   },
   "components": {
