@@ -71,7 +71,7 @@ class ResponseValidator extends AbstractValidator
     {
         $validator = $this->validator();
 
-        $result = $validator->validate($body, $this->prepareData($schema->getSerializableData()));
+        $result = $validator->validate($body, $this->prepareData($schema));
 
         if ($result instanceof ValidationResult && $result->isValid() === false) {
             $message = $result->error()->message();

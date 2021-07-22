@@ -2,6 +2,7 @@
 
 namespace Spectator\Validation;
 
+use cebe\openapi\spec\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
@@ -12,11 +13,17 @@ abstract class AbstractValidator
     /**
      * Check if properties exist, and if so, prepare them based on version.
      *
-     * @param $data
+     * @param  Schema  $schema
      * @return mixed
      */
-    protected function prepareData($data)
+    protected function prepareData(Schema $schema)
     {
+        $data = $schema->getSerializableData();
+
+//        if ($schema->discriminator) {
+//            $data = head($data);
+//        }
+
         if (! isset($data->properties)) {
             return $data;
         }

@@ -113,15 +113,15 @@ class RequestValidator extends AbstractValidator
         $jsonSchema = $requestBody->content[$contentType]->schema;
         $validator = new Validator();
 
-        if ($jsonSchema->type === 'object' || $jsonSchema->type === 'array') {
-            if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
-                $body = json_decode($body);
-            } else {
+        if ($jsonSchema->type === 'object' || $jsonSchema->type === 'array' || $jsonSchema->oneOf || $jsonSchema->anyOf) {
+            if (! in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
                 throw new RequestValidationException("Unable to map [{$contentType}] to schema type [object].");
             }
+
+            $body = json_decode($body);
         }
 
-        $result = $validator->validate($body, $this->prepareData($jsonSchema->getSerializableData()));
+        $result = $validator->validate($body, $this->prepareData($jsonSchema));
 
         if (! $result->isValid()) {
             throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error());
