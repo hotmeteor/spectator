@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 abstract class AbstractValidator
 {
-    protected $version;
+    protected string $version;
 
     /**
      * Check if properties exist, and if so, prepare them based on version.
@@ -19,10 +19,6 @@ abstract class AbstractValidator
     protected function prepareData(Schema $schema)
     {
         $data = $schema->getSerializableData();
-
-//        if ($schema->discriminator) {
-//            $data = head($data);
-//        }
 
         if (! isset($data->properties)) {
             return $data;

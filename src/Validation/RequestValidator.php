@@ -10,13 +10,30 @@ use Spectator\Exceptions\RequestValidationException;
 
 class RequestValidator extends AbstractValidator
 {
-    protected $request;
+    /**
+     * @var Request
+     */
+    protected Request $request;
 
-    protected $pathItem;
+    /**
+     * @var PathItem
+     */
+    protected PathItem $pathItem;
 
-    protected $method;
+    /**
+     * @var string
+     */
+    protected string $method;
 
-    public function __construct(Request $request, PathItem $pathItem, $method, $version = '3.0')
+    /**
+     * RequestValidator constructor.
+     *
+     * @param  Request  $request
+     * @param  PathItem  $pathItem
+     * @param  string  $method
+     * @param  string  $version
+     */
+    public function __construct(Request $request, PathItem $pathItem, string $method, string $version = '3.0')
     {
         $this->request = $request;
         $this->pathItem = $pathItem;
@@ -24,6 +41,12 @@ class RequestValidator extends AbstractValidator
         $this->version = $version;
     }
 
+    /**
+     * @param  Request  $request
+     * @param  PathItem  $pathItem
+     * @param $method
+     * @throws RequestValidationException
+     */
     public static function validate(Request $request, PathItem $pathItem, $method)
     {
         $instance = new self($request, $pathItem, $method);
@@ -31,6 +54,9 @@ class RequestValidator extends AbstractValidator
         $instance->handle();
     }
 
+    /**
+     * @throws RequestValidationException
+     */
     protected function handle()
     {
         $this->validateParameters();
@@ -40,6 +66,9 @@ class RequestValidator extends AbstractValidator
         }
     }
 
+    /**
+     * @throws RequestValidationException
+     */
     protected function validateParameters()
     {
         $route = $this->request->route();
@@ -90,19 +119,20 @@ class RequestValidator extends AbstractValidator
         }
     }
 
-    protected function validateBody()
+    /**
+     * @throws RequestValidationException
+     */
+    protected function validateBody(): void
     {
         $contentType = $this->request->header('Content-Type');
         $body = $this->request->getContent();
         $requestBody = $this->operation()->requestBody;
 
-        if ($requestBody->required === true) {
-            if (empty($body)) {
+        if (empty($body)) {
+            if ($requestBody->required === true) {
                 throw new RequestValidationException('Request body required.');
             }
-        }
 
-        if (empty($this->request->getContent())) {
             return;
         }
 
@@ -128,6 +158,9 @@ class RequestValidator extends AbstractValidator
         }
     }
 
+    /**
+     * @return Operation
+     */
     protected function operation(): Operation
     {
         return $this->pathItem->{$this->method};

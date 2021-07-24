@@ -21,12 +21,18 @@ use Spectator\Validation\ResponseValidator;
 
 class Middleware
 {
-    protected $exceptionHandler;
+    protected ExceptionHandler $exceptionHandler;
 
-    protected $spectator;
+    protected RequestFactory $spectator;
 
-    protected $version = '3.0';
+    protected string $version = '3.0';
 
+    /**
+     * Middleware constructor.
+     *
+     * @param  RequestFactory  $spectator
+     * @param  ExceptionHandler  $exceptionHandler
+     */
     public function __construct(RequestFactory $spectator, ExceptionHandler $exceptionHandler)
     {
         $this->spectator = $spectator;
@@ -34,9 +40,13 @@ class Middleware
     }
 
     /**
-     * @param Request $request
-     * @param Closure $next
+     * @param  Request  $request
+     * @param  Closure  $next
      * @return JsonResponse|Request
+     * @throws InvalidPathException
+     * @throws MissingSpecException
+     * @throws RequestValidationException
+     * @throws \Throwable
      */
     public function handle(Request $request, Closure $next)
     {
@@ -87,7 +97,7 @@ class Middleware
      * @param Closure $next
      * @return mixed
      * @throws InvalidPathException
-     * @throws MissingSpecException
+     * @throws MissingSpecException|RequestValidationException
      */
     protected function validate(Request $request, Closure $next)
     {
@@ -112,6 +122,10 @@ class Middleware
      * @return PathItem
      * @throws InvalidPathException
      * @throws MissingSpecException
+     * @throws TypeErrorException
+     * @throws UnresolvableReferenceException
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\json\InvalidJsonPointerSyntaxException
      */
     protected function pathItem($request_path, $request_method): PathItem
     {

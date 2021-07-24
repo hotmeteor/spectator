@@ -16,9 +16,9 @@ class RequestFactory
      */
     use Macroable;
 
-    protected $specName;
+    protected ?string $specName = null;
 
-    protected $pathPrefix;
+    protected ?string $pathPrefix = null;
 
     /**
      * Set the file name of the spec.
@@ -181,7 +181,7 @@ class RequestFactory
     /**
      * Standardize a file name.
      *
-     * @param $path
+     * @param $file
      * @return string
      */
     protected function standardizeFileName($file)
