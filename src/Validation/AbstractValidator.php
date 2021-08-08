@@ -41,8 +41,8 @@ abstract class AbstractValidator
     protected function wrapAttributesToArray($properties)
     {
         foreach ($properties as $key => $attributes) {
-            if (!isset($attributes->type)) {
-                throw new \ErrorException($key . ' missing type field');
+            if (! isset($attributes->type)) {
+                throw new \ErrorException($key.' missing type field');
             }
 
             if (isset($attributes->nullable)) {
