@@ -133,7 +133,6 @@ class ResponseValidator extends AbstractValidator
     /**
      * @param $contentType
      * @param $schemaType
-     *
      * @return mixed
      *
      * @throws ResponseValidationException
