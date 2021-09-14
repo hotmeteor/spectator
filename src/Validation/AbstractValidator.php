@@ -68,7 +68,7 @@ abstract class AbstractValidator
             if (! isset($attributes->type)) {
                 throw new \ErrorException($key.' missing type field');
             }
-          
+
             // This object has a sub-object, recurse...
             if ($attributes->type === 'object' && isset($attributes->properties)) {
                 $attributes->properties = $this->wrapAttributesToArray($attributes->properties);
