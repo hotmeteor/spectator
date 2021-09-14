@@ -33,7 +33,15 @@ abstract class AbstractValidator
     }
 
     /**
-     * Wrap attributes in array and resolve nullable properties.
+     * Returns an associate array mapping "objects" to "properties" for the purposes of spec testing.
+     * All nullable properties are resolved. When this function finishes, you should have a
+     * structure with the following format:.
+     *
+     * [
+     *     "Pet" => "{ resolved properties of a pet }"
+     *     "Order" => "{ resolved properties of an order }"
+     *     ...
+     * ]
      *
      * @param $properties
      * @return mixed
@@ -41,10 +49,14 @@ abstract class AbstractValidator
     protected function wrapAttributesToArray($properties)
     {
         foreach ($properties as $key => $attributes) {
-            if (! isset($attributes->type)) {
-                throw new \ErrorException($key.' missing type field');
+            // Does this object contain an unresolved "$ref"? This occurs when `cebe\openapi\Reader`
+            // encounters a cyclical reference. Skip it.
+            if (data_get($attributes, '$ref')) {
+                break;
             }
 
+            // Does this object define "nullable"? If so, unset "nullable" and include "null"
+            // in array of possible types (e.g. "type" => [..., "null"]).
             if (isset($attributes->nullable)) {
                 $type = Arr::wrap($attributes->type);
                 $type[] = 'null';
@@ -52,10 +64,17 @@ abstract class AbstractValidator
                 unset($attributes->nullable);
             }
 
+            // Before we check for recursive cases, make sure this object defines a "type".
+            if (! isset($attributes->type)) {
+                throw new \ErrorException($key.' missing type field');
+            }
+          
+            // This object has a sub-object, recurse...
             if ($attributes->type === 'object' && isset($attributes->properties)) {
                 $attributes->properties = $this->wrapAttributesToArray($attributes->properties);
             }
 
+            // This object is an array of sub-objects, recurse...
             if (
                 $attributes->type === 'array'
                 && isset($attributes->items)
