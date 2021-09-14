@@ -79,6 +79,7 @@ class RequestFactory
      * Resolve and parse the spec.
      *
      * @return OpenApi
+     *
      * @throws MissingSpecException
      * @throws \cebe\openapi\exceptions\IOException
      * @throws \cebe\openapi\exceptions\TypeErrorException
@@ -106,6 +107,7 @@ class RequestFactory
      * Retrieve the spec file.
      *
      * @return mixed
+     *
      * @throws MissingSpecException
      */
     protected function getFile()
@@ -128,9 +130,10 @@ class RequestFactory
     /**
      * Retrieve a local spec file.
      *
-     * @param array $source
+     * @param  array  $source
      * @param $file
      * @return false|string
+     *
      * @throws MissingSpecException
      */
     protected function getLocalPath(array $source, $file)
@@ -149,7 +152,7 @@ class RequestFactory
     /**
      * Retrieve a remote spec file.
      *
-     * @param array $source
+     * @param  array  $source
      * @param $file
      * @return string
      */
@@ -167,7 +170,7 @@ class RequestFactory
     /**
      * Build a Github path.
      *
-     * @param array $source
+     * @param  array  $source
      * @param $file
      * @return string
      */

@@ -34,8 +34,8 @@ class Middleware
     }
 
     /**
-     * @param Request $request
-     * @param Closure $next
+     * @param  Request  $request
+     * @param  Closure  $next
      * @return JsonResponse|Request
      */
     public function handle(Request $request, Closure $next)
@@ -48,11 +48,11 @@ class Middleware
             $response = $this->validate($request, $next);
         } catch (InvalidPathException $exception) {
             return $this->formatResponse($exception, 422);
-        } catch (RequestValidationException | ResponseValidationException $exception) {
+        } catch (RequestValidationException|ResponseValidationException $exception) {
             return $this->formatResponse($exception, 400);
         } catch (InvalidMethodException $exception) {
             return $this->formatResponse($exception, 405);
-        } catch (MissingSpecException | UnresolvableReferenceException | TypeErrorException $exception) {
+        } catch (MissingSpecException|UnresolvableReferenceException|TypeErrorException $exception) {
             return $this->formatResponse($exception, 500);
         } catch (\Throwable $exception) {
             if ($this->exceptionHandler->shouldReport($exception)) {
@@ -83,9 +83,10 @@ class Middleware
     }
 
     /**
-     * @param Request $request
-     * @param Closure $next
+     * @param  Request  $request
+     * @param  Closure  $next
      * @return mixed
+     *
      * @throws InvalidPathException
      * @throws MissingSpecException
      */
@@ -110,6 +111,7 @@ class Middleware
      * @param $request_path
      * @param $request_method
      * @return PathItem
+     *
      * @throws InvalidPathException
      * @throws MissingSpecException
      */
