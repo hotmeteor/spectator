@@ -14,8 +14,8 @@ abstract class SchemaValidationException extends \Exception implements Exception
     protected array $errors = [];
 
     /**
-     * @param string $message
-     * @param ValidationError $error
+     * @param  string  $message
+     * @param  ValidationError  $error
      * @return static
      */
     public static function withError(string $message, ValidationError $error)
@@ -30,7 +30,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
     }
 
     /**
-     * @param ValidationError $error
+     * @param  ValidationError  $error
      */
     protected function setErrors(ValidationError $error)
     {
