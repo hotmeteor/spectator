@@ -35,7 +35,7 @@ abstract class AbstractValidator
     /**
      * Returns an associate array mapping "objects" to "properties" for the purposes of spec testing.
      * All nullable properties are resolved. When this function finishes, you should have a
-     * structure with the following format:
+     * structure with the following format:.
      *
      * [
      *     "Pet" => "{ resolved properties of a pet }"
