@@ -66,6 +66,11 @@ abstract class AbstractValidator
                 unset($attributes->nullable);
             }
 
+            // Before we check recursive cases, make sure this object defines a "type".
+            if (!isset($attributes->type)) {
+                break;
+            }
+
             // This object has a sub-object, recurse...
             if ($attributes->type === 'object' && isset($attributes->properties)) {
                 $attributes->properties = $this->wrapAttributesToArray($attributes->properties);
