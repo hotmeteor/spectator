@@ -12,7 +12,7 @@ use Spectator\SpectatorServiceProvider;
 
 /**
  * This TestCase makes use of data providers. Follow the link for more details:
- * https://phpunit.readthedocs.io/en/stable/writing-tests-for-phpunit.html#data-providers
+ * https://phpunit.readthedocs.io/en/stable/writing-tests-for-phpunit.html#data-providers.
  */
 class RequestValidatorTest extends TestCase
 {
