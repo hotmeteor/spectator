@@ -77,8 +77,7 @@ class ResponseValidator extends AbstractValidator
     {
         $validator = $this->validator();
 
-        $actual_response = $body;
-        $body = json_decode($body);
+        $actual_response = json_encode($body);
 
         $expected_schema = $this->prepareData($schema);
         $expected_response = json_encode($expected_schema);
@@ -158,7 +157,7 @@ class ResponseValidator extends AbstractValidator
     {
         $body = $this->response->getContent();
 
-        if (in_array($schemaType, ['object', 'array', 'allOf'], true)) {
+        if (in_array($schemaType, ['object', 'array', 'allOf', 'anyOf', 'oneOf'], true)) {
             if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
                 return json_decode($body);
             } else {

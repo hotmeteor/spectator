@@ -116,7 +116,7 @@ class Assertions
             return $this->runAssertion(function () use ($expected) {
                 $actual = $this->decodeExceptionMessage((array) $this->json());
 
-                PHPUnit::assertSame(
+                PHPUnit::assertStringContainsString(
                     $expected,
                     $actual,
                     'The expected error did not match the actual error.'
