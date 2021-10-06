@@ -43,6 +43,7 @@ class Middleware
      * @param  Request  $request
      * @param  Closure  $next
      * @return JsonResponse|Request
+     *
      * @throws InvalidPathException
      * @throws MissingSpecException
      * @throws RequestValidationException
