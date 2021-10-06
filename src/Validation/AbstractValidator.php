@@ -2,21 +2,24 @@
 
 namespace Spectator\Validation;
 
+use cebe\openapi\spec\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 abstract class AbstractValidator
 {
-    protected $version;
+    protected string $version;
 
     /**
      * Check if properties exist, and if so, prepare them based on version.
      *
-     * @param $data
+     * @param  Schema  $schema
      * @return mixed
      */
-    protected function prepareData($data)
+    protected function prepareData(Schema $schema)
     {
+        $data = $schema->getSerializableData();
+
         if (! isset($data->properties)) {
             return $data;
         }
@@ -33,9 +36,8 @@ abstract class AbstractValidator
     }
 
     /**
-     * Returns an associate array mapping "objects" to "properties" for the purposes of spec testing.
-     * All nullable properties are resolved. When this function finishes, you should have a
-     * structure with the following format:.
+     * Return an associative array mapping "objects" to "properties" for the purposes of spec testing.
+     * When this function finishes, you should have a structure with the following format:.
      *
      * [
      *     "Pet" => "{ resolved properties of a pet }"
@@ -62,6 +64,11 @@ abstract class AbstractValidator
                 $type[] = 'null';
                 $attributes->type = array_unique($type);
                 unset($attributes->nullable);
+            }
+
+            // Before we check recursive cases, make sure this object defines a "type".
+            if (! isset($attributes->type)) {
+                break;
             }
 
             // This object has a sub-object, recurse...

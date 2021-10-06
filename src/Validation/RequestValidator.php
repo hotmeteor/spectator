@@ -10,13 +10,30 @@ use Spectator\Exceptions\RequestValidationException;
 
 class RequestValidator extends AbstractValidator
 {
-    protected $request;
+    /**
+     * @var Request
+     */
+    protected Request $request;
 
-    protected $pathItem;
+    /**
+     * @var PathItem
+     */
+    protected PathItem $pathItem;
 
-    protected $method;
+    /**
+     * @var string
+     */
+    protected string $method;
 
-    public function __construct(Request $request, PathItem $pathItem, $method, $version = '3.0')
+    /**
+     * RequestValidator constructor.
+     *
+     * @param  Request  $request
+     * @param  PathItem  $pathItem
+     * @param  string  $method
+     * @param  string  $version
+     */
+    public function __construct(Request $request, PathItem $pathItem, string $method, string $version = '3.0')
     {
         $this->request = $request;
         $this->pathItem = $pathItem;
@@ -24,6 +41,13 @@ class RequestValidator extends AbstractValidator
         $this->version = $version;
     }
 
+    /**
+     * @param  Request  $request
+     * @param  PathItem  $pathItem
+     * @param $method
+     *
+     * @throws RequestValidationException
+     */
     public static function validate(Request $request, PathItem $pathItem, $method)
     {
         $instance = new self($request, $pathItem, $method);
@@ -31,6 +55,9 @@ class RequestValidator extends AbstractValidator
         $instance->handle();
     }
 
+    /**
+     * @throws RequestValidationException
+     */
     protected function handle()
     {
         $this->validateParameters();
@@ -40,6 +67,9 @@ class RequestValidator extends AbstractValidator
         }
     }
 
+    /**
+     * @throws RequestValidationException
+     */
     protected function validateParameters()
     {
         $route = $this->request->route();
@@ -90,19 +120,21 @@ class RequestValidator extends AbstractValidator
         }
     }
 
-    protected function validateBody()
+    /**
+     * @throws RequestValidationException
+     */
+    protected function validateBody(): void
     {
         $contentType = $this->request->header('Content-Type');
-        $body = $this->request->getContent();
+        $actual_request_body = $this->request->getContent();
+        $body = $actual_request_body;
         $requestBody = $this->operation()->requestBody;
 
-        if ($requestBody->required === true) {
-            if (empty($body)) {
+        if (empty($body)) {
+            if ($requestBody->required === true) {
                 throw new RequestValidationException('Request body required.');
             }
-        }
 
-        if (empty($this->request->getContent())) {
             return;
         }
 
@@ -113,21 +145,33 @@ class RequestValidator extends AbstractValidator
         $jsonSchema = $requestBody->content[$contentType]->schema;
         $validator = new Validator();
 
-        if ($jsonSchema->type === 'object' || $jsonSchema->type === 'array') {
-            if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
-                $body = json_decode($body);
-            } else {
+        if ($jsonSchema->type === 'object' || $jsonSchema->type === 'array' || $jsonSchema->oneOf || $jsonSchema->anyOf) {
+            if (! in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
                 throw new RequestValidationException("Unable to map [{$contentType}] to schema type [object].");
             }
+
+            $body = json_decode($body);
         }
 
-        $result = $validator->validate($body, $this->prepareData($jsonSchema->getSerializableData()));
+        $expected_schema = $this->prepareData($jsonSchema);
+        $expected_request_body = json_encode($expected_schema);
+
+        $result = $validator->validate($body, $expected_schema);
 
         if (! $result->isValid()) {
-            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error());
+            $message = 'Request body did not match provided JSON schema.';
+            $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
+            $message .= PHP_EOL.'  Expected: '.$expected_request_body;
+            $message .= PHP_EOL.'  Actual: '.$actual_request_body;
+            $message .= PHP_EOL.PHP_EOL.'  ---';
+
+            throw RequestValidationException::withError($message, $result->error());
         }
     }
 
+    /**
+     * @return Operation
+     */
     protected function operation(): Operation
     {
         return $this->pathItem->{$this->method};

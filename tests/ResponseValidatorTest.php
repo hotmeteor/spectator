@@ -256,6 +256,205 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider oneOfSchemaProvider
+     */
+    // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
+    public function test_handles_oneOf($response, $valid)
+    {
+        Spectator::using('OneOf.v1.yml');
+
+        Route::patch('/pets', function () use ($response) {
+            return $response;
+        })->middleware(Middleware::class);
+
+        $request = [
+            'bark' => true,
+            'breed' => 'Dingo',
+        ];
+
+        if ($valid) {
+            $this->patchJson('/pets', $request)
+                ->assertValidResponse();
+        } else {
+            $this->patchJson('/pets', $request)
+                ->assertInvalidResponse();
+        }
+    }
+
+    public function oneOfSchemaProvider()
+    {
+        $valid = true;
+        $invalid = false;
+
+        return [
+            'valid response, first type' => [
+                [
+                    'bark' => true,
+                    'breed' => 'Dingo',
+                ],
+                $valid,
+            ],
+            'valid response, second type' => [
+                [
+                    'hunts' => true,
+                    'age' => 2,
+                ],
+                $valid,
+            ],
+            'invalid response' => [
+                [
+                    'bark' => true,
+                    'hunts' => false,
+                ],
+                $invalid,
+            ],
+            'invalid response, mixed' => [
+                [
+                    'bark' => true,
+                    'hunts' => false,
+                    'breed' => 'Husky',
+                    'age' => 3,
+                ],
+                $invalid,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider anyOfSchemaProvider
+     */
+    // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
+    public function test_handles_anyOf($response, $isValid)
+    {
+        Spectator::using('AnyOf.v1.yml');
+
+        Route::patch('/pets', function () use ($response) {
+            return $response;
+        })->middleware(Middleware::class);
+
+        $request = [
+            'age' => 1,
+        ];
+
+        $handled_request = $this->patchJson('/pets', $request);
+
+        if ($isValid) {
+            $handled_request->assertValidResponse();
+        } else {
+            $handled_request->assertInvalidResponse();
+        }
+    }
+
+    public function anyOfSchemaProvider()
+    {
+        $valid = true;
+        $invalid = false;
+
+        return [
+            'valid, one required' => [
+                [
+                    'age' => 1,
+                ],
+                $valid,
+            ],
+            'valid, other required' => [
+                [
+                    'pet_type' => 'Cat',
+                    'hunts' => true,
+                ],
+                $valid,
+            ],
+            'valid, both required' => [
+                [
+                    'nickname' => 'Fido',
+                    'pet_type' => 'Dog',
+                    'age' => 4,
+                ],
+                $valid,
+            ],
+            'invalid request, missing required' => [
+                [
+                    'nickname' => 'Mr. Paws',
+                    'hunts' => false,
+                ],
+                $invalid,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider allOfSchemaProvider
+     */
+    // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
+    public function test_handles_allOf($response, $isValid)
+    {
+        Spectator::using('AllOf.v1.yml');
+
+        Route::patch('/pets', function () use ($response) {
+            return $response;
+        })->middleware(Middleware::class);
+
+        $request = [
+            'pet_type' => 'Cat',
+            'age' => 3,
+            'hunts' => true,
+        ];
+
+        $handled_request = $this->patchJson('/pets', $request);
+
+        if ($isValid) {
+            $handled_request->assertValidResponse();
+        } else {
+            $handled_request->assertInvalidResponse();
+        }
+    }
+
+    public function allOfSchemaProvider()
+    {
+        $valid = true;
+        $invalid = false;
+
+        return [
+            'valid, Cat' => [
+                [
+                    'pet_type' => 'Cat',
+                    'age' => 3,
+                    'hunts' => true,
+                ],
+                $valid,
+            ],
+            'valid, Dog' => [
+                [
+                    'pet_type' => 'Dog',
+                    'bark' => true,
+                ],
+                $valid,
+            ],
+            'valid, Dog 2' => [
+                [
+                    'pet_type' => 'Dog',
+                    'bark' => true,
+                    'breed' => 'Dingo',
+                ],
+                $valid,
+            ],
+            'invalid request, missing required' => [
+                [
+                    'age' => 3,
+                ],
+                $invalid,
+            ],
+            'invalid request, invalid attribute' => [
+                [
+                    'age' => 3,
+                    'bark' => true,
+                ],
+                $invalid,
+            ],
+        ];
+    }
+
     public function test_handles_invalid_spec()
     {
         Spectator::using('Malformed.v1.yaml');
@@ -269,7 +468,7 @@ class ResponseValidatorTest extends TestCase
     }
 
     // https://swagger.io/docs/specification/data-models/inheritance-and-polymorphism/
-    public function test_handles_components_allOf()
+    public function test_handles_inheritance()
     {
         Spectator::using('Components.v1.json');
 

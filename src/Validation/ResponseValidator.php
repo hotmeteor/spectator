@@ -51,14 +51,20 @@ class ResponseValidator extends AbstractValidator
     {
         $contentType = $this->contentType();
 
+        // does the response match any of the specified media types?
         if (! array_key_exists($contentType, $response->content)) {
-            throw new ResponseValidationException('Response did not match any specified media type.');
+            $message = 'Response did not match any specified content type.';
+            $message .= PHP_EOL.PHP_EOL.'  Expected: '.$contentType;
+            $message .= PHP_EOL.'  Actual: DNE';
+            $message .= PHP_EOL.PHP_EOL.'  ---';
+            throw new ResponseValidationException($message);
         }
 
         $schema = $response->content[$contentType]->schema;
 
         $this->validateResponse(
-            $schema, $this->body($contentType, $this->schemaType($schema))
+            $schema,
+            $this->body($contentType, $this->schemaType($schema))
         );
     }
 
@@ -71,10 +77,20 @@ class ResponseValidator extends AbstractValidator
     {
         $validator = $this->validator();
 
-        $result = $validator->validate($body, $this->prepareData($schema->getSerializableData()));
+        $actual_response = json_encode($body);
+
+        $expected_schema = $this->prepareData($schema);
+        $expected_response = json_encode($expected_schema);
+
+        $result = $validator->validate($body, $expected_schema);
 
         if ($result instanceof ValidationResult && $result->isValid() === false) {
-            $message = $result->error()->message();
+            $message = 'Error (Opis\JsonSchema\Validator): '.$result->error()->message();
+
+            $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
+            $message .= PHP_EOL.'  Expected: '.$expected_response;
+            $message .= PHP_EOL.'  Actual: '.$actual_response;
+            $message .= PHP_EOL.PHP_EOL.'  ---';
 
             throw ResponseValidationException::withError($message, $result->error());
         }
@@ -141,7 +157,7 @@ class ResponseValidator extends AbstractValidator
     {
         $body = $this->response->getContent();
 
-        if (in_array($schemaType, ['object', 'array', 'allOf'], true)) {
+        if (in_array($schemaType, ['object', 'array', 'allOf', 'anyOf', 'oneOf'], true)) {
             if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
                 return json_decode($body);
             } else {

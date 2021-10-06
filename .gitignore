@@ -7,3 +7,4 @@ composer.lock
 /assets/
 /phpunit.xml.bak
 .idea
+.prettierrc.yaml
