@@ -67,7 +67,7 @@ abstract class AbstractValidator
             }
 
             // Before we check recursive cases, make sure this object defines a "type".
-            if (!isset($attributes->type)) {
+            if (! isset($attributes->type)) {
                 break;
             }
 
