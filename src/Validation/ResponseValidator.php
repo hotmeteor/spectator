@@ -52,20 +52,15 @@ class ResponseValidator extends AbstractValidator
         $contentType = $this->contentType();
 
         // does the response match any of the specified media types?
-        $response_type_match = false;
         if (! array_key_exists($contentType, $response->content)) {
-            $response_type_match = true;
-        }
-
-        $schema = $response->content[$contentType]->schema;
-
-        if (!$response_type_match) {
             $message = 'Response did not match any specified content type.';
             $message .= PHP_EOL.PHP_EOL.'  Expected: '.$contentType;
             $message .= PHP_EOL.'  Actual: DNE';
             $message .= PHP_EOL.PHP_EOL.'  ---';
             throw new ResponseValidationException($message);
         }
+
+        $schema = $response->content[$contentType]->schema;
 
         $this->validateResponse(
             $schema,

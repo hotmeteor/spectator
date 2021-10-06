@@ -266,8 +266,8 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('OneOf.v1.yml');
 
-        Route::patch('/pets', function () {
-            return response(200);
+        Route::patch('/pets', function () use ($payload) {
+            return $payload;
         })->middleware(Middleware::class);
 
         $request = $this->patchJson('/pets', $payload);
