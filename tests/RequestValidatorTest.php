@@ -10,6 +10,10 @@ use Spectator\Middleware;
 use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
 
+/**
+ * This TestCase makes use of data providers. Follow the link for more details:
+ * https://phpunit.readthedocs.io/en/stable/writing-tests-for-phpunit.html#data-providers
+ */
 class RequestValidatorTest extends TestCase
 {
     public function setUp(): void
@@ -282,10 +286,17 @@ class RequestValidatorTest extends TestCase
         $invalid = false;
 
         return [
-            'valid request' => [
+            'valid request, first type' => [
                 [
                     'bark' => true,
                     'breed' => 'Dingo',
+                ],
+                $valid,
+            ],
+            'valid request, second type' => [
+                [
+                    'hunts' => true,
+                    'age' => 2,
                 ],
                 $valid,
             ],
