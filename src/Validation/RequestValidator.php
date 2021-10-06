@@ -45,6 +45,7 @@ class RequestValidator extends AbstractValidator
      * @param  Request  $request
      * @param  PathItem  $pathItem
      * @param $method
+     *
      * @throws RequestValidationException
      */
     public static function validate(Request $request, PathItem $pathItem, $method)

@@ -59,7 +59,7 @@ class ResponseValidator extends AbstractValidator
 
         $schema = $response->content[$contentType]->schema;
 
-        if (!$response_type_match) {
+        if (! $response_type_match) {
             $message = 'Response did not match any specified content type.';
             $message .= PHP_EOL.PHP_EOL.'  Expected: '.$contentType;
             $message .= PHP_EOL.'  Actual: DNE';
