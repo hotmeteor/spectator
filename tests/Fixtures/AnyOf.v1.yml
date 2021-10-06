@@ -17,6 +17,12 @@ paths:
       responses:
         '200':
           description: Updated
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/PetByAge'
+                  - $ref: '#/components/schemas/PetByType'
 components:
   schemas:
     PetByAge:

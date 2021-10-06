@@ -327,8 +327,8 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('AnyOf.v1.yml');
 
-        Route::patch('/pets', function () {
-            return response(200);
+        Route::patch('/pets', function () use ($payload) {
+            return $payload;
         })->middleware(Middleware::class);
 
         $request = $this->patchJson('/pets', $payload);
@@ -386,8 +386,8 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('AllOf.v1.yml');
 
-        Route::patch('/pets', function () {
-            return response(200);
+        Route::patch('/pets', function () use ($payload) {
+            return $payload;
         })->middleware(Middleware::class);
 
         $request = $this->patchJson('/pets', $payload);

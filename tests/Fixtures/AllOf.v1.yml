@@ -19,6 +19,14 @@ paths:
       responses:
         '200':
           description: Updated
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Cat'
+                  - $ref: '#/components/schemas/Dog'
+                discriminator:
+                  propertyName: pet_type
 components:
   schemas:
     Pet:
@@ -38,7 +46,7 @@ components:
               type: boolean
             breed:
               type: string
-              enum: [ Dingo, Husky, Retriever, Shepherd ]
+              enum: [Dingo, Husky, Retriever, Shepherd]
     Cat: # "Cat" is a value for the pet_type property (the discriminator value)
       allOf: # Combines the main `Pet` schema with `Cat`-specific properties
         - $ref: '#/components/schemas/Pet'
