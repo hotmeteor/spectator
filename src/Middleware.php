@@ -98,7 +98,7 @@ class Middleware
      * @return mixed
      *
      * @throws InvalidPathException
-     * @throws MissingSpecException|RequestValidationException
+     * @throws MissingSpecException|RequestValidationException|ResponseValidationException
      */
     protected function validate(Request $request, Closure $next)
     {

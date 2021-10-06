@@ -125,7 +125,8 @@ class RequestValidator extends AbstractValidator
     protected function validateBody(): void
     {
         $contentType = $this->request->header('Content-Type');
-        $body = $this->request->getContent();
+        $actual_request_body = $this->request->getContent();
+        $body = $actual_request_body;
         $requestBody = $this->operation()->requestBody;
 
         if (empty($body)) {
@@ -151,10 +152,19 @@ class RequestValidator extends AbstractValidator
             $body = json_decode($body);
         }
 
-        $result = $validator->validate($body, $this->prepareData($jsonSchema));
+        $expected_schema = $this->prepareData($jsonSchema);
+        $expected_request_body = json_encode($expected_schema);
+
+        $result = $validator->validate($body, $expected_schema);
 
         if (! $result->isValid()) {
-            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error());
+            $message = 'Request body did not match provided JSON schema.';
+            $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
+            $message .= PHP_EOL.'  Expected: '.$expected_request_body;
+            $message .= PHP_EOL.'  Actual: '.$actual_request_body;
+            $message .= PHP_EOL.PHP_EOL.'  ---';
+
+            throw RequestValidationException::withError($message, $result->error());
         }
     }
 
