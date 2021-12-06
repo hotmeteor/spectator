@@ -73,13 +73,13 @@ class RequestValidator extends AbstractValidator
     protected function validateParameters()
     {
         $route = $this->request->route();
+
         $parameters = $this->pathItem->parameters;
+        $required_parameters = array_filter($parameters, fn ($parameter) => $parameter->required === true);
 
-        foreach ($parameters as $parameter) {
-
+        foreach ($required_parameters as $parameter) {
             // Verify presence, if required.
             if ($parameter->required === true) {
-                // Parameters can be found in query, header, path or cookie.
                 if ($parameter->in === 'path' && ! $route->hasParameter($parameter->name)) {
                     throw new RequestValidationException("Missing required parameter {$parameter->name} in URL path.");
                 } elseif ($parameter->in === 'query' && ! $this->request->query->has($parameter->name)) {
@@ -91,28 +91,28 @@ class RequestValidator extends AbstractValidator
                 }
             }
 
-            // Validate schemas, if provided. Required or not.
+            // Validate schemas, if provided.
             if ($parameter->schema) {
                 $validator = new Validator();
-
-                $jsonSchema = $parameter->schema->getSerializableData();
-
+                $json_schema = $parameter->schema->getSerializableData();
                 $result = null;
 
+                // Get parameter, then validate it.
                 if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
                     $data = $route->parameters();
-                    $result = $validator->validate($data[$parameter->name], $jsonSchema);
+                    $result = $validator->validate($data[$parameter->name], $json_schema);
                 } elseif ($parameter->in === 'query' && $this->request->query->has($parameter->name)) {
                     $data = $this->request->query->get($parameter->name);
-                    $result = $validator->validate($data, $jsonSchema);
+                    $result = $validator->validate($data, $json_schema);
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
                     $data = $this->request->headers->get($parameter->name);
-                    $result = $validator->validate($data, $jsonSchema);
+                    $result = $validator->validate($data, $json_schema);
                 } elseif ($parameter->in === 'cookie' && $this->request->cookies->has($parameter->name)) {
                     $data = $this->request->cookies->get($parameter->name);
-                    $result = $validator->validate($data, $jsonSchema);
+                    $result = $validator->validate($data, $json_schema);
                 }
 
+                // If the result is not valid, then display failure reason.
                 if (optional($result)->isValid() === false) {
                     throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->error());
                 }
@@ -125,44 +125,44 @@ class RequestValidator extends AbstractValidator
      */
     protected function validateBody(): void
     {
-        $contentType = $this->request->header('Content-Type');
-        $actual_request_body = $this->request->getContent();
-        $body = $actual_request_body;
-        $requestBody = $this->operation()->requestBody;
+        $expected_body = $this->operation()->requestBody;
+        $actual_body = $this->request->getContent();
 
-        if (empty($body)) {
-            if ($requestBody->required === true) {
-                throw new RequestValidationException('Request body required.');
-            }
-
+        // If required, then body should be non-empty.
+        if ($expected_body->required === true && empty($actual_body)) {
+            throw new RequestValidationException('Request body required.');
             return;
         }
 
-        if (! array_key_exists($contentType, $requestBody->content)) {
+        // Content types should match.
+        $content_type = $this->request->header('Content-Type');
+        if (! array_key_exists($content_type, $expected_body->content)) {
             throw new RequestValidationException('Request did not match any specified media type for request body.');
         }
 
-        $jsonSchema = $requestBody->content[$contentType]->schema;
-        $validator = new Validator();
-
-        if ($jsonSchema->type === 'object' || $jsonSchema->type === 'array' || $jsonSchema->oneOf || $jsonSchema->anyOf) {
-            if (! in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
-                throw new RequestValidationException("Unable to map [{$contentType}] to schema type [object].");
+        // Capture schemas for validation.
+        $expected_body_raw_schema = $expected_body->content[$content_type]->schema;
+        $actual_body_schema = $actual_body;
+        if ($expected_body_raw_schema->type === 'object' || $expected_body_raw_schema->type === 'array' || $expected_body_raw_schema->oneOf || $expected_body_raw_schema->anyOf) {
+            if (! in_array($content_type, ['application/json', 'application/vnd.api+json'])) {
+                throw new RequestValidationException("Unable to map [{$content_type}] to schema type [object].");
             }
 
-            $body = json_decode($body);
+            $actual_body_schema = json_decode($actual_body_schema);
         }
+        $expected_body_schema = $this->prepareData($expected_body_raw_schema);
 
-        $expected_schema = $this->prepareData($jsonSchema);
-        $expected_request_body = json_encode($expected_schema);
+        // Run validation.
+        $validator = new Validator();
+        $result = $validator->validate($actual_body_schema, $expected_body_schema);
 
-        $result = $validator->validate($body, $expected_schema);
-
-        if (! $result->isValid()) {
+        // If the result is not valid, then display failure reason.
+        $expected_body = json_encode($expected_body_schema);
+        if (!$result->isValid()) {
             $message = 'Request body did not match provided JSON schema.';
             $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
-            $message .= PHP_EOL.'  Expected: '.$expected_request_body;
-            $message .= PHP_EOL.'  Actual: '.$actual_request_body;
+            $message .= PHP_EOL.'  Expected: '.$expected_body;
+            $message .= PHP_EOL.'  Actual: '.$actual_body;
             $message .= PHP_EOL.PHP_EOL.'  ---';
 
             throw RequestValidationException::withError($message, $result->error());
