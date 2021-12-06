@@ -20,7 +20,7 @@ class AssertionsTest extends TestCase
         Spectator::using('Test.v1.json');
     }
 
-    public function testAssertsInvalidPath()
+    public function test_asserts_invalid_path()
     {
         Route::get('/invalid', function () {
             return [
@@ -37,7 +37,7 @@ class AssertionsTest extends TestCase
             ->assertValidationMessage('Path [GET /invalid] not found in spec.');
     }
 
-    public function testExceptionPointsToMixinMethod()
+    public function test_exception_points_to_mixin_method()
     {
         $this->expectException(\ErrorException::class);
         $this->expectExceptionCode(0);
