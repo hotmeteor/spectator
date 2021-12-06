@@ -94,27 +94,31 @@ class RequestValidator extends AbstractValidator
             // Validate schemas, if provided.
             if ($parameter->schema) {
                 $validator = new Validator();
-                $json_schema = $parameter->schema->getSerializableData();
+                $expected_parameter_schema = $parameter->schema->getSerializableData();
                 $result = null;
 
                 // Get parameter, then validate it.
                 if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
-                    $data = $route->parameters();
-                    $result = $validator->validate($data[$parameter->name], $json_schema);
+                    $actual_parameter = $route->parameters()[$parameter->name];
                 } elseif ($parameter->in === 'query' && $this->request->query->has($parameter->name)) {
-                    $data = $this->request->query->get($parameter->name);
-                    $result = $validator->validate($data, $json_schema);
+                    $actual_parameter = $this->request->query->get($parameter->name);
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
-                    $data = $this->request->headers->get($parameter->name);
-                    $result = $validator->validate($data, $json_schema);
+                    $actual_parameter = $this->request->headers->get($parameter->name);
                 } elseif ($parameter->in === 'cookie' && $this->request->cookies->has($parameter->name)) {
-                    $data = $this->request->cookies->get($parameter->name);
-                    $result = $validator->validate($data, $json_schema);
+                    $actual_parameter = $this->request->cookies->get($parameter->name);
                 }
+                $result = $validator->validate($actual_parameter, $expected_parameter_schema);
 
                 // If the result is not valid, then display failure reason.
-                if (optional($result)->isValid() === false) {
-                    throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->error());
+                $expected_parameter = json_encode($expected_parameter_schema);
+                if (!$result->isValid()) {
+                    $message = '"Parameter [{$parameter->name}] did not match provided JSON schema.';
+                    $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
+                    $message .= PHP_EOL.'  Expected: '.$expected_parameter;
+                    $message .= PHP_EOL.'  Actual: '.$actual_parameter;
+                    $message .= PHP_EOL.PHP_EOL.'  ---';
+
+                    throw RequestValidationException::withError($message, $result->error());
                 }
             }
         }
