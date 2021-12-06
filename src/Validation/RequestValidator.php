@@ -111,7 +111,7 @@ class RequestValidator extends AbstractValidator
 
                 // If the result is not valid, then display failure reason.
                 $expected_parameter = json_encode($expected_parameter_schema);
-                if (!$result->isValid()) {
+                if (! $result->isValid()) {
                     $message = '"Parameter [{$parameter->name}] did not match provided JSON schema.';
                     $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
                     $message .= PHP_EOL.'  Expected: '.$expected_parameter;
@@ -135,6 +135,7 @@ class RequestValidator extends AbstractValidator
         // If required, then body should be non-empty.
         if ($expected_body->required === true && empty($actual_body)) {
             throw new RequestValidationException('Request body required.');
+
             return;
         }
 
@@ -162,7 +163,7 @@ class RequestValidator extends AbstractValidator
 
         // If the result is not valid, then display failure reason.
         $expected_body = json_encode($expected_body_schema);
-        if (!$result->isValid()) {
+        if (! $result->isValid()) {
             $message = 'Request body did not match provided JSON schema.';
             $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
             $message .= PHP_EOL.'  Expected: '.$expected_body;
