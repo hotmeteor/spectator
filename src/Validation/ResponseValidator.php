@@ -83,53 +83,48 @@ class ResponseValidator extends AbstractValidator
 
         if ($result instanceof ValidationResult && $result->isValid() === false) {
             $error = $result->error();
-            $formatter = new ErrorFormatter();
-            $spec_errors = join("\n", $formatter->formatFlat($error));
-            $spec_errors .= "\n\n".json_encode($formatter->formatOutput($error, "basic"));
-
-            $expected_schema_json = json_decode(json_encode($expected_schema), true);
-            $expected_schema_pretty = $this->pretty_print($expected_schema_json, "", [], 0);
-
-            $message = "---\n\n".$spec_errors."\n\n".$expected_schema_pretty."\n  ---";
+            $message = $this->display_validation_error($expected_schema, $error);
 
             throw ResponseValidationException::withError($message, $error);
         }
     }
 
-    protected function pretty_print_row($type, $type_modifier = "", $key = "", $key_modifier = "", $indent_level = 0)
+    protected function display_validation_error($expected_schema, $error)
     {
-        $key_final = (empty($key_modifier)) ? $key : $key.$key_modifier;
-        $type_final = (empty($type_modifier)) ? $type : $type.$type_modifier;
+        $formatter = new ErrorFormatter();
+        $spec_errors = join("\n", $formatter->formatFlat($error));
+        $spec_errors .= "\n\n".json_encode($formatter->formatOutput($error, "basic"));
 
-        if (empty($key)) {
-            return str_repeat("    ", $indent_level).$type_final."\n";
-        } else {
-            return str_repeat("    ", $indent_level).$key_final.": ".$type_final."\n";
-        }
+        $expected_schema_json = json_decode(json_encode($expected_schema), true);
+        $expected_schema_pretty = $this->pretty_print($expected_schema_json, "", [], 0);
+
+        $expected_schema_pretty_final = join("\n", $expected_schema_pretty);
+        
+        return "---\n\n".$spec_errors."\n\n".$expected_schema_pretty_final."\n\n  ---";
     }
 
     protected function pretty_print($json, $key, $required_keys, $indent_level)
     {
         $keys = array_keys($json);
-        $results = "";
+        $results = [];
 
         // first, check for polymorphic types...
         if (array_key_exists('allOf', $keys)) {
-            $results .= $this->pretty_print_row('allOf', "", $key, "", $indent_level);
+            $results[] = $this->pretty_print_row('allOf', "", $key, "", $indent_level);
             foreach ($json['allOf'] as $schema_object) {
-                $results .= $this->pretty_print($schema_object, $key, [], ++$indent_level);
+                $results = array_merge($results, $this->pretty_print($schema_object, $key, [], ++$indent_level));
             }
             return $results;
         } elseif (array_key_exists('anyOf', $keys)) {
-            $results .= $this->pretty_print_row('anyOf', "", $key, "", $indent_level);
+            $results[] = $this->pretty_print_row('anyOf', "", $key, "", $indent_level);
             foreach ($json['anyOf'] as $schema_object) {
-                $results .= $this->pretty_print($schema_object, $key, [], ++$indent_level);
+                $results = array_merge($results, $this->pretty_print($schema_object, $key, [], ++$indent_level));
             }
             return $results;
         } elseif (array_key_exists('oneOf', $keys)) {
-            $results .= $this->pretty_print_row('oneOf', "", $key, "", $indent_level);
+            $results[] = $this->pretty_print_row('oneOf', "", $key, "", $indent_level);
             foreach ($json['oneOf'] as $schema_object) {
-                $results .= $this->pretty_print($schema_object, $key, [], ++$indent_level);
+                $results = array_merge($results, $this->pretty_print($schema_object, $key, [], ++$indent_level));
             }
             return $results;
         } elseif (isset($json['type'])) { // then, check for all other types...
@@ -171,7 +166,7 @@ class ResponseValidator extends AbstractValidator
                             }
                         }
 
-                        $results .= $this->pretty_print_row(
+                        $results[] = $this->pretty_print_row(
                             'object',
                             ($additional_properties) ? " ++" : "",
                             $key,
@@ -182,23 +177,35 @@ class ResponseValidator extends AbstractValidator
                         $indent_level = ++$indent_level;
                         foreach ($json['properties'] as $key => $property) {
                             if (isset($json['required'])) {
-                                $results .= $this->pretty_print($property, $key, $json['required'], $indent_level);
+                                $results = array_merge($results, $this->pretty_print($property, $key, $json['required'], $indent_level));
                             } else {
-                                $results .= $this->pretty_print($property, $key, [], $indent_level);
+                                $results = array_merge($results, $this->pretty_print($property, $key, [], $indent_level));
                             }
                         }
                         break;
                     case "array":
-                        $results .= $this->pretty_print_row('array', "", $key, $key_modifier, $indent_level);
-                        $results .= $this->pretty_print($json['items'], "", [], ++$indent_level);
+                        $results[] = $this->pretty_print_row('array', "", $key, $key_modifier, $indent_level);
+                        $results = array_merge($results, $this->pretty_print($json['items'], "", [], ++$indent_level));
                         break;
                     default:
-                        $results .= $this->pretty_print_row($type, "", $key, $key_modifier, $indent_level);
+                        $results[] = $this->pretty_print_row($type, "", $key, $key_modifier, $indent_level);
                         break;
                 }
             }
 
             return $results;
+        }
+    }
+
+    protected function pretty_print_row($type, $type_modifier = "", $key = "", $key_modifier = "", $indent_level = 0)
+    {
+        $key_final = (empty($key_modifier)) ? $key : $key.$key_modifier;
+        $type_final = (empty($type_modifier)) ? $type : $type.$type_modifier;
+
+        if (empty($key)) {
+            return str_repeat("    ", $indent_level).$type_final;
+        } else {
+            return str_repeat("    ", $indent_level).$key_final.": ".$type_final;
         }
     }
 
