@@ -2,10 +2,11 @@
 
 namespace Spectator\Validation;
 
-use cebe\openapi\spec\Operation;
-use cebe\openapi\spec\PathItem;
 use Illuminate\Http\Request;
 use Opis\JsonSchema\Validator;
+use cebe\openapi\spec\PathItem;
+use cebe\openapi\spec\Operation;
+use Opis\JsonSchema\ValidationResult;
 use Spectator\Exceptions\RequestValidationException;
 
 class RequestValidator extends AbstractValidator
@@ -110,15 +111,10 @@ class RequestValidator extends AbstractValidator
                 $result = $validator->validate($actual_parameter, $expected_parameter_schema);
 
                 // If the result is not valid, then display failure reason.
-                $expected_parameter = json_encode($expected_parameter_schema);
-                if (! $result->isValid()) {
-                    $message = '"Parameter [{$parameter->name}] did not match provided JSON schema.';
-                    $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
-                    $message .= PHP_EOL.'  Expected: '.$expected_parameter;
-                    $message .= PHP_EOL.'  Actual: '.$actual_parameter;
-                    $message .= PHP_EOL.PHP_EOL.'  ---';
-
-                    throw RequestValidationException::withError($message, $result->error());
+                if ($result instanceof ValidationResult && $result->isValid() === false) {
+                    $error = $result->error();
+                    $message = RequestValidationException::validationErrorMessage($expected_parameter_schema, $error);
+                    throw RequestValidationException::withError($message, $error);
                 }
             }
         }
@@ -162,15 +158,10 @@ class RequestValidator extends AbstractValidator
         $result = $validator->validate($actual_body_schema, $expected_body_schema);
 
         // If the result is not valid, then display failure reason.
-        $expected_body = json_encode($expected_body_schema);
-        if (! $result->isValid()) {
-            $message = 'Request body did not match provided JSON schema.';
-            $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
-            $message .= PHP_EOL.'  Expected: '.$expected_body;
-            $message .= PHP_EOL.'  Actual: '.$actual_body;
-            $message .= PHP_EOL.PHP_EOL.'  ---';
-
-            throw RequestValidationException::withError($message, $result->error());
+        if ($result instanceof ValidationResult && $result->isValid() === false) {
+            $error = $result->error();
+            $message = RequestValidationException::validationErrorMessage($expected_body_schema, $error);
+            throw RequestValidationException::withError($message, $error);
         }
     }
 
