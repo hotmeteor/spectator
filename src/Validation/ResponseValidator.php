@@ -193,7 +193,6 @@ class ResponseValidator extends AbstractValidator
     /**
      * Helper functions for displaying a validation error.
      */
-
     protected function validation_error_message($schema, $validation_error)
     {
         $error_formatted = $this->format_validation_error($validation_error, false);
@@ -208,7 +207,7 @@ class ResponseValidator extends AbstractValidator
         $schema = json_decode(json_encode($schema), true);
 
         // Create a structured map of strings representing the schema.
-        $schema_formatted = $this->format_schema($schema, "#", "", [], 0);
+        $schema_formatted = $this->format_schema($schema, '#', '', [], 0);
 
         // Display each item in the schema map. If the item is also
         // the location of a matching error, then display it too.
@@ -233,15 +232,15 @@ class ResponseValidator extends AbstractValidator
         $formatter = new ErrorFormatter();
 
         return ($flat) ? $formatter->formatFlat($validation_error) :
-            $formatter->formatOutput($validation_error, "basic");
+            $formatter->formatOutput($validation_error, 'basic');
     }
 
     /**
-     * @param array $schema JSON schema represented as an array
-     * @param string $location The current location/path within the JSON schema structure
-     * @param string $key_current The key at the current location
-     * @param array $keys_required The keys required at the current location
-     * @param int $indent_level
+     * @param  array  $schema  JSON schema represented as an array
+     * @param  string  $location  The current location/path within the JSON schema structure
+     * @param  string  $key_current  The key at the current location
+     * @param  array  $keys_required  The keys required at the current location
+     * @param  int  $indent_level
      * @return array
      */
     protected function format_schema($schema, $location, $key_current, $keys_required, $indent_level)
@@ -252,7 +251,7 @@ class ResponseValidator extends AbstractValidator
         // first, check for polymorphic types...
         if (array_key_exists('allOf', $keys)) {
             $location .= '/allOf';
-            $content = $this->expected_schema_row_content('allOf', "", $key_current, "");
+            $content = $this->expected_schema_row_content('allOf', '', $key_current, '');
             $results[$location] = $this->expected_schema_row($content, $indent_level);
 
             foreach ($schema['allOf'] as $schema_object) {
@@ -262,7 +261,7 @@ class ResponseValidator extends AbstractValidator
             return $results;
         } elseif (array_key_exists('anyOf', $keys)) {
             $location .= '/anyOf';
-            $content = $this->expected_schema_row_content('anyOf', "", $key_current, "");
+            $content = $this->expected_schema_row_content('anyOf', '', $key_current, '');
             $results[$location] = $this->expected_schema_row($content, $indent_level);
 
             foreach ($schema['anyOf'] as $schema_object) {
@@ -272,7 +271,7 @@ class ResponseValidator extends AbstractValidator
             return $results;
         } elseif (array_key_exists('oneOf', $keys)) {
             $location .= '/oneOf';
-            $content = $this->expected_schema_row_content('oneOf', "", $key_current, "");
+            $content = $this->expected_schema_row_content('oneOf', '', $key_current, '');
             $results[$location] = $this->expected_schema_row($content, $indent_level);
 
             foreach ($schema['oneOf'] as $schema_object) {
@@ -283,7 +282,7 @@ class ResponseValidator extends AbstractValidator
         } elseif (isset($schema['type'])) { // then, check for all other types...
             // use "types array" to cover simple and mixed type cases
             $types = [];
-            if (!is_array($schema['type'])) {
+            if (! is_array($schema['type'])) {
                 $types = [$schema['type']];
             } else {
                 $types = $schema['type'];
@@ -291,7 +290,7 @@ class ResponseValidator extends AbstractValidator
 
             // is "null" type used?
             $nullable = false;
-            $null_index = array_search("null", $types);
+            $null_index = array_search('null', $types);
             if ($null_index) {
                 $nullable = true;
                 unset($types[$null_index]);
@@ -305,18 +304,18 @@ class ResponseValidator extends AbstractValidator
 
             // compute key modifiers
             $key_modifier = ($nullable) ?
-                (($required) ? "?*" : "?") :
-                (($required) ? "*" : "");
+                (($required) ? '?*' : '?') :
+                (($required) ? '*' : '');
 
             // compute next location
-            if ($key_current !== "") {
+            if ($key_current !== '') {
                 $location .= '/'.$key_current;
             }
 
             // handle each type — could have multiple types per key
             foreach ($types as $type) {
                 switch ($type) {
-                    case "object":
+                    case 'object':
                         $additional_properties = true;
                         if (isset($schema['additionalProperties'])) {
                             if (is_bool($schema['additionalProperties'])) {
@@ -326,7 +325,7 @@ class ResponseValidator extends AbstractValidator
 
                         $content = $this->expected_schema_row_content(
                             'object',
-                            ($additional_properties) ? "++" : "",
+                            ($additional_properties) ? '++' : '',
                             $key_current,
                             $key_modifier
                         );
@@ -341,15 +340,15 @@ class ResponseValidator extends AbstractValidator
                             }
                         }
                         break;
-                    case "array":
-                        $content = $this->expected_schema_row_content('array', "", $key_current, $key_modifier);
+                    case 'array':
+                        $content = $this->expected_schema_row_content('array', '', $key_current, $key_modifier);
                         $results[$location] = $this->expected_schema_row($content, $indent_level);
 
-                        $results = array_merge($results, $this->format_schema($schema['items'], $location.'/1', "", [], ++$indent_level));
+                        $results = array_merge($results, $this->format_schema($schema['items'], $location.'/1', '', [], ++$indent_level));
 
                         break;
                     default:
-                        $content = $this->expected_schema_row_content($type, "", $key_current, $key_modifier);
+                        $content = $this->expected_schema_row_content($type, '', $key_current, $key_modifier);
                         $results[$location] = $this->expected_schema_row($content, $indent_level);
 
                         break;
@@ -360,16 +359,16 @@ class ResponseValidator extends AbstractValidator
         }
     }
 
-    protected function expected_schema_row_content($type, $type_modifier = "", $key = "", $key_modifier = "")
+    protected function expected_schema_row_content($type, $type_modifier = '', $key = '', $key_modifier = '')
     {
         $key_final = $key.$key_modifier;
         $type_final = $type.$type_modifier;
 
-        return (empty($key)) ? $type_final : $key_final.": ".$type_final;
+        return (empty($key)) ? $type_final : $key_final.': '.$type_final;
     }
 
     protected function expected_schema_row($display, $indent_level = 0)
     {
-        return str_repeat("    ", $indent_level).$display;
+        return str_repeat('    ', $indent_level).$display;
     }
 }
