@@ -494,9 +494,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    // TODO: TEMP: REMOVE
     // https://www.loom.com/share/63191fee2b45421db266dcd012579cb3
-    public function test_temp()
+    public function test_response_example()
     {
         Spectator::using('Test.v2.json');
 

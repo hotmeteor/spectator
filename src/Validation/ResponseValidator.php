@@ -81,9 +81,10 @@ class ResponseValidator extends AbstractValidator
         $result = $validator->validate($body, $expected_schema);
 
         if ($result instanceof ValidationResult && $result->isValid() === false) {
-            $error = $result->error();
-            $message = ResponseValidationException::validationErrorMessage($expected_schema, $error);
-            throw ResponseValidationException::withError($message, $error);
+            $message = ResponseValidationException::validationErrorMessage($expected_schema, $result->error());
+            throw ResponseValidationException::withError($message, $result->error());
+        } elseif ($result->isValid() === false) {
+            throw ResponseValidationException::withError($result->error()->message(), $result->error());
         }
     }
 

@@ -80,16 +80,14 @@ class RequestValidator extends AbstractValidator
 
         foreach ($required_parameters as $parameter) {
             // Verify presence, if required.
-            if ($parameter->required === true) {
-                if ($parameter->in === 'path' && ! $route->hasParameter($parameter->name)) {
-                    throw new RequestValidationException("Missing required parameter {$parameter->name} in URL path.");
-                } elseif ($parameter->in === 'query' && ! $this->request->query->has($parameter->name)) {
-                    throw new RequestValidationException("Missing required query parameter [?{$parameter->name}=].");
-                } elseif ($parameter->in === 'header' && ! $this->request->headers->has($parameter->name)) {
-                    throw new RequestValidationException("Missing required header [{$parameter->name}].");
-                } elseif ($parameter->in === 'cookie' && ! $this->request->cookies->has($parameter->name)) {
-                    throw new RequestValidationException("Missing required cookie [{$parameter->name}].");
-                }
+            if ($parameter->in === 'path' && ! $route->hasParameter($parameter->name)) {
+                throw new RequestValidationException("Missing required parameter {$parameter->name} in URL path.");
+            } elseif ($parameter->in === 'query' && ! $this->request->query->has($parameter->name)) {
+                throw new RequestValidationException("Missing required query parameter [?{$parameter->name}=].");
+            } elseif ($parameter->in === 'header' && ! $this->request->headers->has($parameter->name)) {
+                throw new RequestValidationException("Missing required header [{$parameter->name}].");
+            } elseif ($parameter->in === 'cookie' && ! $this->request->cookies->has($parameter->name)) {
+                throw new RequestValidationException("Missing required cookie [{$parameter->name}].");
             }
 
             // Validate schemas, if provided.
@@ -112,9 +110,10 @@ class RequestValidator extends AbstractValidator
 
                 // If the result is not valid, then display failure reason.
                 if ($result instanceof ValidationResult && $result->isValid() === false) {
-                    $error = $result->error();
-                    $message = RequestValidationException::validationErrorMessage($expected_parameter_schema, $error);
-                    throw RequestValidationException::withError($message, $error);
+                    $message = RequestValidationException::validationErrorMessage($expected_parameter_schema, $result->error());
+                    throw RequestValidationException::withError($message, $result->error());
+                } elseif ($result->isValid() === false) {
+                    throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->error());
                 }
             }
         }
@@ -159,9 +158,10 @@ class RequestValidator extends AbstractValidator
 
         // If the result is not valid, then display failure reason.
         if ($result instanceof ValidationResult && $result->isValid() === false) {
-            $error = $result->error();
-            $message = RequestValidationException::validationErrorMessage($expected_body_schema, $error);
-            throw RequestValidationException::withError($message, $error);
+            $message = RequestValidationException::validationErrorMessage($expected_body_schema, $result->error());
+            throw RequestValidationException::withError($message, $result->error());
+        } elseif ($result->isValid() === false) {
+            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error());
         }
     }
 
