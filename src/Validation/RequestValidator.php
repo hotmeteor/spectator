@@ -2,11 +2,11 @@
 
 namespace Spectator\Validation;
 
-use Illuminate\Http\Request;
-use Opis\JsonSchema\Validator;
-use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\Operation;
+use cebe\openapi\spec\PathItem;
+use Illuminate\Http\Request;
 use Opis\JsonSchema\ValidationResult;
+use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
 
 class RequestValidator extends AbstractValidator

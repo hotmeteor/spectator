@@ -70,7 +70,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
         $error_location_map = [];
         if (isset($error_formatted['errors'])) {
             foreach ($error_formatted['errors'] as $sub_error) {
-                $error_location = str_replace(array('0', '1'), '*', $sub_error['instanceLocation']);
+                $error_location = str_replace(['0', '1'], '*', $sub_error['instanceLocation']);
                 $error_location_map[$error_location] = $sub_error;
             }
         }
@@ -80,9 +80,9 @@ abstract class SchemaValidationException extends \Exception implements Exception
         $error_keyword_location_map = [];
         if (isset($error_formatted['errors'])) {
             foreach ($error_formatted['errors'] as $sub_error) {
-                $keywords = array('/required', '/properties', '/type', '/format');
+                $keywords = ['/required', '/properties', '/type', '/format'];
                 $keyword_location = str_replace($keywords, '', $sub_error['keywordLocation']);
-                $keyword_location = str_replace(array('0', '1'), '*', $keyword_location);
+                $keyword_location = str_replace(['0', '1'], '*', $keyword_location);
                 $error_keyword_location_map[$keyword_location] = $sub_error;
             }
         }
@@ -91,7 +91,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
         $schema = json_decode(json_encode($schema), true);
 
         // Create a structured map of strings representing the schema.
-        $schema_formatted = SchemaValidationException::formatSchema($schema, "#", "", [], 0);
+        $schema_formatted = SchemaValidationException::formatSchema($schema, '#', '', [], 0);
 
         // Display each item in the schema map. If the item is also
         // the location of a matching error, then display it too.
@@ -120,15 +120,15 @@ abstract class SchemaValidationException extends \Exception implements Exception
         $formatter = new ErrorFormatter();
 
         return ($flat) ? $formatter->formatFlat($validation_error) :
-            $formatter->formatOutput($validation_error, "basic");
+            $formatter->formatOutput($validation_error, 'basic');
     }
 
     /**
-     * @param array $schema JSON schema represented as an array
-     * @param string $location The current location/path within the JSON schema structure
-     * @param string $key_current The key at the current location
-     * @param array $keys_required The keys required at the current location
-     * @param int $indent_level
+     * @param  array  $schema  JSON schema represented as an array
+     * @param  string  $location  The current location/path within the JSON schema structure
+     * @param  string  $key_current  The key at the current location
+     * @param  array  $keys_required  The keys required at the current location
+     * @param  int  $indent_level
      * @return array
      */
     public static function formatSchema($schema, $location, $key_current, $keys_required, $indent_level)
@@ -139,7 +139,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
         // first, check for polymorphic types...
         if (array_key_exists('allOf', $keys)) {
             $location .= '/allOf';
-            $content = SchemaValidationException::expectedSchemaRowContent('allOf', "", $key_current, "");
+            $content = SchemaValidationException::expectedSchemaRowContent('allOf', '', $key_current, '');
             $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
 
             $indent_level = ++$indent_level;
@@ -150,7 +150,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
             return $results;
         } elseif (array_key_exists('anyOf', $keys)) {
             $location .= '/anyOf';
-            $content = SchemaValidationException::expectedSchemaRowContent('anyOf', "", $key_current, "");
+            $content = SchemaValidationException::expectedSchemaRowContent('anyOf', '', $key_current, '');
             $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
 
             $indent_level = ++$indent_level;
@@ -161,7 +161,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
             return $results;
         } elseif (array_key_exists('oneOf', $keys)) {
             $location .= '/oneOf';
-            $content = SchemaValidationException::expectedSchemaRowContent('oneOf', "", $key_current, "");
+            $content = SchemaValidationException::expectedSchemaRowContent('oneOf', '', $key_current, '');
             $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
 
             $indent_level = ++$indent_level;
@@ -173,7 +173,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
         } elseif (isset($schema['type'])) { // then, check for all other types...
             // use "types array" to cover simple and mixed type cases
             $types = [];
-            if (!is_array($schema['type'])) {
+            if (! is_array($schema['type'])) {
                 $types = [$schema['type']];
             } else {
                 $types = $schema['type'];
@@ -181,7 +181,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
 
             // is "null" type used?
             $nullable = false;
-            $null_index = array_search("null", $types);
+            $null_index = array_search('null', $types);
             if ($null_index) {
                 $nullable = true;
                 unset($types[$null_index]);
@@ -195,18 +195,18 @@ abstract class SchemaValidationException extends \Exception implements Exception
 
             // compute key modifiers
             $key_modifier = ($nullable) ?
-                (($required) ? "?*" : "?") :
-                (($required) ? "*" : "");
+                (($required) ? '?*' : '?') :
+                (($required) ? '*' : '');
 
             // compute next location
-            if ($key_current !== "") {
+            if ($key_current !== '') {
                 $location .= '/'.$key_current;
             }
 
             // handle each type — could have multiple types per key
             foreach ($types as $type) {
                 switch ($type) {
-                    case "object":
+                    case 'object':
                         $additional_properties = true;
                         if (isset($schema['additionalProperties'])) {
                             if (is_bool($schema['additionalProperties'])) {
@@ -216,7 +216,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
 
                         $content = SchemaValidationException::expectedSchemaRowContent(
                             'object',
-                            ($additional_properties) ? "++" : "",
+                            ($additional_properties) ? '++' : '',
                             $key_current,
                             $key_modifier
                         );
@@ -231,16 +231,16 @@ abstract class SchemaValidationException extends \Exception implements Exception
                             }
                         }
                         break;
-                    case "array":
-                        $content = SchemaValidationException::expectedSchemaRowContent('array', "", $key_current, $key_modifier);
+                    case 'array':
+                        $content = SchemaValidationException::expectedSchemaRowContent('array', '', $key_current, $key_modifier);
                         $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
 
-                        $results = array_merge($results, SchemaValidationException::formatSchema($schema['items'], $location.'/*', "", [], ++$indent_level));
+                        $results = array_merge($results, SchemaValidationException::formatSchema($schema['items'], $location.'/*', '', [], ++$indent_level));
 
                         break;
                     default:
                         $final_type = isset($schema['enum']) ? $type.' ['.join(', ', $schema['enum']).']' : $type;
-                        $content = SchemaValidationException::expectedSchemaRowContent($final_type, "", $key_current, $key_modifier);
+                        $content = SchemaValidationException::expectedSchemaRowContent($final_type, '', $key_current, $key_modifier);
                         $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
 
                         break;
@@ -251,16 +251,16 @@ abstract class SchemaValidationException extends \Exception implements Exception
         }
     }
 
-    public static function expectedSchemaRowContent($type, $type_modifier = "", $key = "", $key_modifier = "")
+    public static function expectedSchemaRowContent($type, $type_modifier = '', $key = '', $key_modifier = '')
     {
         $key_final = $key.$key_modifier;
         $type_final = $type.$type_modifier;
 
-        return (empty($key)) ? $type_final : $key_final.": ".$type_final;
+        return (empty($key)) ? $type_final : $key_final.': '.$type_final;
     }
 
     public static function expectedSchemaRow($display, $indent_level = 0)
     {
-        return str_repeat("    ", $indent_level).$display;
+        return str_repeat('    ', $indent_level).$display;
     }
 }
