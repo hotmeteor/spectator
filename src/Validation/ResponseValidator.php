@@ -2,12 +2,12 @@
 
 namespace Spectator\Validation;
 
-use cebe\openapi\spec\Schema;
-use Opis\JsonSchema\Validator;
-use cebe\openapi\spec\Response;
 use cebe\openapi\spec\Operation;
-use Opis\JsonSchema\ValidationResult;
+use cebe\openapi\spec\Response;
+use cebe\openapi\spec\Schema;
 use Opis\JsonSchema\Errors\ErrorFormatter;
+use Opis\JsonSchema\ValidationResult;
+use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
 
 class ResponseValidator extends AbstractValidator
@@ -85,10 +85,10 @@ class ResponseValidator extends AbstractValidator
             $error = $result->error();
             $formatter = new ErrorFormatter();
             $spec_errors = join("\n", $formatter->formatFlat($error));
-            $spec_errors .= "\n\n".json_encode($formatter->formatOutput($error, "basic"));
+            $spec_errors .= "\n\n".json_encode($formatter->formatOutput($error, 'basic'));
 
             $expected_schema_json = json_decode(json_encode($expected_schema), true);
-            $expected_schema_pretty = $this->pretty_print($expected_schema_json, "", [], 0);
+            $expected_schema_pretty = $this->pretty_print($expected_schema_json, '', [], 0);
 
             $message = "---\n\n".$spec_errors."\n\n".$expected_schema_pretty."\n  ---";
 
@@ -96,46 +96,49 @@ class ResponseValidator extends AbstractValidator
         }
     }
 
-    protected function pretty_print_row($type, $type_modifier = "", $key = "", $key_modifier = "", $indent_level = 0)
+    protected function pretty_print_row($type, $type_modifier = '', $key = '', $key_modifier = '', $indent_level = 0)
     {
         $key_final = (empty($key_modifier)) ? $key : $key.$key_modifier;
         $type_final = (empty($type_modifier)) ? $type : $type.$type_modifier;
 
         if (empty($key)) {
-            return str_repeat("    ", $indent_level).$type_final."\n";
+            return str_repeat('    ', $indent_level).$type_final."\n";
         } else {
-            return str_repeat("    ", $indent_level).$key_final.": ".$type_final."\n";
+            return str_repeat('    ', $indent_level).$key_final.': '.$type_final."\n";
         }
     }
 
     protected function pretty_print($json, $key, $required_keys, $indent_level)
     {
         $keys = array_keys($json);
-        $results = "";
+        $results = '';
 
         // first, check for polymorphic types...
         if (array_key_exists('allOf', $keys)) {
-            $results .= $this->pretty_print_row('allOf', "", $key, "", $indent_level);
+            $results .= $this->pretty_print_row('allOf', '', $key, '', $indent_level);
             foreach ($json['allOf'] as $schema_object) {
                 $results .= $this->pretty_print($schema_object, $key, [], ++$indent_level);
             }
+
             return $results;
         } elseif (array_key_exists('anyOf', $keys)) {
-            $results .= $this->pretty_print_row('anyOf', "", $key, "", $indent_level);
+            $results .= $this->pretty_print_row('anyOf', '', $key, '', $indent_level);
             foreach ($json['anyOf'] as $schema_object) {
                 $results .= $this->pretty_print($schema_object, $key, [], ++$indent_level);
             }
+
             return $results;
         } elseif (array_key_exists('oneOf', $keys)) {
-            $results .= $this->pretty_print_row('oneOf', "", $key, "", $indent_level);
+            $results .= $this->pretty_print_row('oneOf', '', $key, '', $indent_level);
             foreach ($json['oneOf'] as $schema_object) {
                 $results .= $this->pretty_print($schema_object, $key, [], ++$indent_level);
             }
+
             return $results;
         } elseif (isset($json['type'])) { // then, check for all other types...
             // use "types array" to cover simple and mixed type cases
             $types = [];
-            if (!is_array($json['type'])) {
+            if (! is_array($json['type'])) {
                 $types = [$json['type']];
             } else {
                 $types = $json['type'];
@@ -143,7 +146,7 @@ class ResponseValidator extends AbstractValidator
 
             // is "null" type used?
             $nullable = false;
-            $null_index = array_search("null", $types);
+            $null_index = array_search('null', $types);
             if ($null_index) {
                 $nullable = true;
                 unset($types[$null_index]);
@@ -157,13 +160,13 @@ class ResponseValidator extends AbstractValidator
 
             // compute key modifiers
             $key_modifier = ($nullable) ?
-                (($required) ? "?*" : "?") :
-                (($required) ? "*" : "");
+                (($required) ? '?*' : '?') :
+                (($required) ? '*' : '');
 
             // handle each type — could have multiple types per key
             foreach ($types as $type) {
                 switch ($type) {
-                    case "object":
+                    case 'object':
                         $additional_properties = false;
                         if (isset($json['additionalProperties'])) {
                             if (is_bool($json['additionalProperties'])) {
@@ -173,7 +176,7 @@ class ResponseValidator extends AbstractValidator
 
                         $results .= $this->pretty_print_row(
                             'object',
-                            ($additional_properties) ? " ++" : "",
+                            ($additional_properties) ? ' ++' : '',
                             $key,
                             $key_modifier,
                             $indent_level
@@ -188,12 +191,12 @@ class ResponseValidator extends AbstractValidator
                             }
                         }
                         break;
-                    case "array":
-                        $results .= $this->pretty_print_row('array', "", $key, $key_modifier, $indent_level);
-                        $results .= $this->pretty_print($json['items'], "", [], ++$indent_level);
+                    case 'array':
+                        $results .= $this->pretty_print_row('array', '', $key, $key_modifier, $indent_level);
+                        $results .= $this->pretty_print($json['items'], '', [], ++$indent_level);
                         break;
                     default:
-                        $results .= $this->pretty_print_row($type, "", $key, $key_modifier, $indent_level);
+                        $results .= $this->pretty_print_row($type, '', $key, $key_modifier, $indent_level);
                         break;
                 }
             }
