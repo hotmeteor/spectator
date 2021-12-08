@@ -511,8 +511,8 @@ class ResponseValidatorTest extends TestCase
                     [
                         'id' => '3fafec77-402b-35f9-b26a-bd6430da3a29',
                         'name' => 'Marketing',
-                        'slug' => null
-                    ]
+                        'slug' => null,
+                    ],
                 ],
                 'tester' => 'tester',
             ];

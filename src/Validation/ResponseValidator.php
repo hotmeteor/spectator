@@ -2,11 +2,11 @@
 
 namespace Spectator\Validation;
 
-use cebe\openapi\spec\Schema;
-use Opis\JsonSchema\Validator;
-use cebe\openapi\spec\Response;
 use cebe\openapi\spec\Operation;
+use cebe\openapi\spec\Response;
+use cebe\openapi\spec\Schema;
 use Opis\JsonSchema\ValidationResult;
+use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
 
 class ResponseValidator extends AbstractValidator
