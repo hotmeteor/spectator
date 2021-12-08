@@ -20,6 +20,36 @@ class ResponseValidatorTest extends TestCase
         Spectator::using('Test.v1.json');
     }
 
+    // TODO: TEMP: REMOVE!
+    public function testOneOffJarrod()
+    {
+        Spectator::using('Test.v2.json');
+
+        Route::get('/tags', function () {
+            return [
+                'status' => "success",
+                'data' => [
+                    [
+                        'id' => '3fafec77-402b-35f9-b26a-bd6430da3a29',
+                        'name' => 'Photography',
+                        'slug' => 'photography'
+                    ],
+                    [
+                        'id' => '3fafec77-402b-35f9-b26a-bd6430da3a29',
+                        'name' => 'Marketing',
+                        'slug' => 'null',
+                        'tester' => 'tester'
+                    ]
+                ],
+                'tester' => 'tester'
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/tags')
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
+
     public function test_validates_valid_json_response()
     {
         Route::get('/users', function () {
