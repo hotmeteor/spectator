@@ -27,21 +27,21 @@ class ResponseValidatorTest extends TestCase
 
         Route::get('/tags', function () {
             return [
-                'status' => "success",
+                'status' => 'success',
                 'data' => [
                     [
                         'id' => '3fafec77-402b-35f9-b26a-bd6430da3a29',
                         'name' => 'Photography',
-                        'slug' => 'photography'
+                        'slug' => 'photography',
                     ],
                     [
                         'id' => '3fafec77-402b-35f9-b26a-bd6430da3a29',
                         'name' => 'Marketing',
                         'slug' => 'null',
-                        'tester' => 'tester'
-                    ]
+                        'tester' => 'tester',
+                    ],
                 ],
-                'tester' => 'tester'
+                'tester' => 'tester',
             ];
         })->middleware(Middleware::class);
 
