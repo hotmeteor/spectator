@@ -70,8 +70,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
         $error_location_map = [];
         if (isset($error_formatted['errors'])) {
             foreach ($error_formatted['errors'] as $sub_error) {
-                $error_location = str_replace(['0', '1'], '*', $sub_error['instanceLocation']);
-                $error_location_map[$error_location] = $sub_error;
+                $error_location_map[$sub_error['instanceLocation']] = $sub_error;
             }
         }
 
@@ -82,7 +81,6 @@ abstract class SchemaValidationException extends \Exception implements Exception
             foreach ($error_formatted['errors'] as $sub_error) {
                 $keywords = ['/required', '/properties', '/type', '/format'];
                 $keyword_location = str_replace($keywords, '', $sub_error['keywordLocation']);
-                $keyword_location = str_replace(['0', '1'], '*', $keyword_location);
                 $error_keyword_location_map[$keyword_location] = $sub_error;
             }
         }
@@ -124,54 +122,68 @@ abstract class SchemaValidationException extends \Exception implements Exception
     }
 
     /**
+     *
+     * Recursive function that, given a schema, creates a map of underlying schema items intended display.
+     * Each item is keyed/identified using the schema's "location" — with a format similar
+     * to Opis\JsonSchema\Errors. The value for each item is a display string representing a schema item,
+     * its type, and other relevant information, when provided.
+     *
+     * Here's an example map:
+     *
+     * [
+     *     "#" => "object++"
+     *     "#/status" => "    status*: string"
+     *     "#/message" => "    message*: string"
+     * ]
+     *
+     * And when output, it might be displayed as follows:
+     *
+     * object++
+     *     status*: string
+     *     message*: string
+     *
+     * Because the items are keyed by a "location" similar to Opis\JsonSchema\Errors. We can easily
+     * overlay errors at the call site:
+     *
+     * object++ <== The properties must match schema: message
+     *     status*: string
+     *     message*: string <== The data (integer) must match the type: string
+     *
      * @param  array  $schema  JSON schema represented as an array
-     * @param  string  $location  The current location/path within the JSON schema structure
-     * @param  string  $key_current  The key at the current location
-     * @param  array  $keys_required  The keys required at the current location
-     * @param  int  $indent_level
+     * @param  string  $location_current  The current location within the JSON schema structure
+     * @param  string  $key_current  The key at the current location, if one is present.
+     * @param  array  $keys_required  The keys required at the current location, if provided.
+     * @param  int  $indent_level  Represents how much newly added values should be indented.
      * @return array
+     *
      */
-    public static function formatSchema($schema, $location, $key_current, $keys_required, $indent_level)
+    public static function formatSchema($schema, $location_current, $key_current, $keys_required, $indent_level)
     {
-        $keys = array_flip(array_keys($schema));
-        $results = [];
+        $keys_at_location = array_flip(array_keys($schema));
+        $schema_map = [];
 
-        // first, check for polymorphic types...
-        if (array_key_exists('allOf', $keys)) {
-            $location .= '/allOf';
-            $content = SchemaValidationException::expectedSchemaRowContent('allOf', '', $key_current, '');
-            $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
+        // is this a polymorphic schema?
+        $polymorphic_keys = array_filter($keys_at_location, function ($key) {
+            return $key == 'allOf' || $key == 'anyOf' || $key == 'oneOf';
+        }, ARRAY_FILTER_USE_KEY);
+        $polymorphic_keys = array_flip($polymorphic_keys);
 
-            $indent_level = ++$indent_level;
-            foreach ($schema['allOf'] as $index => $schema_object) {
-                $results = array_merge($results, SchemaValidationException::formatSchema($schema_object, $location.'/'.$index, $key_current, [], $indent_level));
-            }
+        if (! empty($polymorphic_keys)) { // first, check for a polymorphic schema...
+            $polymorphic_key = $polymorphic_keys[0];
 
-            return $results;
-        } elseif (array_key_exists('anyOf', $keys)) {
-            $location .= '/anyOf';
-            $content = SchemaValidationException::expectedSchemaRowContent('anyOf', '', $key_current, '');
-            $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
+            // create entry for polymorphic schema
+            $location_current .= '/'.$polymorphic_key;
+            $display_string = SchemaValidationException::schemaItemDisplayString($polymorphic_key, '', $key_current, '');
+            $schema_map[$location_current] = SchemaValidationException::indentedDisplayString($display_string, $indent_level);
 
             $indent_level = ++$indent_level;
-            foreach ($schema['anyOf'] as $index => $schema_object) {
-                $results = array_merge($results, SchemaValidationException::formatSchema($schema_object, $location.'/'.$index, $key_current, [], $indent_level));
+            foreach ($schema[$polymorphic_key] as $index => $next_schema) {
+                $schema_map = array_merge($schema_map, SchemaValidationException::formatSchema($next_schema, $location_current.'/'.$index, $key_current, [], $indent_level));
             }
 
-            return $results;
-        } elseif (array_key_exists('oneOf', $keys)) {
-            $location .= '/oneOf';
-            $content = SchemaValidationException::expectedSchemaRowContent('oneOf', '', $key_current, '');
-            $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
-
-            $indent_level = ++$indent_level;
-            foreach ($schema['oneOf'] as $index => $schema_object) {
-                $results = array_merge($results, SchemaValidationException::formatSchema($schema_object, $location.'/'.$index, $key_current, [], $indent_level));
-            }
-
-            return $results;
-        } elseif (isset($schema['type'])) { // then, check for all other types...
-            // use "types array" to cover simple and mixed type cases
+            return $schema_map;
+        } elseif (isset($schema['type'])) { // otherwise, check for explicit schema type...
+            // convert "type" to an array (to support single/multiple types)
             $types = [];
             if (! is_array($schema['type'])) {
                 $types = [$schema['type']];
@@ -179,7 +191,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
                 $types = $schema['type'];
             }
 
-            // is "null" type used?
+            // is "null" an included type? if so, make note of it and remove it from the types array
             $nullable = false;
             $null_index = array_search('null', $types);
             if ($null_index) {
@@ -187,7 +199,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
                 unset($types[$null_index]);
             }
 
-            // is this required?
+            // is this item required?
             $required = false;
             if (in_array($key_current, $keys_required)) {
                 $required = true;
@@ -200,13 +212,14 @@ abstract class SchemaValidationException extends \Exception implements Exception
 
             // compute next location
             if ($key_current !== '') {
-                $location .= '/'.$key_current;
+                $location_current .= '/'.$key_current;
             }
 
-            // handle each type — could have multiple types per key
+            // handle each schema type
             foreach ($types as $type) {
                 switch ($type) {
                     case 'object':
+                        // does this object support additional properties?
                         $additional_properties = true;
                         if (isset($schema['additionalProperties'])) {
                             if (is_bool($schema['additionalProperties'])) {
@@ -214,44 +227,50 @@ abstract class SchemaValidationException extends \Exception implements Exception
                             }
                         }
 
-                        $content = SchemaValidationException::expectedSchemaRowContent(
+                        // create entry for object schema
+                        $display_string = SchemaValidationException::schemaItemDisplayString(
                             'object',
                             ($additional_properties) ? '++' : '',
                             $key_current,
                             $key_modifier
                         );
-                        $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
+                        $schema_map[$location_current] = SchemaValidationException::indentedDisplayString($display_string, $indent_level);
 
+                        // create entires for all object properties
                         $indent_level = ++$indent_level;
-                        foreach ($schema['properties'] as $key => $property) {
+                        foreach ($schema['properties'] as $key => $next_schema) {
                             if (isset($schema['required'])) {
-                                $results = array_merge($results, SchemaValidationException::formatSchema($property, $location, $key, $schema['required'], $indent_level));
+                                $schema_map = array_merge($schema_map, SchemaValidationException::formatSchema($next_schema, $location_current, $key, $schema['required'], $indent_level));
                             } else {
-                                $results = array_merge($results, SchemaValidationException::formatSchema($property, $location, $key, [], $indent_level));
+                                $schema_map = array_merge($schema_map, SchemaValidationException::formatSchema($next_schema, $location_current, $key, [], $indent_level));
                             }
                         }
                         break;
                     case 'array':
-                        $content = SchemaValidationException::expectedSchemaRowContent('array', '', $key_current, $key_modifier);
-                        $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
+                        // create entry for array schema
+                        $display_string = SchemaValidationException::schemaItemDisplayString('array', '', $key_current, $key_modifier);
+                        $schema_map[$location_current] = SchemaValidationException::indentedDisplayString($display_string, $indent_level);
 
-                        $results = array_merge($results, SchemaValidationException::formatSchema($schema['items'], $location.'/*', '', [], ++$indent_level));
+                        // create entry for array's items
+                        $next_schema = $schema['items'];
+                        $schema_map = array_merge($schema_map, SchemaValidationException::formatSchema($next_schema, $location_current.'/items', '', [], ++$indent_level));
 
                         break;
                     default:
+                        // create entry for basic schema
                         $final_type = isset($schema['enum']) ? $type.' ['.join(', ', $schema['enum']).']' : $type;
-                        $content = SchemaValidationException::expectedSchemaRowContent($final_type, '', $key_current, $key_modifier);
-                        $results[$location] = SchemaValidationException::expectedSchemaRow($content, $indent_level);
+                        $display_string = SchemaValidationException::schemaItemDisplayString($final_type, '', $key_current, $key_modifier);
+                        $schema_map[$location_current] = SchemaValidationException::indentedDisplayString($display_string, $indent_level);
 
                         break;
                 }
             }
 
-            return $results;
+            return $schema_map;
         }
     }
 
-    public static function expectedSchemaRowContent($type, $type_modifier = '', $key = '', $key_modifier = '')
+    public static function schemaItemDisplayString($type, $type_modifier = '', $key = '', $key_modifier = '')
     {
         $key_final = $key.$key_modifier;
         $type_final = $type.$type_modifier;
@@ -259,8 +278,8 @@ abstract class SchemaValidationException extends \Exception implements Exception
         return (empty($key)) ? $type_final : $key_final.': '.$type_final;
     }
 
-    public static function expectedSchemaRow($display, $indent_level = 0)
+    public static function indentedDisplayString($display_string, $indent_level = 0)
     {
-        return str_repeat('    ', $indent_level).$display;
+        return str_repeat('    ', $indent_level).$display_string;
     }
 }
