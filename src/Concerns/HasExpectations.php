@@ -52,7 +52,7 @@ trait HasExpectations
                 return 'The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.';
             }
 
-            $message = trim(Arr::get($contents, 'message'));
+            $message = trim(Arr::get($contents, 'message', ''));
 
             if (isset($contents['specErrors']) && count($contents['specErrors']) > 0 && ! config('spectator.suppress_errors')) {
                 $output = new ConsoleOutput();
