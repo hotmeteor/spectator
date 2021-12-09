@@ -433,6 +433,32 @@ class RequestValidatorTest extends TestCase
             ],
         ];
     }
+
+    public function test_handles_query_parameters()
+    {
+        Spectator::using('Test.v1.json');
+
+        // When testing query parameters, they are not found nor checked by RequestValidator->validateParameters().
+        Route::get('/users', function () {
+            return [];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users?order=fart')
+            ->assertValidRequest();
+
+        // When testing path parameters, they are found and checked by RequestValidator->validateParameters().
+        // Route::bind('postUuid', TestUser::class);
+
+        // Route::get('/posts/{postUuid}/comments/{comment}', function () {
+        //     return [
+        //         'id' => 1,
+        //         'message' => 'My Comment',
+        //     ];
+        // })->middleware(Middleware::class);
+
+        // $this->getJson('/posts/'.Str::uuid()->toString().'/comments/1')
+        //     ->assertValidRequest();
+    }
 }
 
 class TestUser extends Model
