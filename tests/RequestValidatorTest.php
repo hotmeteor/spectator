@@ -160,7 +160,7 @@ class RequestValidatorTest extends TestCase
 
         $payload = [
             'name' => 'Adam Campbell',
-            'email' => 'adam@hotmeteor.com'
+            'email' => 'adam@hotmeteor.com',
         ];
 
         if ($state === self::NULLABLE_MISSING) {
