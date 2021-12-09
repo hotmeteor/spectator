@@ -212,16 +212,20 @@ abstract class SchemaValidationException extends \Exception implements Exception
                 unset($types[$null_index]);
             }
 
+            // is "nullable" defined on the item itself?
+            if (isset($schema['nullable'])) {
+                $nullable = $schema['nullable'];
+            }
+
             // is this item required?
             $required = false;
             if (in_array($key_current, $keys_required)) {
                 $required = true;
             }
 
-            // compute key modifiers
-            $key_modifier = ($nullable) ?
-                (($required) ? '?*' : '?') :
-                (($required) ? '*' : '');
+            // compute modifiers
+            $type_modifier = ($nullable) ? '?' : '';
+            $key_modifier = ($required) ? '*' : '';
 
             // compute next location
             if ($key_current !== '') {
@@ -240,10 +244,14 @@ abstract class SchemaValidationException extends \Exception implements Exception
                             }
                         }
 
+                        if ($additional_properties) {
+                            $type_modifier = '++'.$type_modifier;
+                        }
+
                         // create entry for object schema
                         $display_string = SchemaValidationException::schemaItemDisplayString(
                             'object',
-                            ($additional_properties) ? '++' : '',
+                            $type_modifier,
                             $key_current,
                             $key_modifier
                         );
@@ -261,7 +269,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
                         break;
                     case 'array':
                         // create entry for array schema
-                        $display_string = SchemaValidationException::schemaItemDisplayString('array', '', $key_current, $key_modifier);
+                        $display_string = SchemaValidationException::schemaItemDisplayString('array', $type_modifier, $key_current, $key_modifier);
                         $schema_map[$location_current] = SchemaValidationException::indentedDisplayString($display_string, $indent_level);
 
                         // create entry for array's items
@@ -272,7 +280,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
                     default:
                         // create entry for basic schema
                         $final_type = isset($schema['enum']) ? $type.' ['.join(', ', $schema['enum']).']' : $type;
-                        $display_string = SchemaValidationException::schemaItemDisplayString($final_type, '', $key_current, $key_modifier);
+                        $display_string = SchemaValidationException::schemaItemDisplayString($final_type, $type_modifier, $key_current, $key_modifier);
                         $schema_map[$location_current] = SchemaValidationException::indentedDisplayString($display_string, $indent_level);
 
                         break;
