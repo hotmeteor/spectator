@@ -535,7 +535,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/users')
             ->assertValidRequest()
-            ->assertValidResponse()
+            ->assertInvalidResponse(400)
             ->assertValidationMessage('All array items must match schema')
             ->assertErrorsContain([
                 'All array items must match schema',
