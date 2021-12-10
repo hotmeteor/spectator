@@ -58,8 +58,7 @@ class RequestValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/v1/users')
-            ->assertValidRequest()
-            ->assertValidResponse();
+            ->assertValidRequest();
     }
 
     public function test_resolves_prefixed_path_from_inline_setting()
@@ -77,8 +76,7 @@ class RequestValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/v1/users')
-            ->assertValidRequest()
-            ->assertValidResponse();
+            ->assertValidRequest();
     }
 
     public function test_resolve_route_model_binding()
@@ -94,8 +92,7 @@ class RequestValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/users/1')
-            ->assertValidRequest()
-            ->assertValidResponse();
+            ->assertValidRequest();
     }
 
     public function test_resolve_route_model_explicit_binding()
@@ -112,8 +109,7 @@ class RequestValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/posts/'.Str::uuid()->toString())
-            ->assertValidRequest()
-            ->assertValidResponse();
+            ->assertValidRequest();
     }
 
     public function test_cannot_resolve_route_model_explicit_binding_with_invalid_format()
@@ -130,8 +126,7 @@ class RequestValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/posts/invalid')
-            ->assertInvalidRequest()
-            ->assertValidResponse(400);
+            ->assertInvalidRequest();
     }
 
     public function test_resolve_route_model_binding_with_multiple_parameters()
@@ -148,8 +143,7 @@ class RequestValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/posts/'.Str::uuid()->toString().'/comments/1')
-            ->assertValidRequest()
-            ->assertValidResponse();
+            ->assertValidRequest();
     }
 
     /**
@@ -160,7 +154,7 @@ class RequestValidatorTest extends TestCase
         $state,
         $is_valid
     ) {
-//        Spectator::using("Nullable.{$version}.json");
+        Spectator::using("Nullable.{$version}.json");
 
         Route::post('/users')->middleware(Middleware::class);
 
@@ -187,12 +181,10 @@ class RequestValidatorTest extends TestCase
 
         if ($is_valid) {
             $this->postJson('/users', $payload)
-                ->assertValidRequest()
-                ->assertValidResponse();
+                ->assertValidRequest();
         } else {
             $this->postJson('/users', $payload)
-                ->assertInvalidRequest()
-                ->assertValidResponse();
+                ->assertInvalidRequest();
         }
     }
 
@@ -274,7 +266,6 @@ class RequestValidatorTest extends TestCase
 
         if ($isValid) {
             $request->assertValidRequest();
-            $request->assertValidResponse();
         } else {
             $request->assertInvalidRequest();
         }
@@ -335,7 +326,6 @@ class RequestValidatorTest extends TestCase
 
         if ($isValid) {
             $request->assertValidRequest();
-            $request->assertValidResponse();
         } else {
             $request->assertInvalidRequest();
         }
@@ -394,7 +384,6 @@ class RequestValidatorTest extends TestCase
 
         if ($isValid) {
             $request->assertValidRequest();
-            $request->assertValidResponse();
         } else {
             $request->assertInvalidRequest();
         }

@@ -132,7 +132,7 @@ class Assertions
         return function ($errors) {
             return $this->runAssertion(function () use ($errors) {
                 self::assertJson([
-                    'errors' => Arr::wrap($errors),
+                    'specErrors' => Arr::wrap($errors),
                 ]);
 
                 return $this;

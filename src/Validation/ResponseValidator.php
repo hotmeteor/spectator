@@ -51,7 +51,7 @@ class ResponseValidator extends AbstractValidator
     {
         $contentType = $this->contentType();
 
-        // does the response match any of the specified media types?
+        // Does the response match any of the specified media types?
         if (! array_key_exists($contentType, $response->content)) {
             $message = 'Response did not match any specified content type.';
             $message .= PHP_EOL.PHP_EOL.'  Expected: '.$contentType;
@@ -75,24 +75,16 @@ class ResponseValidator extends AbstractValidator
      */
     protected function validateResponse(Schema $schema, $body)
     {
-        $validator = $this->validator();
-
-        $actual_response = json_encode($body);
-
         $expected_schema = $this->prepareData($schema);
-        $expected_response = json_encode($expected_schema);
 
+        $validator = $this->validator();
         $result = $validator->validate($body, $expected_schema);
 
         if ($result instanceof ValidationResult && $result->isValid() === false) {
-            $message = 'Error (Opis\JsonSchema\Validator): '.$result->error()->message();
-
-            $message .= PHP_EOL.PHP_EOL.'  Keyword: '.$result->error()->keyword();
-            $message .= PHP_EOL.'  Expected: '.$expected_response;
-            $message .= PHP_EOL.'  Actual: '.$actual_response;
-            $message .= PHP_EOL.PHP_EOL.'  ---';
-
+            $message = ResponseValidationException::validationErrorMessage($expected_schema, $result->error());
             throw ResponseValidationException::withError($message, $result->error());
+        } elseif ($result->isValid() === false) {
+            throw ResponseValidationException::withError($result->error()->message(), $result->error());
         }
     }
 

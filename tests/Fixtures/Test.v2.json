@@ -130,6 +130,71 @@
           }
         }
       }
+    },
+    "/tags": {
+      "get": {
+        "summary": "List all tags.",
+        "tags": [
+          "tags"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "success",
+                      "minLength": 0,
+                      "maxLength": 255
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 36,
+                            "maxLength": 36,
+                            "format": "uuid",
+                            "example": "00000000-0000-4000-8000-000000000000"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Photography",
+                            "minLength": 1,
+                            "maxLength": 255
+                          },
+                          "slug": {
+                            "type": "string",
+                            "example": "photography",
+                            "minLength": 1,
+                            "maxLength": 255,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

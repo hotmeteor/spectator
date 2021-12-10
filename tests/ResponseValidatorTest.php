@@ -79,8 +79,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/path-without-operationId')
             ->assertValidRequest()
-            ->assertInvalidResponse(400)
-            ->assertValidationMessage('The properties must match schema: {properties}');
+            ->assertInvalidResponse(400);
     }
 
     public function test_cannot_locate_path_without_path_prefix()
@@ -493,5 +492,55 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/item')
             ->assertValidRequest()
             ->assertValidResponse();
+    }
+
+    // https://www.loom.com/share/63191fee2b45421db266dcd012579cb3
+    public function test_response_example()
+    {
+        Spectator::using('Test.v2.json');
+
+        Route::get('/tags', function () {
+            return [
+                'status' => 'success',
+                'data' => [
+                    [
+                        'id' => '3fafec77-402b-35f9-b26a-bd6430da3a29',
+                        'name' => 'Photography',
+                        'slug' => 'photography',
+                    ],
+                    [
+                        'id' => '3fafec77-402b-35f9-b26a-bd6430da3a29',
+                        'name' => 'Marketing',
+                        'slug' => null,
+                    ],
+                ],
+                'tester' => 'tester',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/tags')
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
+
+    public function test_errors_contain()
+    {
+        Route::get('/users', function () {
+            return [
+                [
+                    'id' => 'invalid',
+                ],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertInvalidResponse(400)
+            ->assertValidationMessage('All array items must match schema')
+            ->assertErrorsContain([
+                'All array items must match schema',
+                'The properties must match schema: id',
+                'The data (string) must match the type: number',
+            ]);
     }
 }

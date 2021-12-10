@@ -156,6 +156,34 @@ The test is verifying that both the request and the response are valid according
 
 Within your spec, each possible response should be documented. For example, a single `POST` endpoint may result in a `2xx`, `4xx`, or even `5xx` code response. Additionally, your endpoints will likely have particular parameter validation that needs to be adhered to. This is what makes contract testing different from functional testing: in functional testing, successful and failed responses are tested for outcomes; in contract testing, requests and responses are tested for conformity and outcomes don't matter.
 
+### Debugging
+
+For certain validation errors, a special exception message is thrown which shows error message(s) displayed alongside the expected schema. For example:
+
+```
+  ---
+
+The properties must match schema: data
+All array items must match schema
+The required properties (name) are missing
+
+object++ <== The properties must match schema: data
+    status*: string
+    data*: array <== All array items must match schema
+        object <== The required properties (name) are missing
+            id*: string
+            name*: string
+            slug: string?
+
+  ---
+```
+
+A few custom symbols are used:
+
+- "++": Object supports `additionalProperties`
+- "\*": Item is `required`
+- "?": Item can be `nullable`
+
 ## Usage
 
 Define the spec file to test against. This can be defined in your `setUp()` method or in a specific test method.
