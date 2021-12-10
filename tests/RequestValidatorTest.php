@@ -433,6 +433,25 @@ class RequestValidatorTest extends TestCase
             ],
         ];
     }
+
+    public function test_handles_query_parameters()
+    {
+        Spectator::using('Test.v1.json');
+
+        // When testing query parameters, they are not found nor checked by RequestValidator->validateParameters().
+        Route::get('/users', function () {
+            return [];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users?order=invalid')
+            ->assertInvalidRequest()
+            ->assertErrorsContain([
+                'The data should match one item from enum',
+            ]);
+
+        $this->getJson('/users?order=name')
+            ->assertValidRequest();
+    }
 }
 
 class TestUser extends Model

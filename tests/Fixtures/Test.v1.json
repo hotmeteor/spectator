@@ -61,6 +61,8 @@
         "operationId": "get-users",
         "parameters": [
           {
+            "in": "query",
+            "name": "order",
             "schema": {
               "type": "string",
               "enum": [
@@ -68,8 +70,6 @@
                 "email"
               ]
             },
-            "in": "query",
-            "name": "order",
             "allowEmptyValue": true
           }
         ]
