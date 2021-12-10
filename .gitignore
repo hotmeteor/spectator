@@ -2,6 +2,8 @@
 .DS_Store
 .php_cs.cache
 .php_cs.dist
+.php-cs-fixer.php
+.php-cs-fixer.cache
 .phpunit.result.cache
 composer.lock
 /assets/

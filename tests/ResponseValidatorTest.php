@@ -522,4 +522,25 @@ class ResponseValidatorTest extends TestCase
             ->assertValidRequest()
             ->assertValidResponse(200);
     }
+
+    public function test_errors_contain()
+    {
+        Route::get('/users', function () {
+            return [
+                [
+                    'id' => 'invalid',
+                ],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse()
+            ->assertValidationMessage('All array items must match schema')
+            ->assertErrorsContain([
+                'All array items must match schema',
+                'The properties must match schema: id',
+                'The data (string) must match the type: number',
+            ]);
+    }
 }
