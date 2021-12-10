@@ -2,8 +2,10 @@
 
 namespace Spectator;
 
+use cebe\openapi\exceptions\IOException;
 use cebe\openapi\exceptions\TypeErrorException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
+use cebe\openapi\json\InvalidJsonPointerSyntaxException;
 use cebe\openapi\spec\PathItem;
 use Closure;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -99,7 +101,12 @@ class Middleware
      * @return mixed
      *
      * @throws InvalidPathException
-     * @throws MissingSpecException|RequestValidationException|ResponseValidationException
+     * @throws MissingSpecException
+     * @throws RequestValidationException
+     * @throws TypeErrorException
+     * @throws UnresolvableReferenceException
+     * @throws IOException
+     * @throws InvalidJsonPointerSyntaxException
      */
     protected function validate(Request $request, Closure $next)
     {
@@ -107,11 +114,20 @@ class Middleware
 
         $pathItem = $this->pathItem($request_path, $request->method());
 
-        RequestValidator::validate($request, $pathItem, $request->method());
+        RequestValidator::validate(
+            $request,
+            $pathItem,
+            $request->method()
+        );
 
         $response = $next($request);
 
-        ResponseValidator::validate($request_path, $response, $pathItem->{strtolower($request->method())}, $this->version);
+        ResponseValidator::validate(
+            $request_path,
+            $response,
+            $pathItem->{strtolower($request->method())},
+            $this->version
+        );
 
         $this->spectator->reset();
 
@@ -127,8 +143,8 @@ class Middleware
      * @throws MissingSpecException
      * @throws TypeErrorException
      * @throws UnresolvableReferenceException
-     * @throws \cebe\openapi\exceptions\IOException
-     * @throws \cebe\openapi\json\InvalidJsonPointerSyntaxException
+     * @throws IOException
+     * @throws InvalidJsonPointerSyntaxException
      */
     protected function pathItem($request_path, $request_method): PathItem
     {

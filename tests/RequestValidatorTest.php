@@ -443,21 +443,14 @@ class RequestValidatorTest extends TestCase
             return [];
         })->middleware(Middleware::class);
 
-        $this->getJson('/users?order=fart')
+        $this->getJson('/users?order=invalid')
+            ->assertInvalidRequest()
+            ->assertErrorsContain([
+                'The data should match one item from enum',
+            ]);
+
+        $this->getJson('/users?order=name')
             ->assertValidRequest();
-
-        // When testing path parameters, they are found and checked by RequestValidator->validateParameters().
-        // Route::bind('postUuid', TestUser::class);
-
-        // Route::get('/posts/{postUuid}/comments/{comment}', function () {
-        //     return [
-        //         'id' => 1,
-        //         'message' => 'My Comment',
-        //     ];
-        // })->middleware(Middleware::class);
-
-        // $this->getJson('/posts/'.Str::uuid()->toString().'/comments/1')
-        //     ->assertValidRequest();
     }
 }
 
