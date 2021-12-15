@@ -198,16 +198,17 @@ class RequestValidator extends AbstractValidator
     {
         $body = array_merge_recursive(
             $this->request->request->all(),
-            array_map(function(UploadedFile $file) {
+            array_map(function (UploadedFile $file) {
                 return $file->get();
-            },$this->request->allFiles())
+            }, $this->request->allFiles())
         );
 
         return $this->toObject($body);
     }
 
-    private function toObject($data) {
-        if (!is_array($data)) {
+    private function toObject($data)
+    {
+        if (! is_array($data)) {
             return $data;
         } elseif (is_numeric(key($data))) {
             return array_map([$this, 'toObject'], $data);
