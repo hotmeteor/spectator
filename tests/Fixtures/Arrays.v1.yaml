@@ -1,0 +1,75 @@
+openapi: 3.0.0
+info:
+  title: Arrays.v1
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /orgs/{orgUuid}:
+    get:
+      summary: Get org
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: 53f7bd7b-2ee2-4be4-a15b-e09c76a150f9
+                        receivedOn:
+                          type: string
+                          format: date-time
+                          example: '2021-11-22T16:37:15.000Z'
+                        fulfilledOn:
+                          type: string
+                          format: date-time
+                        isFulfilled:
+                          type: boolean
+                          default: false
+                        orderedTrees:
+                          type: string
+                          example: '1000'
+                        plantedTrees:
+                          type: string
+                          example: '700'
+                        href:
+                          type: string
+                          format: url
+                          example: 'http://localhost:3000/orders/53f7bd7b-2ee2-4be4-a15b-e09c76a150f9.json'
+                      required:
+                        - id
+                        - receivedOn
+                        - fulfilledOn
+                        - isFulfilled
+                        - orderedTrees
+                        - plantedTrees
+                        - href
+                required:
+                  - id
+                  - name
+                  - orders
+      operationId: get-org
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          name: orgUuid
+          in: path
+          required: true
+components:
+  schemas: {}
