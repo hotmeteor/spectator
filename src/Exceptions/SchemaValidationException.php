@@ -287,9 +287,9 @@ abstract class SchemaValidationException extends \Exception implements Exception
                         break;
                 }
             }
-
-            return $schema_map;
         }
+
+        return $schema_map;
     }
 
     /**
