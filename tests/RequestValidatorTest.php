@@ -462,8 +462,12 @@ class RequestValidatorTest extends TestCase
             return [];
         })->middleware(Middleware::class);
 
+        $this->getJson('/users-by-id/foo')
+            ->assertInvalidRequest();
+
         $this->getJson('/users-by-id/1')
             ->assertValidRequest();
+
     }
 }
 

@@ -122,7 +122,22 @@ class RequestValidator extends AbstractValidator
 
                 if ($actual_parameter) {
                     if($expected_parameter_schema->type && gettype($actual_parameter) !== $expected_parameter_schema->type){
-                        settype($actual_parameter, $expected_parameter_schema->type);
+                        $typeIsCorrect = true;
+                        switch ($expected_parameter_schema->type){
+                            case 'integer':
+                            case 'number':
+                                $typeIsCorrect = is_numeric($actual_parameter);
+                                break;
+                            case 'string':
+                                $typeIsCorrect = is_string($actual_parameter);
+                                break;
+                            case 'boolean':
+                                $typeIsCorrect = filter_var($actual_parameter, FILTER_VALIDATE_BOOLEAN) !== false;
+                                break;
+                        }
+                        if ($typeIsCorrect){
+                            settype($actual_parameter, $expected_parameter_schema->type);
+                        }
                     }
 
                     $result = $validator->validate($actual_parameter, $expected_parameter_schema);
