@@ -121,7 +121,7 @@ class RequestValidator extends AbstractValidator
                 }
 
                 if ($actual_parameter) {
-                    if($expected_parameter_schema->type && gettype($actual_parameter) !== $expected_parameter_schema->type){
+                    if ($expected_parameter_schema->type && gettype($actual_parameter) !== $expected_parameter_schema->type) {
                         $typeIsCorrect = true;
                         switch ($expected_parameter_schema->type){
                             case 'integer':
