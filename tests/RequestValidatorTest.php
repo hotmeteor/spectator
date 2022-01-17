@@ -79,6 +79,27 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
+public function test_uses_global_path()
+{
+    Config::set('spectator.path_prefix', 'v1');
+
+    Spectator::using('Global.v1.yaml');
+
+    $uuid = (string) Str::uuid();
+
+    Route::get('/v1/orgs/{orgUuid}', function () use ($uuid) {
+        return [
+            'id' => 1,
+            'uuid' => $uuid,
+            'name' => 'My Org',
+        ];
+    })->middleware(Middleware::class);
+
+    $this->getJson("/v1/orgs/{$uuid}")
+        ->assertValidRequest()
+        ->assertValidResponse(200);
+}
+
     public function test_resolve_route_model_binding()
     {
         Spectator::using('Test.v1.json');
