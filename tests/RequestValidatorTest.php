@@ -452,6 +452,19 @@ class RequestValidatorTest extends TestCase
         $this->getJson('/users?order=name')
             ->assertValidRequest();
     }
+
+    public function test_handles_query_parameters_int()
+    {
+        Spectator::using('Test.v1.json');
+
+        // When testing query parameters, they are not found nor checked by RequestValidator->validateParameters().
+        Route::get('/users-by-id/{user}', function (int $user) {
+            return [];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users-by-id/1')
+            ->assertValidRequest();
+    }
 }
 
 class TestUser extends Model

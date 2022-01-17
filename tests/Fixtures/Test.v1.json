@@ -197,6 +197,46 @@
         "operationId": "get-users-user"
       }
     },
+    "/users-by-id/{user}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "integer"
+          },
+          "name": "user",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Get a single user",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-users-user"
+      }
+    },
     "/posts/{postUuid}": {
       "parameters": [
         {

@@ -121,6 +121,10 @@ class RequestValidator extends AbstractValidator
                 }
 
                 if ($actual_parameter) {
+                    if ($expected_parameter_schema->type && gettype($actual_parameter) !== $expected_parameter_schema->type) {
+                        settype($actual_parameter, $expected_parameter_schema->type);
+                    }
+
                     $result = $validator->validate($actual_parameter, $expected_parameter_schema);
 
                     // If the result is not valid, then display failure reason.
