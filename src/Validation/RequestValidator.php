@@ -120,25 +120,8 @@ class RequestValidator extends AbstractValidator
                     $actual_parameter = $this->request->cookies->get($parameter->name);
                 }
 
-                if ($actual_parameter) {
-                    if ($expected_parameter_schema->type && gettype($actual_parameter) !== $expected_parameter_schema->type) {
-                        $typeIsCorrect = true;
-                        switch ($expected_parameter_schema->type){
-                            case 'integer':
-                            case 'number':
-                                $typeIsCorrect = is_numeric($actual_parameter);
-                                break;
-                            case 'string':
-                                $typeIsCorrect = is_string($actual_parameter);
-                                break;
-                            case 'boolean':
-                                $typeIsCorrect = filter_var($actual_parameter, FILTER_VALIDATE_BOOLEAN) !== false;
-                                break;
-                        }
-                        if ($typeIsCorrect){
-                            settype($actual_parameter, $expected_parameter_schema->type);
-                        }
-                    }
+                if ($actual_parameter !== null) {
+                    $actual_parameter = $this->castParameter($actual_parameter, $expected_parameter_schema->type);
 
                     $result = $validator->validate($actual_parameter, $expected_parameter_schema);
 
@@ -152,6 +135,30 @@ class RequestValidator extends AbstractValidator
                 }
             }
         }
+    }
+
+    /**
+     * @param mixed $parameter
+     * @param string|null $type
+     * @return mixed
+     */
+    private function castParameter($parameter, ?string $type)
+    {
+        if ($type === null) {
+            return $parameter;
+        }
+
+        if ($type === 'integer' && filter_var($parameter, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null) {
+            return (int) $parameter;
+        } elseif ($type === 'number' && filter_var($parameter, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE) !== null) {
+            return (float) $parameter;
+        } elseif ($type === 'boolean' && filter_var($parameter, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) !== null) {
+            return filter_var($parameter, FILTER_VALIDATE_BOOLEAN);
+        } elseif ($type === 'string') {
+            return (string) $parameter;
+        }
+
+        return $parameter;
     }
 
     /**
