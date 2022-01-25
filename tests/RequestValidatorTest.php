@@ -467,7 +467,6 @@ class RequestValidatorTest extends TestCase
 
         $this->getJson('/users-by-id/1')
             ->assertValidRequest();
-
     }
 }
 

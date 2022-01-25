@@ -138,8 +138,8 @@ class RequestValidator extends AbstractValidator
     }
 
     /**
-     * @param mixed $parameter
-     * @param string|null $type
+     * @param  mixed  $parameter
+     * @param  string|null  $type
      * @return mixed
      */
     private function castParameter($parameter, ?string $type)
