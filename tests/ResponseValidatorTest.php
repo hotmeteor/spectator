@@ -5,6 +5,7 @@ namespace Spectator\Tests;
 use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Spectator\Middleware;
 use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
@@ -541,6 +542,49 @@ class ResponseValidatorTest extends TestCase
                 'All array items must match schema',
                 'The properties must match schema: id',
                 'The data (string) must match the type: number',
+            ]);
+    }
+
+    public function test_response_succeeds_with_empty_array()
+    {
+        Spectator::using('Arrays.v1.yaml');
+
+        $uuid = (string) Str::uuid();
+
+        Route::get('/orgs/{orgUuid}', function () use ($uuid) {
+            return [
+                'id' => $uuid,
+                'name' => 'My Org',
+                'orders' => [],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson("/orgs/{$uuid}")
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
+
+    public function test_response_fails_with_invalid_array()
+    {
+        Spectator::using('Arrays.v1.yaml');
+
+        $uuid = (string) Str::uuid();
+
+        Route::get('/orgs/{orgUuid}', function () use ($uuid) {
+            return [
+                'id' => $uuid,
+                'name' => 'My Org',
+                'orders' => [[]],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson("/orgs/{$uuid}")
+            ->assertValidRequest()
+            ->assertInvalidResponse()
+            ->assertErrorsContain([
+                'The properties must match schema: orders',
+                'All array items must match schema',
+                'The data (array) must match the type: object',
             ]);
     }
 }
