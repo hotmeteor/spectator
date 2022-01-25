@@ -61,7 +61,7 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_resolves_prefixed_path_from_inline_setting()
+    public function test_uses_global_path_via_inline_setting()
     {
         Spectator::setPathPrefix('v1')->using('Versioned.v1.json');
 
@@ -79,26 +79,49 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-public function test_uses_global_path()
-{
-    Config::set('spectator.path_prefix', 'v1');
+    public function test_uses_global_path_through_config()
+    {
+        Config::set('spectator.path_prefix', 'v1');
 
-    Spectator::using('Global.v1.yaml');
+        Spectator::using('Global.v1.yaml');
 
-    $uuid = (string) Str::uuid();
+        $uuid = (string) Str::uuid();
 
-    Route::get('/v1/orgs/{orgUuid}', function () use ($uuid) {
-        return [
-            'id' => 1,
-            'uuid' => $uuid,
-            'name' => 'My Org',
-        ];
-    })->middleware(Middleware::class);
+        Route::get('/v1/orgs/{orgUuid}', function () use ($uuid) {
+            return [
+                'id' => 1,
+                'uuid' => $uuid,
+                'name' => 'My Org',
+            ];
+        })->middleware(Middleware::class);
 
-    $this->getJson("/v1/orgs/{$uuid}")
-        ->assertValidRequest()
-        ->assertValidResponse(200);
-}
+        $this->getJson("/v1/orgs/{$uuid}")
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
+
+    public function test_uses_global_path_with_route_prefix()
+    {
+        Config::set('spectator.path_prefix', 'v1');
+
+        Spectator::using('Global.v1.yaml');
+
+        $uuid = (string) Str::uuid();
+
+        Route::prefix('v1')->group(function () use ($uuid) {
+            Route::get('/orgs/{orgUuid}', function () use ($uuid) {
+                return [
+                    'id' => 1,
+                    'uuid' => $uuid,
+                    'name' => 'My Org',
+                ];
+            })->middleware(Middleware::class);
+        });
+
+        $this->getJson("/v1/orgs/{$uuid}")
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
 
     public function test_resolve_route_model_binding()
     {
