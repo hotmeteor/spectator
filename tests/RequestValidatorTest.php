@@ -3,6 +3,7 @@
 namespace Spectator\Tests;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -463,6 +464,42 @@ class RequestValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->getJson('/users-by-id/1')
+            ->assertValidRequest();
+    }
+
+    public function test_handles_form_data()
+    {
+        Spectator::using('BinaryString.v1.json');
+
+        Route::post('/users', function () {
+            return [];
+        })->middleware(Middleware::class);
+
+        $this->post(
+            '/users',
+            ['name' => 'Adam Campbell', 'picture' => UploadedFile::fake()->image('test.jpg')],
+            ['Content-Type' => 'multipart/form-data']
+        )
+            ->assertInvalidRequest()
+            ->assertErrorsContain([
+                'The required properties (email) are missing',
+            ]);
+
+        $this->post(
+            '/users',
+            ['name' => 'Adam Campbell', 'email' => 'test@test.com'],
+            ['Content-Type' => 'multipart/form-data']
+        )
+            ->assertInvalidRequest()
+            ->assertErrorsContain([
+                'The required properties (picture) are missing',
+            ]);
+
+        $this->post(
+            '/users',
+            ['name' => 'Adam Campbell', 'email' => 'test@test.com', 'picture' => UploadedFile::fake()->image('test.jpg')],
+            ['Content-Type' => 'multipart/form-data']
+        )
             ->assertValidRequest();
     }
 }

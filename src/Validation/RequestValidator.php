@@ -5,6 +5,7 @@ namespace Spectator\Validation;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\PathItem;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
@@ -164,11 +165,11 @@ class RequestValidator extends AbstractValidator
         $expected_body_raw_schema = $expected_body->content[$content_type]->schema;
         $actual_body_schema = $actual_body;
         if ($expected_body_raw_schema->type === 'object' || $expected_body_raw_schema->type === 'array' || $expected_body_raw_schema->oneOf || $expected_body_raw_schema->anyOf) {
-            if (! in_array($content_type, ['application/json', 'application/vnd.api+json'])) {
-                throw new RequestValidationException("Unable to map [{$content_type}] to schema type [object].");
+            if (in_array($content_type, ['application/json', 'application/vnd.api+json'])) {
+                $actual_body_schema = json_decode($actual_body_schema);
+            } else {
+                $actual_body_schema = $this->parseBodySchema();
             }
-
-            $actual_body_schema = json_decode($actual_body_schema);
         }
         $expected_body_schema = $this->prepareData($expected_body_raw_schema);
 
@@ -191,5 +192,28 @@ class RequestValidator extends AbstractValidator
     protected function operation(): Operation
     {
         return $this->pathItem->{$this->method};
+    }
+
+    protected function parseBodySchema(): object
+    {
+        $body = array_merge_recursive(
+            $this->request->request->all(),
+            array_map(function (UploadedFile $file) {
+                return $file->get();
+            }, $this->request->allFiles())
+        );
+
+        return $this->toObject($body);
+    }
+
+    private function toObject($data)
+    {
+        if (! is_array($data)) {
+            return $data;
+        } elseif (is_numeric(key($data))) {
+            return array_map([$this, 'toObject'], $data);
+        } else {
+            return (object) array_map([$this, 'toObject'], $data);
+        }
     }
 }

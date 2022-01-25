@@ -1,0 +1,62 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Test.v1",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "post": {
+        "summary": "Create user",
+        "tags": [],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "operationId": "post-users",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Adam Campbell"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "test@test.com"
+                  },
+                  "picture": {
+                    "type": "string",
+                    "format": "binary",
+                    "example": "SGVsbG8gV29ybGQ="
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "picture"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}
