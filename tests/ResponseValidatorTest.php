@@ -587,4 +587,31 @@ class ResponseValidatorTest extends TestCase
                 'The data (array) must match the type: object',
             ]);
     }
+
+    public function test_response_without_request_validation()
+    {
+        Spectator::using('Test.v1.json');
+
+        $uuid = (string) Str::uuid();
+
+        Route::get('/posts/{postUuid}', function ($postUuid) use ($uuid) {
+            return (string) $postUuid === $uuid
+                ? response()->json([
+                    'id' => 1,
+                    'title' => 'My Blog Post',
+                ], 200)
+                : abort(404);
+        })->middleware(Middleware::class);
+
+        $this->getJson("/posts/{$uuid}")
+            ->assertValidResponse(200);
+
+        $invalidUuid = (string) Str::uuid();
+
+        $this->getJson("/posts/{$invalidUuid}")
+            ->assertValidResponse(404);
+
+        $this->getJson('/posts/nonsense')
+            ->assertValidResponse(404);
+    }
 }
