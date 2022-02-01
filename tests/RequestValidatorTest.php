@@ -555,8 +555,7 @@ class RequestValidatorTest extends TestCase
             return [];
         })->middleware(Middleware::class);
 
-        $this->withoutExceptionHandling()
-            ->post(
+        $this->post(
             '/users/multiple-files',
             [
                 'picture' => UploadedFile::fake()->image('test.jpg'),
@@ -564,6 +563,20 @@ class RequestValidatorTest extends TestCase
                     ['name' => 'test.jpg', 'file' => UploadedFile::fake()->image('test.jpg')],
                     ['name' => 'test.jpg', 'file' => UploadedFile::fake()->image('test.jpg')],
                 ],
+                'resume' => [
+                    'name' => 'test.pdf',
+                    'file' => UploadedFile::fake()->create('test.pdf'),
+                ]
+            ],
+            ['Content-Type' => 'multipart/form-data']
+        )
+            ->assertValidRequest();
+
+        $this->withoutExceptionHandling()->post(
+            '/users/multiple-files',
+            [
+                'picture' => UploadedFile::fake()->image('test.jpg'),
+                'files' => [],
                 'resume' => [
                     'name' => 'test.pdf',
                     'file' => UploadedFile::fake()->create('test.pdf'),

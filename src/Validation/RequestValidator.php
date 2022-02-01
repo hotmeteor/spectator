@@ -211,10 +211,10 @@ class RequestValidator extends AbstractValidator
     {
         if (! is_array($data)) {
             return $data;
-        } elseif (is_numeric(key($data))) {
-            return array_map([$this, 'toObject'], $data);
-        } else {
+        } elseif (Arr::isAssoc($data)) {
             return (object) array_map([$this, 'toObject'], $data);
+        } else {
+            return array_map([$this, 'toObject'], $data);
         }
     }
 }
