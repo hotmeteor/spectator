@@ -199,7 +199,7 @@ class RequestValidator extends AbstractValidator
     {
         $body = $this->request->all();
 
-        array_walk_recursive($body, function(&$value){
+        array_walk_recursive($body, function (&$value) {
             if ($value instanceof UploadedFile) {
                 $value = $value->get();
             }
