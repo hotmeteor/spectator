@@ -6,6 +6,7 @@ use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\PathItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
@@ -196,12 +197,12 @@ class RequestValidator extends AbstractValidator
 
     protected function parseBodySchema(): object
     {
-        $body = array_merge_recursive(
-            $this->request->request->all(),
-            array_map(function (UploadedFile $file) {
-                return $file->get();
-            }, $this->request->allFiles())
-        );
+        $body = Arr::undot(array_map(
+            function ($item) {
+                return $item instanceof UploadedFile ? $item->get() : $item;
+            },
+            Arr::dot($this->request->all())
+        ));
 
         return $this->toObject($body);
     }

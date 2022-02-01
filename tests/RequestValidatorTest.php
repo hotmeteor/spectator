@@ -546,6 +546,33 @@ class RequestValidatorTest extends TestCase
         )
             ->assertValidRequest();
     }
+
+    public function test_handles_form_data_with_multiple_files()
+    {
+        Spectator::using('BinaryString.v1.json');
+
+        Route::post('/users/multiple-files', function () {
+            return [];
+        })->middleware(Middleware::class);
+
+        $this->withoutExceptionHandling()
+            ->post(
+            '/users/multiple-files',
+            [
+                'picture' => UploadedFile::fake()->image('test.jpg'),
+                'files' => [
+                    ['name' => 'test.jpg', 'file' => UploadedFile::fake()->image('test.jpg')],
+                    ['name' => 'test.jpg', 'file' => UploadedFile::fake()->image('test.jpg')],
+                ],
+                'resume' => [
+                    'name' => 'test.pdf',
+                    'file' => UploadedFile::fake()->create('test.pdf'),
+                ]
+            ],
+            ['Content-Type' => 'multipart/form-data']
+        )
+            ->assertValidRequest();
+    }
 }
 
 class TestUser extends Model
