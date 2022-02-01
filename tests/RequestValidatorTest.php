@@ -566,7 +566,7 @@ class RequestValidatorTest extends TestCase
                 'resume' => [
                     'name' => 'test.pdf',
                     'file' => UploadedFile::fake()->create('test.pdf'),
-                ]
+                ],
             ],
             ['Content-Type' => 'multipart/form-data']
         )
@@ -580,7 +580,7 @@ class RequestValidatorTest extends TestCase
                 'resume' => [
                     'name' => 'test.pdf',
                     'file' => UploadedFile::fake()->create('test.pdf'),
-                ]
+                ],
             ],
             ['Content-Type' => 'multipart/form-data']
         )
