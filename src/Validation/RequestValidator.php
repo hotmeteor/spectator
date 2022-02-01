@@ -197,12 +197,13 @@ class RequestValidator extends AbstractValidator
 
     protected function parseBodySchema(): object
     {
-        $body = Arr::undot(array_map(
-            function ($item) {
-                return $item instanceof UploadedFile ? $item->get() : $item;
-            },
-            Arr::dot($this->request->all())
-        ));
+        $body = $this->request->all();
+
+        array_walk_recursive($body, function(&$value){
+            if ($value instanceof UploadedFile) {
+                $value = $value->get();
+            }
+        });
 
         return $this->toObject($body);
     }
