@@ -1,53 +1,53 @@
 {
-  "name": "hotmeteor/spectator",
-  "description": "Testing helpers for your OpenAPI spec",
-  "type": "library",
-  "license": "MIT",
-  "keywords": [
-    "laravel",
-    "spectator",
-    "openapi",
-    "testing"
-  ],
-  "authors": [
-    {
-      "name": "Adam Campbell",
-      "email": "adam@hotmeteor.com"
+    "name": "hotmeteor/spectator",
+    "description": "Testing helpers for your OpenAPI spec",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "spectator",
+        "openapi",
+        "testing"
+    ],
+    "authors": [
+        {
+            "name": "Adam Campbell",
+            "email": "adam@hotmeteor.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "ext-json": "*",
+        "cebe/php-openapi": "^1.5",
+        "laravel/framework": "^7.30.3|^8.40.0|^9.0",
+        "opis/json-schema": "^2.0"
+    },
+    "require-dev": {
+        "nunomaduro/collision": "^4.0|^5.1|^6.0",
+        "orchestra/testbench": "^5.0|^6.0|^7.0",
+        "phpunit/phpunit": "^8.0|^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Spectator\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Spectator\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Spectator\\SpectatorServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
     }
-  ],
-  "require": {
-    "php": "^7.4|^8.0",
-    "ext-json": "*",
-    "cebe/php-openapi": "^1.5",
-    "laravel/framework": "^7.30.3|^8.40.0",
-    "opis/json-schema": "^2.0"
-  },
-  "require-dev": {
-    "nunomaduro/collision": "^4.0|^5.1",
-    "orchestra/testbench": "^5.0|^6.0",
-    "phpunit/phpunit": "^8.0|^9.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Spectator\\": "src"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Spectator\\Tests\\": "tests/"
-    }
-  },
-  "scripts": {
-    "test": "vendor/bin/phpunit"
-  },
-  "extra": {
-    "laravel": {
-      "providers": [
-        "Spectator\\SpectatorServiceProvider"
-      ]
-    }
-  },
-  "config": {
-    "sort-packages": true
-  }
 }
