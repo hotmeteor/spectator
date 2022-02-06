@@ -13,9 +13,11 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        laravel: [ 7.30.*, 8.* ]
-        php: [ 7.4, 8.0 ]
+        laravel: [ 7.30.*, 8.* , 9.*]
+        php: [ 7.4, 8.0 , 8.0]
         include:
+          - laravel: 9.*
+            testbench: 7.*
           - laravel: 7.30.*
             testbench: 5.*
           - laravel: 8.*
