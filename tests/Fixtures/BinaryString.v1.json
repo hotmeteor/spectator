@@ -54,6 +54,81 @@
           }
         }
       }
+    },
+    "/users/multiple-files": {
+      "post": {
+        "summary": "Send multiple files in structure",
+        "tags": [],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          }
+        },
+        "operationId": "post-users-multiple-files",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "picture": {
+                    "type": "string",
+                    "format": "binary",
+                    "example": "SGVsbG8gV29ybGQ="
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "file.txt"
+                        },
+                        "file": {
+                          "type": "string",
+                          "format": "binary",
+                          "example": "SGVsbG8gV29ybGQ="
+                        },
+                        "required": [
+                          "name",
+                          "file"
+                        ]
+                      }
+                    }
+                  },
+                  "resume": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "example": "file.txt"
+                      },
+                      "file": {
+                        "type": "string",
+                        "format": "binary",
+                        "example": "SGVsbG8gV29ybGQ="
+                      },
+                      "required": [
+                        "name",
+                        "file"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "picture",
+                  "files",
+                  "resume"
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
