@@ -588,27 +588,33 @@ class ResponseValidatorTest extends TestCase
             ]);
     }
 
-    public function test_response_without_request_validation()
+    public function test_response_without_validating_route_model_binding()
     {
         Spectator::using('Test.v1.json');
 
         $uuid = (string) Str::uuid();
 
         Route::get('/posts/{postUuid}', function ($postUuid) use ($uuid) {
-            return (string) $postUuid === $uuid
-                ? response()->json([
-                    'id' => 1,
-                    'title' => 'My Blog Post',
-                ], 200)
-                : abort(404);
+            if ($postUuid !== $uuid) {
+                abort(404);
+            }
+
+            return [
+                'id' => 1,
+                'name' => 'My Org',
+                'orders' => [[]],
+            ];
         })->middleware(Middleware::class);
 
         $this->getJson("/posts/{$uuid}")
             ->assertValidResponse(200);
 
-        $invalidUuid = (string) Str::uuid();
+        $otherUuid = (string) Str::uuid();
 
-        $this->getJson("/posts/{$invalidUuid}")
+        $this->getJson("/posts/{$otherUuid}")
+            ->assertValidResponse(404);
+
+        $this->getJson('/posts/123456')
             ->assertValidResponse(404);
 
         $this->getJson('/posts/nonsense')
