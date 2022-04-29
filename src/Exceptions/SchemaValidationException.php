@@ -180,7 +180,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
         $polymorphic_keys = array_filter($keys_at_location, function ($key) {
             return $key == 'allOf' || $key == 'anyOf' || $key == 'oneOf';
         }, ARRAY_FILTER_USE_KEY);
-        $polymorphic_keys = array_flip($polymorphic_keys);
+        $polymorphic_keys = array_values(array_flip($polymorphic_keys));
 
         if (! empty($polymorphic_keys)) { // first, check for a polymorphic schema...
             $polymorphic_key = $polymorphic_keys[0];
