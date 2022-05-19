@@ -150,7 +150,7 @@ class ResponseValidator extends AbstractValidator
         $body = $this->response->getContent();
 
         if (in_array($schemaType, ['object', 'array', 'allOf', 'anyOf', 'oneOf'], true)) {
-            if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
+            if (in_array($contentType, ['application/json', 'application/problem+json', 'application/vnd.api+json'])) {
                 return json_decode($body);
             } else {
                 throw new ResponseValidationException("Unable to map [{$contentType}] to schema type [object].");
