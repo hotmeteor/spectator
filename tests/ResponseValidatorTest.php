@@ -5,6 +5,7 @@ namespace Spectator\Tests;
 use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
 use Spectator\Middleware;
 use Spectator\Spectator;
@@ -586,5 +587,23 @@ class ResponseValidatorTest extends TestCase
                 'All array items must match schema',
                 'The data (array) must match the type: object',
             ]);
+    }
+
+    public function test_validates_schema_problem_json_response_when_invalid()
+    {
+        Spectator::using('ProblemJson.yaml');
+        Route::get('/users', function () {
+            return Response::json([
+                'type' => 'about:blank',
+                'title' => 'Internal Server Error',
+                'status' => 500,
+                'details' => 'Error',
+                'instance' => '/users',
+            ], 500, ['Content-Type' => 'application/problem+json']);
+        })->middleware(Middleware::class);
+
+        $response = $this->getJson('/users');
+        $response->assertValidRequest()
+            ->assertValidResponse(500);
     }
 }
