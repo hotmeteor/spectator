@@ -1,0 +1,50 @@
+openapi: 3.0.0
+info:
+  title: Problem Json
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /users:
+    get:
+      summary: Get users
+      tags: []
+      responses:
+        '500':
+          description: "Error internal"
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                additionalProperties: true
+                minProperties: 5
+                description: >-
+                  The issue details in JSON format [[RFC7807](https://tools.ietf.org/html/rfc7807)].
+                properties:
+                  type:
+                    type: string
+                    description: >-
+                      A URL [[RFC3986](https://tools.ietf.org/html/rfc3986)] to a page with more details regarding the problem.
+                      Type is typically an absolute URL that leads to an HTML page containing human-readable documentation regarding the problem.
+                      When type is not provided (undefined) the consumers must assume that type equals about:blank.
+                  title:
+                    type: string
+                    description: >-
+                      Short human-readable summary of the problem.
+                      If type is specified then title should not equal the description of the HTTP status code.
+                      When type equals about:blank then title should equal the description of the HTTP status code.
+                  status:
+                    type: integer
+                    description: The HTTP status code.
+                    minimum: 400
+                    maximum: 599
+                  detail:
+                    type: string
+                    description: >-
+                      Human-readable description of this specific problem.
+                  instance:
+                    type: string
+                    description: >-
+                      A URI that describes where the problem occurred.
+components:
+  schemas: {}
