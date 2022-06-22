@@ -23,6 +23,19 @@ paths:
                     type: string
                   email:
                     type: string
+        '422':
+          description: Unprocessable entity
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
       operationId: get-users
       parameters:
         - schema:

@@ -56,6 +56,48 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "description": "User ID",
+                        "example": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "User name",
+                        "example": "Adam Campbell"
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "User email address",
+                        "format": "email",
+                        "example": "test@test.com"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": [
+                      {
+                        "id": 1,
+                        "name": "Adam Campbell",
+                        "email": "test@test.com"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
           }
         },
         "operationId": "get-users",
