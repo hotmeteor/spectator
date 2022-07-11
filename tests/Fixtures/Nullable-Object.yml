@@ -26,6 +26,9 @@ components:
       properties:
         name:
           type: string
+        age:
+          type: integer
+          nullable: true
     Pet:
       type: object
       properties:

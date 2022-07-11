@@ -613,6 +613,7 @@ class RequestValidatorTest extends TestCase
         return [
             [['name' => 'dog', 'friend' => null], true],
             [['name' => 'dog', 'friend' => ['name' => 'Alice']], true],
+            [['name' => 'dog', 'friend' => ['name' => 'Alice', 'age' => null]], true],
         ];
     }
 }

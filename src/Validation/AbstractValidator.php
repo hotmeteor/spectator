@@ -66,8 +66,13 @@ abstract class AbstractValidator
                     $type = Arr::wrap($attributes->type ?? null);
                     $type[] = 'null';
                     $attributes->type = array_unique($type);
-                    unset($attributes->nullable);
                 }
+                unset($attributes->nullable);
+            }
+
+            // anyOf -> recurse ...
+            if (isset($attributes->anyOf)) {
+                $attributes->anyOf = $this->wrapAttributesToArray($attributes->anyOf);
             }
 
             // Before we check recursive cases, make sure this object defines a "type".
