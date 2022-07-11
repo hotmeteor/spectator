@@ -60,10 +60,14 @@ abstract class AbstractValidator
             // Does this object define "nullable"? If so, unset "nullable" and include "null"
             // in array of possible types (e.g. "type" => [..., "null"]).
             if (isset($attributes->nullable)) {
-                $type = Arr::wrap($attributes->type);
-                $type[] = 'null';
-                $attributes->type = array_unique($type);
-                unset($attributes->nullable);
+                if (isset($attributes->anyOf)) {
+                    $attributes->anyOf[] = (object) ['type' => 'null'];
+                } else {
+                    $type = Arr::wrap($attributes->type ?? null);
+                    $type[] = 'null';
+                    $attributes->type = array_unique($type);
+                    unset($attributes->nullable);
+                }
             }
 
             // Before we check recursive cases, make sure this object defines a "type".

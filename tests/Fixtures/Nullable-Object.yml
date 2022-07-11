@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: Nullable-Object.v1
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /pets:
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+components:
+  schemas:
+    Human:
+      type: object
+      properties:
+        name:
+          type: string
+    Pet:
+      type: object
+      properties:
+        name:
+          type: string
+        friend:
+          nullable: true
+          anyOf:
+            - $ref: '#/components/schemas/Human'
