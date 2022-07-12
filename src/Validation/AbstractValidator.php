@@ -87,12 +87,15 @@ abstract class AbstractValidator
 
             // This object is an array of sub-objects, recurse...
             if (
-                $attributes->type === 'array'
-                && isset($attributes->items)
-                && isset($attributes->items->properties)
-                && $attributes->items->type === 'object'
+                isset($attributes->items, $attributes->items->properties) && $attributes->type === 'array' && $attributes->items->type === 'object'
             ) {
                 $attributes->items->properties = $this->wrapAttributesToArray($attributes->items->properties);
+            }
+            // This object is an array of anyOf, recurse...
+            if (
+                isset($attributes->items, $attributes->items->anyOf) && $attributes->type === 'array'
+            ) {
+                $attributes->items->anyOf = $this->wrapAttributesToArray($attributes->items->anyOf);
             }
         }
 

@@ -21,9 +21,9 @@ class ResponseValidatorTest extends TestCase
         Spectator::using('Test.v1.json');
     }
 
-    public function test_validates_valid_json_response()
+    public function test_validates_valid_json_response(): void
     {
-        Route::get('/users', function () {
+        Route::get('/users', static function () {
             return [
                 [
                     'id' => 1,
@@ -38,9 +38,9 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function test_validates_invalid_json_response()
+    public function test_validates_invalid_json_response(): void
     {
-        Route::get('/users', function () {
+        Route::get('/users', static function () {
             return [
                 [
                     'id' => 'invalid',
@@ -53,7 +53,7 @@ class ResponseValidatorTest extends TestCase
             ->assertInvalidResponse(400)
             ->assertValidationMessage('All array items must match schema');
 
-        Route::get('/users', function () {
+        Route::get('/users', static function () {
             return [
                 [
                     'id' => 1,
@@ -68,11 +68,11 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('All array items must match schema');
     }
 
-    public function test_fallback_to_request_uri_if_operationId_not_given()
+    public function test_fallback_to_request_uri_if_operationId_not_given(): void
     {
         Spectator::using('Test.v1.json');
 
-        Route::get('/path-without-operationId', function () {
+        Route::get('/path-without-operationId', static function () {
             return [
                 'int' => 'not an int',
             ];
@@ -83,11 +83,11 @@ class ResponseValidatorTest extends TestCase
             ->assertInvalidResponse(400);
     }
 
-    public function test_cannot_locate_path_without_path_prefix()
+    public function test_cannot_locate_path_without_path_prefix(): void
     {
         Spectator::using('Test.v2.json');
 
-        Route::get('/api/v2/users', function () {
+        Route::get('/api/v2/users', static function () {
             return [
                 [
                     'id' => 1,
@@ -110,7 +110,7 @@ class ResponseValidatorTest extends TestCase
 
     public function test_uncaught_exceptions_are_thrown_when_exception_handling_is_disabled(): void
     {
-        Route::get('/users', function () {
+        Route::get('/users', static function () {
             throw new Exception('Something went wrong in the codebase!');
         })->middleware(Middleware::class);
 
@@ -132,10 +132,10 @@ class ResponseValidatorTest extends TestCase
         $version,
         $state,
         $is_valid
-    ) {
-        Spectator::using("Nullable.{$version}.json");
+    ): void {
+        Spectator::using("Nullable.$version.json");
 
-        Route::get('/users/{user}', function () use ($state) {
+        Route::get('/users/{user}', static function () use ($state) {
             $return = [
                 'first_name' => 'Joe',
                 'last_name' => 'Bloggs',
@@ -183,7 +183,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function nullableProvider()
+    public function nullableProvider(): array
     {
         $validResponse = true;
         $invalidResponse = false;
@@ -260,11 +260,11 @@ class ResponseValidatorTest extends TestCase
      * @dataProvider oneOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_oneOf($response, $valid)
+    public function test_handles_oneOf($response, $valid): void
     {
         Spectator::using('OneOf.v1.yml');
 
-        Route::patch('/pets', function () use ($response) {
+        Route::patch('/pets', static function () use ($response) {
             return $response;
         })->middleware(Middleware::class);
 
@@ -282,7 +282,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function oneOfSchemaProvider()
+    public function oneOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -325,11 +325,11 @@ class ResponseValidatorTest extends TestCase
      * @dataProvider anyOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_anyOf($response, $isValid)
+    public function test_handles_anyOf($response, $isValid): void
     {
         Spectator::using('AnyOf.v1.yml');
 
-        Route::patch('/pets', function () use ($response) {
+        Route::patch('/pets', static function () use ($response) {
             return $response;
         })->middleware(Middleware::class);
 
@@ -346,7 +346,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function anyOfSchemaProvider()
+    public function anyOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -387,11 +387,11 @@ class ResponseValidatorTest extends TestCase
      * @dataProvider allOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_allOf($response, $isValid)
+    public function test_handles_allOf($response, $isValid): void
     {
         Spectator::using('AllOf.v1.yml');
 
-        Route::patch('/pets', function () use ($response) {
+        Route::patch('/pets', static function () use ($response) {
             return $response;
         })->middleware(Middleware::class);
 
@@ -410,7 +410,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function allOfSchemaProvider()
+    public function allOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -455,7 +455,7 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    public function test_handles_invalid_spec()
+    public function test_handles_invalid_spec(): void
     {
         Spectator::using('Malformed.v1.yaml');
 
@@ -468,11 +468,11 @@ class ResponseValidatorTest extends TestCase
     }
 
     // https://swagger.io/docs/specification/data-models/inheritance-and-polymorphism/
-    public function test_handles_inheritance()
+    public function test_handles_inheritance(): void
     {
         Spectator::using('Components.v1.json');
 
-        Route::get('/item', function () {
+        Route::get('/item', static function () {
             return [
                 'name' => 'Table',
             ];
@@ -482,7 +482,7 @@ class ResponseValidatorTest extends TestCase
             ->assertValidRequest()
             ->assertInvalidResponse();
 
-        Route::get('/item', function () {
+        Route::get('/item', static function () {
             return [
                 'name' => 'Table',
                 'type' => 1234,
@@ -496,11 +496,11 @@ class ResponseValidatorTest extends TestCase
     }
 
     // https://www.loom.com/share/63191fee2b45421db266dcd012579cb3
-    public function test_response_example()
+    public function test_response_example(): void
     {
         Spectator::using('Test.v2.json');
 
-        Route::get('/tags', function () {
+        Route::get('/tags', static function () {
             return [
                 'status' => 'success',
                 'data' => [
@@ -524,9 +524,9 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function test_errors_contain()
+    public function test_errors_contain(): void
     {
-        Route::get('/users', function () {
+        Route::get('/users', static function () {
             return [
                 [
                     'id' => 'invalid',
@@ -545,13 +545,13 @@ class ResponseValidatorTest extends TestCase
             ]);
     }
 
-    public function test_response_succeeds_with_empty_array()
+    public function test_response_succeeds_with_empty_array(): void
     {
         Spectator::using('Arrays.v1.yaml');
 
         $uuid = (string) Str::uuid();
 
-        Route::get('/orgs/{orgUuid}', function () use ($uuid) {
+        Route::get('/orgs/{orgUuid}', static function () use ($uuid) {
             return [
                 'id' => $uuid,
                 'name' => 'My Org',
@@ -559,18 +559,18 @@ class ResponseValidatorTest extends TestCase
             ];
         })->middleware(Middleware::class);
 
-        $this->getJson("/orgs/{$uuid}")
+        $this->getJson("/orgs/$uuid")
             ->assertValidRequest()
             ->assertValidResponse(200);
     }
 
-    public function test_response_fails_with_invalid_array()
+    public function test_response_fails_with_invalid_array(): void
     {
         Spectator::using('Arrays.v1.yaml');
 
         $uuid = (string) Str::uuid();
 
-        Route::get('/orgs/{orgUuid}', function () use ($uuid) {
+        Route::get('/orgs/{orgUuid}', static function () use ($uuid) {
             return [
                 'id' => $uuid,
                 'name' => 'My Org',
@@ -578,7 +578,7 @@ class ResponseValidatorTest extends TestCase
             ];
         })->middleware(Middleware::class);
 
-        $this->getJson("/orgs/{$uuid}")
+        $this->getJson("/orgs/$uuid")
             ->assertValidRequest()
             ->assertInvalidResponse()
             ->assertErrorsContain([
@@ -586,5 +586,22 @@ class ResponseValidatorTest extends TestCase
                 'All array items must match schema',
                 'The data (array) must match the type: object',
             ]);
+    }
+
+    public function test_array_any_of(): void
+    {
+        Spectator::using('ArrayAnyOf.v1.yaml');
+
+        Route::patch('/pets', static function () {
+            return [
+                // PetByAge
+                ['age' => 5, 'nickname' => 'nick'],
+                // PetByType
+                ['pet_type' => 'Dog', 'hunts' => false],
+            ];
+        })->middleware(Middleware::class);
+
+        $response = $this->getJson('/pets');
+        $response->assertValidResponse();
     }
 }
