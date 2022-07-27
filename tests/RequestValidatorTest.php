@@ -637,7 +637,7 @@ class RequestValidatorTest extends TestCase
             ->assertValidResponse();
 
         $this->getJson('/posts/invalid')
-            ->assertValidRequest()
+            ->assertInvalidRequest()
             ->assertValidResponse();
 
         Spectator::skipRequestValidation();

@@ -11,17 +11,26 @@ use Spectator\Exceptions\MissingSpecException;
 
 class RequestFactory
 {
-    /*
-     * @method static void assertValidRequest()
-     */
     use Macroable;
 
+    /**
+     * @var string|null
+     */
     protected ?string $specName = null;
 
+    /**
+     * @var string|null
+     */
     protected ?string $pathPrefix = null;
 
+    /**
+     * @var bool
+     */
     protected bool $validateRequest = true;
 
+    /**
+     * @var array
+     */
     private array $cachedSpecs = [];
 
     /**
@@ -72,11 +81,9 @@ class RequestFactory
      *
      * return RequestFactory
      */
-    public function reset(): self
+    public function reset(): void
     {
         $this->specName = null;
-
-        return $this;
     }
 
     /**
@@ -110,6 +117,7 @@ class RequestFactory
     {
         if ($this->specName) {
             $file = $this->getFile();
+
             if ($this->cachedSpecs[$file] ?? null) {
                 return $this->cachedSpecs[$file];
             }
@@ -153,7 +161,7 @@ class RequestFactory
     /**
      * Retrieve a local spec file.
      *
-     * @param  array  $source
+     * @param array $source
      * @param $file
      * @return string
      *
@@ -175,7 +183,7 @@ class RequestFactory
     /**
      * Retrieve a remote spec file.
      *
-     * @param  array  $source
+     * @param array $source
      * @param $file
      * @return string
      */
@@ -193,7 +201,7 @@ class RequestFactory
     /**
      * Build a Github path.
      *
-     * @param  array  $source
+     * @param array $source
      * @param $file
      * @return string
      */

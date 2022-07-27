@@ -67,7 +67,7 @@ class Middleware
         }
 
         try {
-            $response = $this->validate($request, $next);
+            return $this->validate($request, $next);
         } catch (InvalidPathException $exception) {
             return $this->formatResponse($exception, 422);
         } catch (RequestValidationException|ResponseValidationException $exception) {
@@ -83,8 +83,6 @@ class Middleware
 
             throw $exception;
         }
-
-        return $response;
     }
 
     /**
@@ -115,7 +113,7 @@ class Middleware
      * @throws TypeErrorException
      * @throws UnresolvableReferenceException
      * @throws IOException
-     * @throws InvalidJsonPointerSyntaxException
+     * @throws InvalidJsonPointerSyntaxException|Exceptions\SchemaValidationException
      */
     protected function validate(Request $request, Closure $next)
     {
@@ -139,8 +137,6 @@ class Middleware
             $pathItem->{strtolower($request->method())},
             $this->version
         );
-
-        $this->spectator->reset();
 
         return $response;
     }

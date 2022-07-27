@@ -55,7 +55,7 @@ class RequestValidator extends AbstractValidator
      * @param  PathItem  $pathItem
      * @param  string  $method
      *
-     * @throws RequestValidationException
+     * @throws RequestValidationException|SchemaValidationException
      */
     public static function validate(Request $request, PathItem $pathItem, string $method)
     {
@@ -65,7 +65,7 @@ class RequestValidator extends AbstractValidator
     }
 
     /**
-     * @throws RequestValidationException
+     * @throws RequestValidationException|SchemaValidationException
      */
     protected function handle()
     {
@@ -130,10 +130,12 @@ class RequestValidator extends AbstractValidator
                     $result = $validator->validate($actual_parameter, $expected_parameter_schema);
 
                     // If the result is not valid, then display failure reason.
-                    if ($result instanceof ValidationResult && $result->isValid() === false) {
-                        $message = RequestValidationException::validationErrorMessage($expected_parameter_schema, $result->error());
-                        throw RequestValidationException::withError($message, $result->error());
-                    } elseif ($result->isValid() === false) {
+                    if ($result->isValid() === false) {
+                        if ($result instanceof ValidationResult) {
+                            $message = RequestValidationException::validationErrorMessage($expected_parameter_schema, $result->error());
+                            throw RequestValidationException::withError($message, $result->error());
+                        }
+
                         throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->error());
                     }
                 }
@@ -152,8 +154,6 @@ class RequestValidator extends AbstractValidator
         // If required, then body should be non-empty.
         if ($expected_body->required === true && empty($actual_body)) {
             throw new RequestValidationException('Request body required.');
-
-            return;
         }
 
         // Content types should match.
