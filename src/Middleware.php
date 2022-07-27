@@ -23,10 +23,19 @@ use Spectator\Validation\ResponseValidator;
 
 class Middleware
 {
+    /**
+     * @var ExceptionHandler
+     */
     protected ExceptionHandler $exceptionHandler;
 
+    /**
+     * @var RequestFactory
+     */
     protected RequestFactory $spectator;
 
+    /**
+     * @var string
+     */
     protected string $version = '3.0';
 
     /**
@@ -172,6 +181,10 @@ class Middleware
         throw new InvalidPathException("Path [{$request_method} {$request_path}] not found in spec.", 404);
     }
 
+    /**
+     * @param string $path
+     * @return string
+     */
     protected function resolvePath(string $path): string
     {
         $separator = '/';
