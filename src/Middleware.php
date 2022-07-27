@@ -172,11 +172,7 @@ class Middleware
         throw new InvalidPathException("Path [{$request_method} {$request_path}] not found in spec.", 404);
     }
 
-    /**
-     * @param $path
-     * @return string
-     */
-    protected function resolvePath($path): string
+    protected function resolvePath(string $path): string
     {
         $separator = '/';
 
