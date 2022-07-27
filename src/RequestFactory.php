@@ -20,7 +20,9 @@ class RequestFactory
 
     protected ?string $pathPrefix = null;
 
-    private array $cached_specs = [];
+    protected bool $validateRequest = true;
+
+    private array $cachedSpecs = [];
 
     /**
      * Set the file name of the spec.
@@ -78,6 +80,22 @@ class RequestFactory
     }
 
     /**
+     * @return void
+     */
+    public function skipRequestValidation(): void
+    {
+        $this->validateRequest = false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldValidateRequest(): bool
+    {
+        return $this->validateRequest;
+    }
+
+    /**
      * Resolve and parse the spec.
      *
      * @return OpenApi
@@ -92,16 +110,16 @@ class RequestFactory
     {
         if ($this->specName) {
             $file = $this->getFile();
-            if ($this->cached_specs[$file] ?? null) {
-                return $this->cached_specs[$file];
+            if ($this->cachedSpecs[$file] ?? null) {
+                return $this->cachedSpecs[$file];
             }
 
             switch (strtolower(pathinfo($this->specName, PATHINFO_EXTENSION))) {
                 case 'json':
-                    return $this->cached_specs[$file] = Reader::readFromJsonFile($file);
+                    return $this->cachedSpecs[$file] = Reader::readFromJsonFile($file);
                 case 'yml':
                 case 'yaml':
-                    return $this->cached_specs[$file] = Reader::readFromYamlFile($file);
+                    return $this->cachedSpecs[$file] = Reader::readFromYamlFile($file);
             }
         }
 
@@ -137,21 +155,21 @@ class RequestFactory
      *
      * @param  array  $source
      * @param $file
-     * @return false|string
+     * @return string
      *
      * @throws MissingSpecException
      */
-    protected function getLocalPath(array $source, $file)
+    protected function getLocalPath(array $source, $file): string
     {
         $path = $this->standardizePath($source['base_path']);
 
         $path = realpath("{$path}{$file}");
 
-        if (! file_exists($path)) {
-            throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
+        if (file_exists($path)) {
+            return $path;
         }
 
-        return $path;
+        throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
     }
 
     /**
@@ -161,7 +179,7 @@ class RequestFactory
      * @param $file
      * @return string
      */
-    protected function getRemotePath(array $source, $file)
+    protected function getRemotePath(array $source, $file): string
     {
         $path = $this->standardizePath($source['base_path']);
 
@@ -179,7 +197,7 @@ class RequestFactory
      * @param $file
      * @return string
      */
-    protected function getGithubPath(array $source, $file)
+    protected function getGithubPath(array $source, $file): string
     {
         $path = "https://{$source['token']}@raw.githubusercontent.com/{$source['repo']}/{$source['base_path']}/{$file}";
 
@@ -192,7 +210,7 @@ class RequestFactory
      * @param $file
      * @return string
      */
-    protected function standardizeFileName($file)
+    protected function standardizeFileName($file): string
     {
         if (Str::startsWith($file, '/')) {
             $file = Str::replaceFirst('/', '', $file);
@@ -205,9 +223,9 @@ class RequestFactory
      * Standardize a path.
      *
      * @param $path
-     * @return mixed|string
+     * @return string
      */
-    protected function standardizePath($path)
+    protected function standardizePath($path): string
     {
         if (! Str::endsWith($path, '/')) {
             $path = $path.'/';

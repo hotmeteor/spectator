@@ -616,6 +616,40 @@ class RequestValidatorTest extends TestCase
             [['name' => 'dog', 'friend' => ['name' => 'Alice', 'age' => null]], true],
         ];
     }
+
+    public function test_skip_request_validation(): void
+    {
+        Spectator::using('Test.v1.json');
+
+        Route::bind('postUuid', TestUser::class);
+
+        $uuid = Str::uuid();
+
+        Route::get('/posts/{postUuid}', function () {
+            return [
+                'id' => 1,
+                'title' => 'My Post',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson("/posts/{$uuid}")
+            ->assertValidRequest()
+            ->assertValidResponse();
+
+        $this->getJson('/posts/invalid')
+            ->assertValidRequest()
+            ->assertValidResponse();
+
+        Spectator::skipRequestValidation();
+
+        $this->getJson("/posts/{$uuid}")
+            ->assertValidRequest()
+            ->assertValidResponse();
+
+        $this->getJson('/posts/invalid')
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
 }
 
 class TestUser extends Model

@@ -12,8 +12,6 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 trait HasExpectations
 {
-    protected $tableStyle;
-
     public function expectsFalse()
     {
         return function ($contents, array $exceptions) {

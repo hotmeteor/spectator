@@ -140,6 +140,13 @@ class Assertions
         };
     }
 
+    public function skipRequestValidation()
+    {
+        return function () {
+            Spectator::skipRequestValidation();
+        };
+    }
+
     protected function runAssertion()
     {
         return function (Closure $closure) {

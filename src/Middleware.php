@@ -41,8 +41,8 @@ class Middleware
     /**
      * Middleware constructor.
      *
-     * @param  RequestFactory  $spectator
-     * @param  ExceptionHandler  $exceptionHandler
+     * @param RequestFactory $spectator
+     * @param ExceptionHandler $exceptionHandler
      */
     public function __construct(RequestFactory $spectator, ExceptionHandler $exceptionHandler)
     {
@@ -51,8 +51,8 @@ class Middleware
     }
 
     /**
-     * @param  Request  $request
-     * @param  Closure  $next
+     * @param Request $request
+     * @param Closure $next
      * @return JsonResponse|Request
      *
      * @throws InvalidPathException
@@ -105,8 +105,8 @@ class Middleware
     }
 
     /**
-     * @param  Request  $request
-     * @param  Closure  $next
+     * @param Request $request
+     * @param Closure $next
      * @return mixed
      *
      * @throws InvalidPathException
@@ -123,11 +123,13 @@ class Middleware
 
         $pathItem = $this->pathItem($request_path, $request->method());
 
-        RequestValidator::validate(
-            $request,
-            $pathItem,
-            $request->method()
-        );
+        if ($this->spectator->shouldValidateRequest()) {
+            RequestValidator::validate(
+                $request,
+                $pathItem,
+                $request->method()
+            );
+        }
 
         $response = $next($request);
 

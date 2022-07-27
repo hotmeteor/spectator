@@ -23,6 +23,7 @@ class SpectatorServiceProvider extends ServiceProvider
         $this->mergeConfig();
 
         $this->app->singleton(RequestFactory::class);
+        $this->app->alias(RequestFactory::class, 'spectator');
     }
 
     protected function mergeConfig()

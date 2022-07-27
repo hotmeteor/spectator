@@ -5,24 +5,28 @@ namespace Spectator;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static void using($name): void
- * @method static void reset(): void
- * @method static string getSpec(): string
- * @method static string getPathPrefix(): string
- * @method static RequestFactory setPathPrefix($prefix): RequestFactory
- * @method static object resolve(): SpecObjectInterface
+ * @method static void using($name) Set the spec file to use
+ * @method static void reset() Reset the Spectator instance
+ * @method static string getSpec() Get the spec being used
+ * @method static string getPathPrefix() Get the path prefix being used
+ * @method static RequestFactory setPathPrefix($prefix) Set the path prefix being used
+ * @method static object resolve() Resolve the spec into an object
+ * @method static void skipRequestValidation() Disable request validation
+ * @method bool shouldValidateRequest() Indicate if request should be validated
  *
  * @see \Spectator\RequestFactory
  */
 class Spectator extends Facade
 {
     /**
-     * @method static void using($name): void
-     * @method static void reset(): void
-     * @method static string getSpec(): string|null
-     * @method static string getPathPrefix(): string
-     * @method static RequestFactory setPathPrefix($prefix): RequestFactory
-     * @method static object resolve(): SpecObjectInterface
+     * @method static void using($name) Set the spec file to use
+     * @method static void reset() Reset the Spectator instance
+     * @method static string getSpec() Get the spec being used
+     * @method static string getPathPrefix() Get the path prefix being used
+     * @method static RequestFactory setPathPrefix($prefix) Set the path prefix being used
+     * @method static object resolve() Resolve the spec into an object
+     * @method static void skipRequestValidation() Disable request validation
+     * @method bool shouldValidateRequest() Indicate if request should be validated
      *
      * @see \Spectator\RequestFactory
      */
