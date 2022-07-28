@@ -137,7 +137,7 @@ class RequestFactory
     }
 
     /**
-     * @param Throwable $throwable
+     * @param  Throwable  $throwable
      * @return void
      */
     public function captureRequestValidation(Throwable $throwable)
@@ -146,7 +146,7 @@ class RequestFactory
     }
 
     /**
-     * @param Throwable $throwable
+     * @param  Throwable  $throwable
      * @return void
      */
     public function captureResponseValidation(Throwable $throwable)
