@@ -13,11 +13,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
-use Spectator\Exceptions\InvalidMethodException;
 use Spectator\Exceptions\InvalidPathException;
+use Spectator\Exceptions\MalformedSpecException;
 use Spectator\Exceptions\MissingSpecException;
 use Spectator\Exceptions\RequestValidationException;
-use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Validation\RequestValidator;
 use Spectator\Validation\ResponseValidator;
 
@@ -41,8 +40,8 @@ class Middleware
     /**
      * Middleware constructor.
      *
-     * @param  RequestFactory  $spectator
-     * @param  ExceptionHandler  $exceptionHandler
+     * @param RequestFactory $spectator
+     * @param ExceptionHandler $exceptionHandler
      */
     public function __construct(RequestFactory $spectator, ExceptionHandler $exceptionHandler)
     {
@@ -51,8 +50,8 @@ class Middleware
     }
 
     /**
-     * @param  Request  $request
-     * @param  Closure  $next
+     * @param Request $request
+     * @param Closure $next
      * @return JsonResponse|Request
      *
      * @throws InvalidPathException
@@ -62,27 +61,23 @@ class Middleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (! $this->spectator->getSpec()) {
-            return $next($request);
-        }
+        $response = $next($request);
 
-        try {
-            return $this->validate($request, $next);
-        } catch (InvalidPathException $exception) {
-            return $this->formatResponse($exception, 422);
-        } catch (RequestValidationException|ResponseValidationException $exception) {
-            return $this->formatResponse($exception, 400);
-        } catch (InvalidMethodException $exception) {
-            return $this->formatResponse($exception, 405);
-        } catch (MissingSpecException|UnresolvableReferenceException|TypeErrorException $exception) {
-            return $this->formatResponse($exception, 500);
-        } catch (\Throwable $exception) {
-            if ($this->exceptionHandler->shouldReport($exception)) {
-                return $this->formatResponse($exception, 500);
+        if ($this->spectator->getSpec()) {
+            try {
+                $response = $this->validate($request, $next);
+            } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
+                $this->spectator->captureRequestValidation($exception);
+            } catch (\Throwable $exception) {
+                if ($this->exceptionHandler->shouldReport($exception)) {
+                    return $this->formatResponse($exception, 500);
+                }
+
+                throw $exception;
             }
-
-            throw $exception;
         }
+
+        return $response;
     }
 
     /**
@@ -103,17 +98,17 @@ class Middleware
     }
 
     /**
-     * @param  Request  $request
-     * @param  Closure  $next
+     * @param Request $request
+     * @param Closure $next
      * @return mixed
      *
      * @throws InvalidPathException
+     * @throws MalformedSpecException
      * @throws MissingSpecException
-     * @throws RequestValidationException
      * @throws TypeErrorException
      * @throws UnresolvableReferenceException
      * @throws IOException
-     * @throws InvalidJsonPointerSyntaxException|Exceptions\SchemaValidationException
+     * @throws InvalidJsonPointerSyntaxException
      */
     protected function validate(Request $request, Closure $next)
     {
@@ -121,22 +116,28 @@ class Middleware
 
         $pathItem = $this->pathItem($request_path, $request->method());
 
-        if ($this->spectator->shouldValidateRequest()) {
+        try {
             RequestValidator::validate(
                 $request,
                 $pathItem,
                 $request->method()
             );
+        } catch (\Exception $exception) {
+            $this->spectator->captureRequestValidation($exception);
         }
 
         $response = $next($request);
 
-        ResponseValidator::validate(
-            $request_path,
-            $response,
-            $pathItem->{strtolower($request->method())},
-            $this->version
-        );
+        try {
+            ResponseValidator::validate(
+                $request_path,
+                $response,
+                $pathItem->{strtolower($request->method())},
+                $this->version
+            );
+        } catch (\Exception $exception) {
+            $this->spectator->captureResponseValidation($exception);
+        }
 
         return $response;
     }
@@ -147,6 +148,7 @@ class Middleware
      * @return PathItem
      *
      * @throws InvalidPathException
+     * @throws MalformedSpecException
      * @throws MissingSpecException
      * @throws TypeErrorException
      * @throws UnresolvableReferenceException
@@ -180,7 +182,7 @@ class Middleware
     }
 
     /**
-     * @param  string  $path
+     * @param string $path
      * @return string
      */
     protected function resolvePath(string $path): string

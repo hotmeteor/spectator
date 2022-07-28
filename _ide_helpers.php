@@ -15,6 +15,7 @@ namespace Illuminate\Testing {
      * @method static assertInvalidResponse($status = null)
      * @method static assertValidationMessage($expected)
      * @method static assertErrorsContain($errors)
+     * @method static dumpSpecErrors()
      * @method static void skipRequestValidation()
      */
     class TestResponse

@@ -487,14 +487,22 @@ class RequestValidatorTest extends TestCase
             return [];
         })->middleware(Middleware::class);
 
-        $this->getJson('/users?order=invalid')
-            ->assertInvalidRequest()
-            ->assertErrorsContain([
-                'The data should match one item from enum',
-            ]);
+        $this->get('/users?order=invalid')
+            ->assertValidationMessage('The data should match one item from enum')
+            ->assertInvalidRequest();
 
-        $this->getJson('/users?order=name')
+        $this->get('/users?order=')
             ->assertValidRequest();
+
+        $this->get('/users?order=name')
+            ->assertValidRequest();
+
+        $this->get('/users?order=email')
+            ->assertValidRequest();
+
+        $this->get('/users?order=email,name')
+            ->assertValidationMessage('The data should match one item from enum')
+            ->assertInvalidRequest();
     }
 
     public function test_handles_query_parameters_int(): void
@@ -617,7 +625,7 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    public function test_skip_request_validation(): void
+    public function test_ignores_request_validation_if_not_asserted(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -640,14 +648,10 @@ class RequestValidatorTest extends TestCase
             ->assertInvalidRequest()
             ->assertValidResponse();
 
-        Spectator::skipRequestValidation();
-
         $this->getJson("/posts/{$uuid}")
-            ->assertValidRequest()
             ->assertValidResponse();
 
         $this->getJson('/posts/invalid')
-            ->assertValidRequest()
             ->assertValidResponse();
     }
 }

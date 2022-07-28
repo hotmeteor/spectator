@@ -35,7 +35,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/users')
             ->assertValidRequest()
-            ->assertValidResponse(200);
+            ->assertValidResponse();
     }
 
     public function test_validates_invalid_json_response(): void
@@ -50,7 +50,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/users')
             ->assertValidRequest()
-            ->assertInvalidResponse(400)
+            ->assertInvalidResponse()
             ->assertValidationMessage('All array items must match schema');
 
         Route::get('/users', static function () {
@@ -64,7 +64,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/users')
             ->assertValidRequest()
-            ->assertInvalidResponse(400)
+            ->assertInvalidResponse()
             ->assertValidationMessage('All array items must match schema');
     }
 
@@ -80,7 +80,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/path-without-operationId')
             ->assertValidRequest()
-            ->assertInvalidResponse(400);
+            ->assertInvalidResponse();
     }
 
     public function test_cannot_locate_path_without_path_prefix(): void
@@ -105,7 +105,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/api/v2/users')
             ->assertValidRequest()
-            ->assertValidResponse(200);
+            ->assertValidResponse();
     }
 
     public function test_uncaught_exceptions_are_thrown_when_exception_handling_is_disabled(): void
@@ -536,7 +536,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/users')
             ->assertValidRequest()
-            ->assertInvalidResponse(400)
+            ->assertInvalidResponse()
             ->assertValidationMessage('All array items must match schema')
             ->assertErrorsContain([
                 'All array items must match schema',
@@ -561,7 +561,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson("/orgs/$uuid")
             ->assertValidRequest()
-            ->assertValidResponse(200);
+            ->assertValidResponse();
     }
 
     public function test_response_fails_with_invalid_array(): void

@@ -2,16 +2,29 @@
 
 namespace Spectator;
 
+use cebe\openapi\exceptions\TypeErrorException;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
+use Spectator\Exceptions\MalformedSpecException;
 use Spectator\Exceptions\MissingSpecException;
+use Throwable;
 
 class RequestFactory
 {
     use Macroable;
+
+    /**
+     * @var Throwable|null
+     */
+    public ?Throwable $requestException = null;
+
+    /**
+     * @var Throwable|null
+     */
+    public ?Throwable $responseException = null;
 
     /**
      * @var string|null
@@ -22,11 +35,6 @@ class RequestFactory
      * @var string|null
      */
     protected ?string $pathPrefix = null;
-
-    /**
-     * @var bool
-     */
-    protected bool $validateRequest = true;
 
     /**
      * @var array
@@ -84,22 +92,8 @@ class RequestFactory
     public function reset(): void
     {
         $this->specName = null;
-    }
-
-    /**
-     * @return void
-     */
-    public function skipRequestValidation(): void
-    {
-        $this->validateRequest = false;
-    }
-
-    /**
-     * @return bool
-     */
-    public function shouldValidateRequest(): bool
-    {
-        return $this->validateRequest;
+        $this->requestException = null;
+        $this->responseException = null;
     }
 
     /**
@@ -107,14 +101,18 @@ class RequestFactory
      *
      * @return OpenApi
      *
-     * @throws MissingSpecException
      * @throws \cebe\openapi\exceptions\IOException
      * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \cebe\openapi\json\InvalidJsonPointerSyntaxException
+     * @throws MalformedSpecException
+     * @throws MissingSpecException
      */
     public function resolve(): OpenApi
     {
+        $this->requestException = null;
+        $this->responseException = null;
+
         if ($this->specName) {
             $file = $this->getFile();
 
@@ -122,16 +120,38 @@ class RequestFactory
                 return $this->cachedSpecs[$file];
             }
 
-            switch (strtolower(pathinfo($this->specName, PATHINFO_EXTENSION))) {
-                case 'json':
-                    return $this->cachedSpecs[$file] = Reader::readFromJsonFile($file);
-                case 'yml':
-                case 'yaml':
-                    return $this->cachedSpecs[$file] = Reader::readFromYamlFile($file);
+            try {
+                switch (strtolower(pathinfo($this->specName, PATHINFO_EXTENSION))) {
+                    case 'json':
+                        return $this->cachedSpecs[$file] = Reader::readFromJsonFile($file);
+                    case 'yml':
+                    case 'yaml':
+                        return $this->cachedSpecs[$file] = Reader::readFromYamlFile($file);
+                }
+            } catch (TypeErrorException $exception) {
+                throw new MalformedSpecException('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
             }
         }
 
         throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
+    }
+
+    /**
+     * @param Throwable $throwable
+     * @return void
+     */
+    public function captureRequestValidation(Throwable $throwable)
+    {
+        $this->requestException = $throwable;
+    }
+
+    /**
+     * @param Throwable $throwable
+     * @return void
+     */
+    public function captureResponseValidation(Throwable $throwable)
+    {
+        $this->responseException = $throwable;
     }
 
     /**

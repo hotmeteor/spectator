@@ -7,7 +7,6 @@ use cebe\openapi\spec\PathItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
-use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\SchemaValidationException;
@@ -109,34 +108,30 @@ class RequestValidator extends AbstractValidator
                 $validator = new Validator();
                 $expected_parameter_schema = $parameter->schema->getSerializableData();
                 $result = null;
-                $actual_parameter = null;
+                $parameter_value = null;
 
                 // Get parameter, then validate it.
                 if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
-                    $actual_parameter = $route->parameters()[$parameter->name];
+                    $parameter_value = $route->parameters()[$parameter->name];
                 } elseif ($parameter->in === 'query' && $this->request->query->has($parameter->name)) {
-                    $actual_parameter = $this->request->query->get($parameter->name);
+                    $parameter_value = $this->request->query->get($parameter->name);
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
-                    $actual_parameter = $this->request->headers->get($parameter->name);
+                    $parameter_value = $this->request->headers->get($parameter->name);
                 } elseif ($parameter->in === 'cookie' && $this->request->cookies->has($parameter->name)) {
-                    $actual_parameter = $this->request->cookies->get($parameter->name);
+                    $parameter_value = $this->request->cookies->get($parameter->name);
                 }
 
-                if ($actual_parameter) {
-                    if ($expected_parameter_schema->type && gettype($actual_parameter) !== $expected_parameter_schema->type) {
-                        settype($actual_parameter, $expected_parameter_schema->type);
+                if ($parameter_value) {
+                    if ($expected_parameter_schema->type && gettype($parameter_value) !== $expected_parameter_schema->type) {
+                        settype($parameter_value, $expected_parameter_schema->type);
                     }
 
-                    $result = $validator->validate($actual_parameter, $expected_parameter_schema);
+                    $result = $validator->validate($parameter_value, $expected_parameter_schema);
 
                     // If the result is not valid, then display failure reason.
                     if ($result->isValid() === false) {
-                        if ($result instanceof ValidationResult) {
-                            $message = RequestValidationException::validationErrorMessage($expected_parameter_schema, $result->error());
-                            throw RequestValidationException::withError($message, $result->error());
-                        }
-
-                        throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->error());
+                        $message = RequestValidationException::validationErrorMessage($expected_parameter_schema, $result->error());
+                        throw RequestValidationException::withError($message, $result->error());
                     }
                 }
             }
@@ -179,11 +174,9 @@ class RequestValidator extends AbstractValidator
         $result = $validator->validate($actual_body_schema, $expected_body_schema);
 
         // If the result is not valid, then display failure reason.
-        if ($result instanceof ValidationResult && $result->isValid() === false) {
+        if ($result->isValid() === false) {
             $message = RequestValidationException::validationErrorMessage($expected_body_schema, $result->error());
             throw RequestValidationException::withError($message, $result->error());
-        } elseif ($result->isValid() === false) {
-            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error());
         }
     }
 
