@@ -487,14 +487,22 @@ class RequestValidatorTest extends TestCase
             return [];
         })->middleware(Middleware::class);
 
-        $this->getJson('/users?order=invalid')
-            ->assertInvalidRequest()
-            ->assertErrorsContain([
-                'The data should match one item from enum',
-            ]);
+        $this->get('/users?order=invalid')
+            ->assertValidationMessage('The data should match one item from enum')
+            ->assertInvalidRequest();
 
-        $this->getJson('/users?order=name')
+        $this->get('/users?order=')
             ->assertValidRequest();
+
+        $this->get('/users?order=name')
+            ->assertValidRequest();
+
+        $this->get('/users?order=email')
+            ->assertValidRequest();
+
+        $this->get('/users?order=email,name')
+            ->assertValidationMessage('The data should match one item from enum')
+            ->assertInvalidRequest();
     }
 
     public function test_handles_query_parameters_int(): void
@@ -615,6 +623,36 @@ class RequestValidatorTest extends TestCase
             [['name' => 'dog', 'friend' => ['name' => 'Alice']], true],
             [['name' => 'dog', 'friend' => ['name' => 'Alice', 'age' => null]], true],
         ];
+    }
+
+    public function test_ignores_request_validation_if_not_asserted(): void
+    {
+        Spectator::using('Test.v1.json');
+
+        Route::bind('postUuid', TestUser::class);
+
+        $uuid = Str::uuid();
+
+        Route::get('/posts/{postUuid}', function () {
+            return [
+                'id' => 1,
+                'title' => 'My Post',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson("/posts/{$uuid}")
+            ->assertValidRequest()
+            ->assertValidResponse();
+
+        $this->getJson('/posts/invalid')
+            ->assertInvalidRequest()
+            ->assertValidResponse();
+
+        $this->getJson("/posts/{$uuid}")
+            ->assertValidResponse();
+
+        $this->getJson('/posts/invalid')
+            ->assertValidResponse();
     }
 }
 
