@@ -68,6 +68,53 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('All array items must match schema');
     }
 
+    public function test_validates_valid_problem_json_response()
+    {
+        Route::get('/users', function () {
+            return response()->json([
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ], 422, ['Content-Type' => 'application/problem+json']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse(422);
+    }
+
+    public function test_validates_invalid_problem_json_response()
+    {
+        Route::get('/users', function () {
+            return response()->json([
+                [
+                    'id' => 'invalid',
+                ],
+            ], 422, ['Content-Type' => 'application/problem+json']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertInvalidResponse(400)
+            ->assertValidationMessage('All array items must match schema');
+
+        Route::get('/users', function () {
+            return response()->json([
+                [
+                    'id' => 1,
+                    'email' => 'invalid',
+                ],
+            ], 422, ['Content-Type' => 'application/problem+json']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertInvalidResponse(400)
+            ->assertValidationMessage('All array items must match schema');
+    }
+
     public function test_fallback_to_request_uri_if_operationId_not_given(): void
     {
         Spectator::using('Test.v1.json');
