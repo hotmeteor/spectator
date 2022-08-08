@@ -97,7 +97,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/users')
             ->assertValidRequest()
-            ->assertInvalidResponse(400)
+            ->assertInvalidResponse()
             ->assertValidationMessage('All array items must match schema');
 
         Route::get('/users', function () {
@@ -111,7 +111,7 @@ class ResponseValidatorTest extends TestCase
 
         $this->getJson('/users')
             ->assertValidRequest()
-            ->assertInvalidResponse(400)
+            ->assertInvalidResponse()
             ->assertValidationMessage('All array items must match schema');
     }
 
