@@ -20,6 +20,8 @@ class RequestFactory
 
     protected ?string $pathPrefix = null;
 
+    private array $cached_specs = [];
+
     /**
      * Set the file name of the spec.
      *
@@ -90,13 +92,16 @@ class RequestFactory
     {
         if ($this->specName) {
             $file = $this->getFile();
+            if ($this->cached_specs[$file] ?? null) {
+                return $this->cached_specs[$file];
+            }
 
             switch (strtolower(pathinfo($this->specName, PATHINFO_EXTENSION))) {
                 case 'json':
-                    return Reader::readFromJsonFile($file);
+                    return $this->cached_specs[$file] = Reader::readFromJsonFile($file);
                 case 'yml':
                 case 'yaml':
-                    return Reader::readFromYamlFile($file);
+                    return $this->cached_specs[$file] = Reader::readFromYamlFile($file);
             }
         }
 
