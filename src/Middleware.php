@@ -61,11 +61,9 @@ class Middleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $response = $next($request);
-
         if ($this->spectator->getSpec()) {
             try {
-                $response = $this->validate($request, $next);
+                return $this->validate($request, $next);
             } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
                 $this->spectator->captureRequestValidation($exception);
             } catch (\Throwable $exception) {
@@ -75,9 +73,9 @@ class Middleware
 
                 throw $exception;
             }
+        } else {
+            return $next($request);
         }
-
-        return $response;
     }
 
     /**
