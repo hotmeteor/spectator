@@ -306,7 +306,7 @@ For those interested in contributing to Spectator, it is worth familiarizing you
 
 A huge thanks to all our sponsors who help push Spectator development forward! In particular, we'd like to say a special thank you to our partners:
 
-- Phil Sturgeon (@philsturgeon)
+- Phil Sturgeon ([@philsturgeon](https://github.com/philsturgeon))
 
 If you'd like to become a sponsor, please [see here for more information](https://github.com/sponsors/hotmeteor). 💪
 
