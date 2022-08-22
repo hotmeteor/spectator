@@ -302,6 +302,14 @@ For those interested in contributing to Spectator, it is worth familiarizing you
 - `cebe/php-openapi`: Used to parse specs into usable arrays
 - `opis/json-schema`: Used to perform validation of an object/array against a spec
 
+## Sponsors
+
+A huge thanks to all our sponsors who help push Spectator development forward! In particular, we'd like to say a special thank you to our partners:
+
+- Phil Sturgeon (@philsturgeon)
+
+If you'd like to become a sponsor, please [see here for more information](https://github.com/sponsors/hotmeteor). 💪
+
 ## Credits
 
 - [Adam Campbell](https://github.com/hotmeteor)
