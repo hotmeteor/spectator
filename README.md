@@ -130,7 +130,7 @@ And here's an example of a contract test:
 ```php
 <?php
 
-use Spectator/Spectator;
+use Spectator\Spectator;
 
 class ExampleTest extends TestCase
 {
@@ -191,7 +191,7 @@ Define the spec file to test against. This can be defined in your `setUp()` meth
 ```php
 <?php
 
-use Spectator/Spectator;
+use Spectator\Spectator;
 
 class ExampleTest extends TestCase
 {
