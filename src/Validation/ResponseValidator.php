@@ -80,7 +80,7 @@ class ResponseValidator extends AbstractValidator
     }
 
     /**
-     * @param Schema $schema
+     * @param  Schema  $schema
      * @param $body
      *
      * @throws ResponseValidationException
