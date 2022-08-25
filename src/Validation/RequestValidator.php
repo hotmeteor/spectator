@@ -127,7 +127,13 @@ class RequestValidator extends AbstractValidator
 
                 if ($parameter_value) {
                     if ($expected_parameter_schema->type && gettype($parameter_value) !== $expected_parameter_schema->type) {
-                        settype($parameter_value, $expected_parameter_schema->type);
+                        $expected_type = $expected_parameter_schema->type;
+
+                        if ($expected_type === 'number') {
+                            $expected_type = is_float($parameter_value) ? 'float' : 'int';
+                        }
+
+                        settype($parameter_value, $expected_type);
                     }
 
                     $result = $validator->validate($parameter_value, $expected_parameter_schema);
