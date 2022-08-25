@@ -362,9 +362,82 @@
         },
         "operationId": "get-posts-post-comment"
       }
+    },
+    "/orders/{order}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "53f7bd7b-2ee2-4be4-a15b-e09c76a150f9"
+          },
+          "name": "order",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Get Order",
+        "description": "Orders are made by organizations to fund tree planting, and when trees are planted those orders will be marked as fullfilled. Orders may be partially fulfilled, and it is up to you if you wish to import those. Make sure to deduplicate the trees if you do.",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic_Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic_Problem"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-orders-uuid"
+      }
     }
   },
   "components": {
-    "schemas": {}
+    "schemas": {
+      "Order": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Generic_Problem": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "integer"
+          }
+        }
+      }
+    }
   }
 }
