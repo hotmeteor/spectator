@@ -4,6 +4,7 @@ namespace Spectator\Validation;
 
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\PathItem;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
@@ -113,6 +114,9 @@ class RequestValidator extends AbstractValidator
                 // Get parameter, then validate it.
                 if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
                     $parameter_value = $route->parameters()[$parameter->name];
+                    if ($parameter_value instanceof Model) {
+                        $parameter_value = $route->originalParameters()[$parameter->name];
+                    }
                 } elseif ($parameter->in === 'query' && $this->request->query->has($parameter->name)) {
                     $parameter_value = $this->request->query->get($parameter->name);
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
