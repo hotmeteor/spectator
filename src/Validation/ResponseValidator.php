@@ -35,6 +35,7 @@ class ResponseValidator extends AbstractValidator
 
     /**
      * @throws ResponseValidationException
+     * @throws SchemaValidationException
      */
     protected function handle()
     {
