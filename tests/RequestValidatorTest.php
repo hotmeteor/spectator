@@ -616,6 +616,27 @@ class RequestValidatorTest extends TestCase
         }
     }
 
+    public function test_numeric_values()
+    {
+        Spectator::using('Numbers.v1.json');
+
+        Route::get('/users', function () {
+            return [
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ];
+        })
+            ->middleware(Middleware::class);
+
+        $this->getJson('/users?page=1&per_page=10&float_param=3.14')
+            ->assertStatus(200)
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
     public function nullableObjectProvider(): array
     {
         return [

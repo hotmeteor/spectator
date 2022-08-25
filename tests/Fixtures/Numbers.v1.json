@@ -1,0 +1,151 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Numbers.v1",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Get users",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "description": "User ID",
+                        "example": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "User name",
+                        "example": "Adam Campbell"
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "User email address",
+                        "format": "email",
+                        "example": "test@test.com"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": [
+                      {
+                        "id": 1,
+                        "name": "Adam Campbell",
+                        "email": "test@test.com"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "description": "User ID",
+                        "example": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "User name",
+                        "example": "Adam Campbell"
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "User email address",
+                        "format": "email",
+                        "example": "test@test.com"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": [
+                      {
+                        "id": 1,
+                        "name": "Adam Campbell",
+                        "email": "test@test.com"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-users",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "example": 1,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "",
+            "example": 10,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "float_param",
+            "in": "query",
+            "description": "",
+            "example": "4.54",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "email"
+              ]
+            },
+            "allowEmptyValue": true
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {}
+  }
+}
