@@ -115,6 +115,29 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('All array items must match schema');
     }
 
+    public function test_validates_problem_json_response_using_components()
+    {
+        Spectator::using('Test.v1.json');
+
+        $uuid = (string) Str::uuid();
+
+        Route::get('/orders/{order}', static function ($order) use ($uuid) {
+            if ($order !== $uuid) {
+                abort(404);
+            }
+
+            return [
+                'uuid' => $uuid,
+            ];
+        })->middleware(Middleware::class);
+
+        $response = $this->getJson("/orders/{$uuid}")
+            ->assertValidResponse(200);
+
+        $response = $this->getJson('/orders/invalid')
+            ->assertValidResponse(404);
+    }
+
     public function test_fallback_to_request_uri_if_operationId_not_given(): void
     {
         Spectator::using('Test.v1.json');
