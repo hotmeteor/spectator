@@ -61,20 +61,20 @@ class Middleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $response = $next($request);
+        if (!$this->spectator->getSpec()) {
+            return $next($request);
+        }
 
-        if ($this->spectator->getSpec()) {
-            try {
-                $response = $this->validate($request, $next);
-            } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
-                $this->spectator->captureRequestValidation($exception);
-            } catch (\Throwable $exception) {
-                if ($this->exceptionHandler->shouldReport($exception)) {
-                    return $this->formatResponse($exception, 500);
-                }
-
-                throw $exception;
+        try {
+            $response = $this->validate($request, $next);
+        } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
+            $this->spectator->captureRequestValidation($exception);
+        } catch (\Throwable $exception) {
+            if ($this->exceptionHandler->shouldReport($exception)) {
+                return $this->formatResponse($exception, 500);
             }
+
+            throw $exception;
         }
 
         return $response;
