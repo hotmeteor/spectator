@@ -61,7 +61,7 @@ class Middleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!$this->spectator->getSpec()) {
+        if (! $this->spectator->getSpec()) {
             return $next($request);
         }
 
