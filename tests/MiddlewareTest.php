@@ -24,6 +24,7 @@ class MiddlewareTest extends TestCase
 
         Route::get('/users', static function () use (&$numberOfTimesProcessed) {
             $numberOfTimesProcessed++;
+
             return [
                 [
                     'id' => 1,
