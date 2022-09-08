@@ -316,6 +316,12 @@ If you'd like to become a sponsor, please [see here for more information](https:
 - Inspired by [Laravel OpenAPI](https://github.com/mdwheele/laravel-openapi) package by [Dustin Wheeler](https://github.com/mdwheele)
 - [All Contributors](../../contributors)
 
+<a href = "https://github.com/hotmeteor/spectator/graphs/contributors">
+  <img src = "https://contrib.rocks/image?repo=hotmeteor/spectator"/>
+</a>
+
+Made with [contributors-img](https://contrib.rocks).
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
