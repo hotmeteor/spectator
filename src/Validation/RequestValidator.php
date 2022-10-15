@@ -88,7 +88,7 @@ class RequestValidator extends AbstractValidator
             $this->operation()->parameters
         );
 
-        $required_parameters = array_filter($parameters, fn ($parameter) => $parameter->required === true);
+        $required_parameters = array_filter($parameters, fn ($parameter) => $parameter->required === true && ! $route->hasParameter($parameter->name));
 
         foreach ($required_parameters as $parameter) {
             // Verify presence, if required.
