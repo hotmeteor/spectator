@@ -503,6 +503,22 @@ class RequestValidatorTest extends TestCase
         $this->get('/users?order=email,name')
             ->assertValidationMessage('The data should match one item from enum')
             ->assertInvalidRequest();
+
+        // Test it handles nested query parameters
+        Route::get('/orders', function () {
+            return [];
+        })->middleware(Middleware::class);
+
+        $this->get('/orders')
+            ->assertValidationMessage('Missing required query parameter [?filter[groupId]=].')
+            ->assertInvalidRequest();
+
+        $this->get('/orders?filter[groupId]=1')
+            ->assertValidationMessage('The data must match the \'uuid\' format')
+            ->assertInvalidRequest();
+
+        $this->get('/orders?filter[groupId]=cc8936c7-d681-4c42-9410-c50488f43736')
+            ->assertValid();
     }
 
     public function test_handles_query_parameters_int(): void

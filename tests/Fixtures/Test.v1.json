@@ -378,7 +378,7 @@
       ],
       "get": {
         "summary": "Get Order",
-        "description": "Orders are made by organizations to fund tree planting, and when trees are planted those orders will be marked as fullfilled. Orders may be partially fulfilled, and it is up to you if you wish to import those. Make sure to deduplicate the trees if you do.",
+        "description": "Orders are made by organizations to fund tree planting, and when trees are planted those orders will be marked as fulfilled. Orders may be partially fulfilled, and it is up to you if you wish to import those. Make sure to deduplicate the trees if you do.",
         "tags": [],
         "responses": {
           "200": {
@@ -413,6 +413,48 @@
           }
         },
         "operationId": "get-orders-uuid"
+      }
+    },
+    "/orders": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "53f7bd7b-2ee2-4be4-a15b-e09c76a150f9"
+          },
+          "name": "filter[groupId]",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Filter Orders",
+        "description": "Orders are made by organizations to fund tree planting, and when trees are planted those orders will be marked as fulfilled. Orders may be partially fulfilled, and it is up to you if you wish to import those. Make sure to deduplicate the trees if you do.",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generic_Problem"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "filter-orders-by-group"
       }
     }
   },

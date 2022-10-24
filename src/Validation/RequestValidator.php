@@ -3,6 +3,7 @@
 namespace Spectator\Validation;
 
 use cebe\openapi\spec\Operation;
+use cebe\openapi\spec\Parameter;
 use cebe\openapi\spec\PathItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -94,7 +95,7 @@ class RequestValidator extends AbstractValidator
             // Verify presence, if required.
             if ($parameter->in === 'path' && ! $route->hasParameter($parameter->name)) {
                 throw new RequestValidationException("Missing required parameter {$parameter->name} in URL path.");
-            } elseif ($parameter->in === 'query' && ! $this->request->query->has($parameter->name)) {
+            } elseif ($parameter->in === 'query' && ! $this->hasQueryParam($parameter->name)) {
                 throw new RequestValidationException("Missing required query parameter [?{$parameter->name}=].");
             } elseif ($parameter->in === 'header' && ! $this->request->headers->has($parameter->name)) {
                 throw new RequestValidationException("Missing required header [{$parameter->name}].");
@@ -117,8 +118,8 @@ class RequestValidator extends AbstractValidator
                     if ($parameter_value instanceof Model) {
                         $parameter_value = $route->originalParameters()[$parameter->name];
                     }
-                } elseif ($parameter->in === 'query' && $this->request->query->has($parameter->name)) {
-                    $parameter_value = $this->request->query->get($parameter->name);
+                } elseif ($parameter->in === 'query' && $this->hasQueryParam($parameter->name)) {
+                    $parameter_value = $this->getQueryParam($parameter->name);
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
                     $parameter_value = $this->request->headers->get($parameter->name);
                 } elseif ($parameter->in === 'cookie' && $this->request->cookies->has($parameter->name)) {
@@ -220,5 +221,22 @@ class RequestValidator extends AbstractValidator
         } else {
             return array_map([$this, 'toObject'], $data);
         }
+    }
+
+    private function hasQueryParam(string $parameterName): bool
+    {
+        return Arr::has($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
+    }
+
+    private function getQueryParam(string $parameterName)
+    {
+        return Arr::get($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
+    }
+
+    private function convertQueryParameterToDotted(string $parameterName): string
+    {
+        parse_str($parameterName, $parsedParameterName);
+
+        return key(Arr::dot($parsedParameterName));
     }
 }
