@@ -5,7 +5,6 @@
 /** @noinspection PhpUnusedAliasInspection */
 
 namespace Illuminate\Testing {
-
     /**
      * @see \Spectator\Assertions
      *
@@ -25,7 +24,6 @@ namespace Illuminate\Testing {
 }
 
 namespace Illuminate\Foundation\Testing {
-
     /**
      * @see \Spectator\Assertions
      *
