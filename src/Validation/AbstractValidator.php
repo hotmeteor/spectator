@@ -60,10 +60,19 @@ abstract class AbstractValidator
             // Does this object define "nullable"? If so, unset "nullable" and include "null"
             // in array of possible types (e.g. "type" => [..., "null"]).
             if (isset($attributes->nullable)) {
-                $type = Arr::wrap($attributes->type);
-                $type[] = 'null';
-                $attributes->type = array_unique($type);
+                if (isset($attributes->anyOf)) {
+                    $attributes->anyOf[] = (object) ['type' => 'null'];
+                } else {
+                    $type = Arr::wrap($attributes->type ?? null);
+                    $type[] = 'null';
+                    $attributes->type = array_unique($type);
+                }
                 unset($attributes->nullable);
+            }
+
+            // anyOf -> recurse ...
+            if (isset($attributes->anyOf)) {
+                $attributes->anyOf = $this->wrapAttributesToArray($attributes->anyOf);
             }
 
             // Before we check recursive cases, make sure this object defines a "type".
@@ -78,12 +87,15 @@ abstract class AbstractValidator
 
             // This object is an array of sub-objects, recurse...
             if (
-                $attributes->type === 'array'
-                && isset($attributes->items)
-                && isset($attributes->items->properties)
-                && $attributes->items->type === 'object'
+                isset($attributes->items, $attributes->items->properties) && $attributes->type === 'array' && $attributes->items->type === 'object'
             ) {
                 $attributes->items->properties = $this->wrapAttributesToArray($attributes->items->properties);
+            }
+            // This object is an array of anyOf, recurse...
+            if (
+                isset($attributes->items, $attributes->items->anyOf) && $attributes->type === 'array'
+            ) {
+                $attributes->items->anyOf = $this->wrapAttributesToArray($attributes->items->anyOf);
             }
         }
 

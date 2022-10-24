@@ -130,7 +130,7 @@ And here's an example of a contract test:
 ```php
 <?php
 
-use Spectator/Spectator;
+use Spectator\Spectator;
 
 class ExampleTest extends TestCase
 {
@@ -191,7 +191,7 @@ Define the spec file to test against. This can be defined in your `setUp()` meth
 ```php
 <?php
 
-use Spectator/Spectator;
+use Spectator\Spectator;
 
 class ExampleTest extends TestCase
 {
@@ -302,11 +302,25 @@ For those interested in contributing to Spectator, it is worth familiarizing you
 - `cebe/php-openapi`: Used to parse specs into usable arrays
 - `opis/json-schema`: Used to perform validation of an object/array against a spec
 
+## Sponsors
+
+A huge thanks to all our sponsors who help push Spectator development forward! In particular, we'd like to say a special thank you to our partners:
+
+- Phil Sturgeon ([@philsturgeon](https://github.com/philsturgeon))
+
+If you'd like to become a sponsor, please [see here for more information](https://github.com/sponsors/hotmeteor). 💪
+
 ## Credits
 
 - [Adam Campbell](https://github.com/hotmeteor)
 - Inspired by [Laravel OpenAPI](https://github.com/mdwheele/laravel-openapi) package by [Dustin Wheeler](https://github.com/mdwheele)
 - [All Contributors](../../contributors)
+
+<a href = "https://github.com/hotmeteor/spectator/graphs/contributors">
+  <img src = "https://contrib.rocks/image?repo=hotmeteor/spectator"/>
+</a>
+
+Made with [contributors-img](https://contrib.rocks).
 
 ## License
 

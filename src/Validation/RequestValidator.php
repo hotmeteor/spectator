@@ -3,9 +3,12 @@
 namespace Spectator\Validation;
 
 use cebe\openapi\spec\Operation;
+use cebe\openapi\spec\Parameter;
 use cebe\openapi\spec\PathItem;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Opis\JsonSchema\ValidationResult;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\SchemaValidationException;
@@ -53,7 +56,7 @@ class RequestValidator extends AbstractValidator
      * @param  PathItem  $pathItem
      * @param  string  $method
      *
-     * @throws RequestValidationException
+     * @throws RequestValidationException|SchemaValidationException
      */
     public static function validate(Request $request, PathItem $pathItem, string $method)
     {
@@ -63,7 +66,7 @@ class RequestValidator extends AbstractValidator
     }
 
     /**
-     * @throws RequestValidationException
+     * @throws RequestValidationException|SchemaValidationException
      */
     protected function handle()
     {
@@ -92,7 +95,7 @@ class RequestValidator extends AbstractValidator
             // Verify presence, if required.
             if ($parameter->in === 'path' && ! $route->hasParameter($parameter->name)) {
                 throw new RequestValidationException("Missing required parameter {$parameter->name} in URL path.");
-            } elseif ($parameter->in === 'query' && ! $this->request->query->has($parameter->name)) {
+            } elseif ($parameter->in === 'query' && ! $this->hasQueryParam($parameter->name)) {
                 throw new RequestValidationException("Missing required query parameter [?{$parameter->name}=].");
             } elseif ($parameter->in === 'header' && ! $this->request->headers->has($parameter->name)) {
                 throw new RequestValidationException("Missing required header [{$parameter->name}].");
@@ -107,30 +110,39 @@ class RequestValidator extends AbstractValidator
                 $validator = new Validator();
                 $expected_parameter_schema = $parameter->schema->getSerializableData();
                 $result = null;
-                $actual_parameter = null;
+                $parameter_value = null;
 
                 // Get parameter, then validate it.
                 if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
-                    $actual_parameter = $route->parameters()[$parameter->name];
-                } elseif ($parameter->in === 'query' && $this->request->query->has($parameter->name)) {
-                    $actual_parameter = $this->request->query->get($parameter->name);
+                    $parameter_value = $route->parameters()[$parameter->name];
+                    if ($parameter_value instanceof Model) {
+                        $parameter_value = $route->originalParameters()[$parameter->name];
+                    }
+                } elseif ($parameter->in === 'query' && $this->hasQueryParam($parameter->name)) {
+                    $parameter_value = $this->getQueryParam($parameter->name);
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
-                    $actual_parameter = $this->request->headers->get($parameter->name);
+                    $parameter_value = $this->request->headers->get($parameter->name);
                 } elseif ($parameter->in === 'cookie' && $this->request->cookies->has($parameter->name)) {
-                    $actual_parameter = $this->request->cookies->get($parameter->name);
+                    $parameter_value = $this->request->cookies->get($parameter->name);
                 }
 
-                if ($actual_parameter !== null) {
-                    $actual_parameter = $this->castParameter($actual_parameter, $expected_parameter_schema->type);
+                if ($parameter_value) {
+                    if ($expected_parameter_schema->type && gettype($parameter_value) !== $expected_parameter_schema->type) {
+                        $expected_type = $expected_parameter_schema->type;
 
-                    $result = $validator->validate($actual_parameter, $expected_parameter_schema);
+                        if ($expected_type === 'number') {
+                            $expected_type = is_float($parameter_value) ? 'float' : 'int';
+                        }
+
+                        settype($parameter_value, $expected_type);
+                    }
+
+                    $result = $validator->validate($parameter_value, $expected_parameter_schema);
 
                     // If the result is not valid, then display failure reason.
-                    if ($result instanceof ValidationResult && $result->isValid() === false) {
+                    if ($result->isValid() === false) {
                         $message = RequestValidationException::validationErrorMessage($expected_parameter_schema, $result->error());
                         throw RequestValidationException::withError($message, $result->error());
-                    } elseif ($result->isValid() === false) {
-                        throw RequestValidationException::withError("Parameter [{$parameter->name}] did not match provided JSON schema.", $result->error());
                     }
                 }
             }
@@ -172,8 +184,6 @@ class RequestValidator extends AbstractValidator
         // If required, then body should be non-empty.
         if ($expected_body->required === true && empty($actual_body)) {
             throw new RequestValidationException('Request body required.');
-
-            return;
         }
 
         // Content types should match.
@@ -186,11 +196,11 @@ class RequestValidator extends AbstractValidator
         $expected_body_raw_schema = $expected_body->content[$content_type]->schema;
         $actual_body_schema = $actual_body;
         if ($expected_body_raw_schema->type === 'object' || $expected_body_raw_schema->type === 'array' || $expected_body_raw_schema->oneOf || $expected_body_raw_schema->anyOf) {
-            if (! in_array($content_type, ['application/json', 'application/vnd.api+json'])) {
-                throw new RequestValidationException("Unable to map [{$content_type}] to schema type [object].");
+            if (in_array($content_type, ['application/json', 'application/vnd.api+json'])) {
+                $actual_body_schema = json_decode($actual_body_schema);
+            } else {
+                $actual_body_schema = $this->parseBodySchema();
             }
-
-            $actual_body_schema = json_decode($actual_body_schema);
         }
         $expected_body_schema = $this->prepareData($expected_body_raw_schema);
 
@@ -199,11 +209,9 @@ class RequestValidator extends AbstractValidator
         $result = $validator->validate($actual_body_schema, $expected_body_schema);
 
         // If the result is not valid, then display failure reason.
-        if ($result instanceof ValidationResult && $result->isValid() === false) {
+        if ($result->isValid() === false) {
             $message = RequestValidationException::validationErrorMessage($expected_body_schema, $result->error());
             throw RequestValidationException::withError($message, $result->error());
-        } elseif ($result->isValid() === false) {
-            throw RequestValidationException::withError('Request body did not match provided JSON schema.', $result->error());
         }
     }
 
@@ -213,5 +221,46 @@ class RequestValidator extends AbstractValidator
     protected function operation(): Operation
     {
         return $this->pathItem->{$this->method};
+    }
+
+    protected function parseBodySchema(): object
+    {
+        $body = $this->request->all();
+
+        array_walk_recursive($body, function (&$value) {
+            if ($value instanceof UploadedFile) {
+                $value = $value->get();
+            }
+        });
+
+        return $this->toObject($body);
+    }
+
+    private function toObject($data)
+    {
+        if (! is_array($data)) {
+            return $data;
+        } elseif (Arr::isAssoc($data)) {
+            return (object) array_map([$this, 'toObject'], $data);
+        } else {
+            return array_map([$this, 'toObject'], $data);
+        }
+    }
+
+    private function hasQueryParam(string $parameterName): bool
+    {
+        return Arr::has($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
+    }
+
+    private function getQueryParam(string $parameterName)
+    {
+        return Arr::get($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
+    }
+
+    private function convertQueryParameterToDotted(string $parameterName): string
+    {
+        parse_str($parameterName, $parsedParameterName);
+
+        return key(Arr::dot($parsedParameterName));
     }
 }

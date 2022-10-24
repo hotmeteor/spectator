@@ -5,9 +5,10 @@ namespace Spectator\Validation;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Response;
 use cebe\openapi\spec\Schema;
-use Opis\JsonSchema\ValidationResult;
+use Illuminate\Support\Str;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
+use Spectator\Exceptions\SchemaValidationException;
 
 class ResponseValidator extends AbstractValidator
 {
@@ -34,6 +35,7 @@ class ResponseValidator extends AbstractValidator
 
     /**
      * @throws ResponseValidationException
+     * @throws SchemaValidationException
      */
     protected function handle()
     {
@@ -46,17 +48,27 @@ class ResponseValidator extends AbstractValidator
 
     /**
      * @throws ResponseValidationException
+     * @throws SchemaValidationException
      */
     protected function parseResponse(Response $response)
     {
         $contentType = $this->contentType();
 
+        // This is a bit hacky, but will allow resolving other JSON responses like application/problem+json
+        // when returning standard JSON responses from frameworks (See hotmeteor/spectator#114)
+
+        $specTypes = array_values(array_map(
+            fn ($type) => $contentType === 'application/json' && Str::endsWith($type, '+json') ? 'application/json' : $type,
+            array_keys($response->content)
+        ));
+
         // Does the response match any of the specified media types?
-        if (! array_key_exists($contentType, $response->content)) {
+        if (! in_array($contentType, $specTypes)) {
             $message = 'Response did not match any specified content type.';
-            $message .= PHP_EOL.PHP_EOL.'  Expected: '.$contentType;
-            $message .= PHP_EOL.'  Actual: DNE';
+            $message .= PHP_EOL.PHP_EOL.'  Expected: '.$specTypes[0];
+            $message .= PHP_EOL.'  Actual: '.$contentType;
             $message .= PHP_EOL.PHP_EOL.'  ---';
+
             throw new ResponseValidationException($message);
         }
 
@@ -69,9 +81,11 @@ class ResponseValidator extends AbstractValidator
     }
 
     /**
+     * @param  Schema  $schema
      * @param $body
      *
      * @throws ResponseValidationException
+     * @throws SchemaValidationException
      */
     protected function validateResponse(Schema $schema, $body)
     {
@@ -80,11 +94,9 @@ class ResponseValidator extends AbstractValidator
         $validator = $this->validator();
         $result = $validator->validate($body, $expected_schema);
 
-        if ($result instanceof ValidationResult && $result->isValid() === false) {
+        if ($result->isValid() === false) {
             $message = ResponseValidationException::validationErrorMessage($expected_schema, $result->error());
             throw ResponseValidationException::withError($message, $result->error());
-        } elseif ($result->isValid() === false) {
-            throw ResponseValidationException::withError($result->error()->message(), $result->error());
         }
     }
 
@@ -150,7 +162,7 @@ class ResponseValidator extends AbstractValidator
         $body = $this->response->getContent();
 
         if (in_array($schemaType, ['object', 'array', 'allOf', 'anyOf', 'oneOf'], true)) {
-            if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
+            if (in_array($contentType, ['application/json', 'application/vnd.api+json', 'application/problem+json'])) {
                 return json_decode($body);
             } else {
                 throw new ResponseValidationException("Unable to map [{$contentType}] to schema type [object].");

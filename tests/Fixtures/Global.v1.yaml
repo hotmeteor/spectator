@@ -1,0 +1,36 @@
+openapi: 3.0.0
+info:
+  title: Global.v1
+  version: '1.0'
+servers:
+  - url: 'https://api.protect.earth/v1'
+    description: Production
+paths:
+  /orgs/{orgUuid}:
+    get:
+      summary: Get org
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  uuid:
+                    type: string
+                  name:
+                    type: string
+      operationId: get-org
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          name: orgUuid
+          in: path
+          required: true
+components:
+  schemas: {}

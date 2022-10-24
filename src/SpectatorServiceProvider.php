@@ -3,11 +3,9 @@
 namespace Spectator;
 
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Foundation\Testing\TestResponse as LegacyTestResponse;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Testing\TestResponse;
-use LogicException;
 
 class SpectatorServiceProvider extends ServiceProvider
 {
@@ -25,6 +23,7 @@ class SpectatorServiceProvider extends ServiceProvider
         $this->mergeConfig();
 
         $this->app->singleton(RequestFactory::class);
+        $this->app->alias(RequestFactory::class, 'spectator');
     }
 
     protected function mergeConfig()
@@ -41,21 +40,7 @@ class SpectatorServiceProvider extends ServiceProvider
 
     protected function decorateTestResponse()
     {
-        // Laravel >= 7.0
-        if (class_exists(TestResponse::class)) {
-            TestResponse::mixin(new Assertions());
-
-            return;
-        }
-
-        // Laravel <= 6.0
-        if (class_exists(LegacyTestResponse::class)) {
-            LegacyTestResponse::mixin(new Assertions());
-
-            return;
-        }
-
-        throw new LogicException('Could not detect TestResponse class.');
+        TestResponse::mixin(new Assertions());
     }
 
     protected function getConfigPath()

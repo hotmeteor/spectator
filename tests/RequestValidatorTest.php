@@ -3,6 +3,7 @@
 namespace Spectator\Tests;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -23,7 +24,7 @@ class RequestValidatorTest extends TestCase
         $this->app->register(SpectatorServiceProvider::class);
     }
 
-    public function test_cannot_resolve_prefixed_path()
+    public function test_cannot_resolve_prefixed_path(): void
     {
         Spectator::using('Versioned.v1.json');
 
@@ -42,7 +43,7 @@ class RequestValidatorTest extends TestCase
             ->assertValidationMessage('Path [GET /v1/users] not found in spec.');
     }
 
-    public function test_resolves_prefixed_path_from_config()
+    public function test_resolves_prefixed_path_from_config(): void
     {
         Spectator::using('Versioned.v1.json');
         Config::set('spectator.path_prefix', 'v1');
@@ -61,7 +62,7 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_resolves_prefixed_path_from_inline_setting()
+    public function test_uses_global_path_via_inline_setting(): void
     {
         Spectator::setPathPrefix('v1')->using('Versioned.v1.json');
 
@@ -79,7 +80,51 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_resolve_route_model_binding()
+    public function test_uses_global_path_through_config(): void
+    {
+        Config::set('spectator.path_prefix', 'v1');
+
+        Spectator::using('Global.v1.yaml');
+
+        $uuid = (string) Str::uuid();
+
+        Route::get('/v1/orgs/{orgUuid}', function () use ($uuid) {
+            return [
+                'id' => 1,
+                'uuid' => $uuid,
+                'name' => 'My Org',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson("/v1/orgs/$uuid")
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
+
+    public function test_uses_global_path_with_route_prefix(): void
+    {
+        Config::set('spectator.path_prefix', 'v1');
+
+        Spectator::using('Global.v1.yaml');
+
+        $uuid = (string) Str::uuid();
+
+        Route::prefix('v1')->group(function () use ($uuid) {
+            Route::get('/orgs/{orgUuid}', function () use ($uuid) {
+                return [
+                    'id' => 1,
+                    'uuid' => $uuid,
+                    'name' => 'My Org',
+                ];
+            })->middleware(Middleware::class);
+        });
+
+        $this->getJson("/v1/orgs/$uuid")
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
+
+    public function test_resolve_route_model_binding(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -95,7 +140,7 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_resolve_route_model_explicit_binding()
+    public function test_resolve_route_model_explicit_binding(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -112,7 +157,7 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_cannot_resolve_route_model_explicit_binding_with_invalid_format()
+    public function test_cannot_resolve_route_model_explicit_binding_with_invalid_format(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -129,7 +174,7 @@ class RequestValidatorTest extends TestCase
             ->assertInvalidRequest();
     }
 
-    public function test_resolve_route_model_binding_with_multiple_parameters()
+    public function test_resolve_route_model_binding_with_multiple_parameters(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -153,8 +198,8 @@ class RequestValidatorTest extends TestCase
         $version,
         $state,
         $is_valid
-    ) {
-        Spectator::using("Nullable.{$version}.json");
+    ): void {
+        Spectator::using("Nullable.$version.json");
 
         Route::post('/users')->middleware(Middleware::class);
 
@@ -188,10 +233,9 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function nullableProvider()
+    public function nullableProvider(): array
     {
         $validResponse = true;
-        $invalidResponse = false;
 
         $v30 = '3.0';
         $v31 = '3.1';
@@ -254,7 +298,7 @@ class RequestValidatorTest extends TestCase
      * @dataProvider oneOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_oneOf($payload, $isValid)
+    public function test_handles_oneOf($payload, $isValid): void
     {
         Spectator::using('OneOf.v1.yml');
 
@@ -271,7 +315,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function oneOfSchemaProvider()
+    public function oneOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -314,7 +358,7 @@ class RequestValidatorTest extends TestCase
      * @dataProvider anyOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_anyOf($payload, $isValid)
+    public function test_handles_anyOf($payload, $isValid): void
     {
         Spectator::using('AnyOf.v1.yml');
 
@@ -331,7 +375,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function anyOfSchemaProvider()
+    public function anyOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -372,7 +416,7 @@ class RequestValidatorTest extends TestCase
      * @dataProvider allOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_allOf($payload, $isValid)
+    public function test_handles_allOf($payload, $isValid): void
     {
         Spectator::using('AllOf.v1.yml');
 
@@ -389,7 +433,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function allOfSchemaProvider()
+    public function allOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -434,7 +478,7 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    public function test_handles_query_parameters()
+    public function test_handles_query_parameters(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -443,17 +487,41 @@ class RequestValidatorTest extends TestCase
             return [];
         })->middleware(Middleware::class);
 
-        $this->getJson('/users?order=invalid')
-            ->assertInvalidRequest()
-            ->assertErrorsContain([
-                'The data should match one item from enum',
-            ]);
+        $this->get('/users?order=invalid')
+            ->assertValidationMessage('The data should match one item from enum')
+            ->assertInvalidRequest();
 
-        $this->getJson('/users?order=name')
+        $this->get('/users?order=')
             ->assertValidRequest();
+
+        $this->get('/users?order=name')
+            ->assertValidRequest();
+
+        $this->get('/users?order=email')
+            ->assertValidRequest();
+
+        $this->get('/users?order=email,name')
+            ->assertValidationMessage('The data should match one item from enum')
+            ->assertInvalidRequest();
+
+        // Test it handles nested query parameters
+        Route::get('/orders', function () {
+            return [];
+        })->middleware(Middleware::class);
+
+        $this->get('/orders')
+            ->assertValidationMessage('Missing required query parameter [?filter[groupId]=].')
+            ->assertInvalidRequest();
+
+        $this->get('/orders?filter[groupId]=1')
+            ->assertValidationMessage('The data must match the \'uuid\' format')
+            ->assertInvalidRequest();
+
+        $this->get('/orders?filter[groupId]=cc8936c7-d681-4c42-9410-c50488f43736')
+            ->assertValid();
     }
 
-    public function test_handles_query_parameters_int()
+    public function test_handles_query_parameters_int(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -467,6 +535,164 @@ class RequestValidatorTest extends TestCase
 
         $this->getJson('/users-by-id/1')
             ->assertValidRequest();
+    }
+
+    public function test_handles_form_data(): void
+    {
+        Spectator::using('BinaryString.v1.json');
+
+        Route::post('/users', function () {
+            return [];
+        })->middleware(Middleware::class);
+
+        $this->post(
+            '/users',
+            ['name' => 'Adam Campbell', 'picture' => UploadedFile::fake()->image('test.jpg')],
+            ['Content-Type' => 'multipart/form-data']
+        )
+            ->assertInvalidRequest()
+            ->assertErrorsContain([
+                'The required properties (email) are missing',
+            ]);
+
+        $this->post(
+            '/users',
+            ['name' => 'Adam Campbell', 'email' => 'test@test.com'],
+            ['Content-Type' => 'multipart/form-data']
+        )
+            ->assertInvalidRequest()
+            ->assertErrorsContain([
+                'The required properties (picture) are missing',
+            ]);
+
+        $this->post(
+            '/users',
+            ['name' => 'Adam Campbell', 'email' => 'test@test.com', 'picture' => UploadedFile::fake()->image('test.jpg')],
+            ['Content-Type' => 'multipart/form-data']
+        )
+            ->assertValidRequest();
+    }
+
+    public function test_handles_form_data_with_multiple_files(): void
+    {
+        Spectator::using('BinaryString.v1.json');
+
+        Route::post('/users/multiple-files', function () {
+            return [];
+        })->middleware(Middleware::class);
+
+        $this->post(
+            '/users/multiple-files',
+            [
+                'picture' => UploadedFile::fake()->image('test.jpg'),
+                'files' => [
+                    ['name' => 'test.jpg', 'file' => UploadedFile::fake()->image('test.jpg')],
+                    ['name' => 'test.jpg', 'file' => UploadedFile::fake()->image('test.jpg')],
+                ],
+                'resume' => [
+                    'name' => 'test.pdf',
+                    'file' => UploadedFile::fake()->create('test.pdf'),
+                ],
+            ],
+            ['Content-Type' => 'multipart/form-data']
+        )
+            ->assertValidRequest();
+
+        $this->withoutExceptionHandling()->post(
+            '/users/multiple-files',
+            [
+                'picture' => UploadedFile::fake()->image('test.jpg'),
+                'files' => [],
+                'resume' => [
+                    'name' => 'test.pdf',
+                    'file' => UploadedFile::fake()->create('test.pdf'),
+                ],
+            ],
+            ['Content-Type' => 'multipart/form-data']
+        )
+            ->assertValidRequest();
+    }
+
+    /**
+     * @dataProvider nullableObjectProvider
+     */
+    public function test_nullable_object($payload, $isValid): void
+    {
+        Spectator::using('Nullable-Object.yml');
+
+        Route::patch('/pets', static function () use ($payload) {
+            return $payload;
+        })->middleware(Middleware::class);
+
+        $response = $this->patchJson('/pets', $payload);
+
+        if ($isValid) {
+            $response->assertValidRequest();
+            $response->assertValidResponse(200);
+        } else {
+            $response->assertInvalidRequest();
+            $response->assertInvalidResponse();
+        }
+    }
+
+    public function test_numeric_values()
+    {
+        Spectator::using('Numbers.v1.json');
+
+        Route::get('/users', function () {
+            return [
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ];
+        })
+            ->middleware(Middleware::class);
+
+        $this->getJson('/users?page=1&per_page=10&float_param=3.14')
+            ->assertStatus(200)
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
+    public function nullableObjectProvider(): array
+    {
+        return [
+            [['name' => 'dog', 'friend' => null], true],
+            [['name' => 'dog', 'friend' => ['name' => 'Alice']], true],
+            [['name' => 'dog', 'friend' => ['name' => 'Alice', 'age' => null]], true],
+        ];
+    }
+
+    public function test_ignores_request_validation_if_not_asserted(): void
+    {
+        Spectator::using('Test.v1.json');
+
+        Route::bind('postUuid', TestUser::class);
+
+        $uuid = Str::uuid();
+
+        Route::get('/posts/{postUuid}', function () {
+            return [
+                'id' => 1,
+                'title' => 'My Post',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson("/posts/{$uuid}")
+            ->assertValidRequest()
+            ->assertValidResponse();
+
+        $this->getJson('/posts/invalid')
+            ->assertInvalidRequest()
+            ->assertValidResponse();
+
+        $this->getJson("/posts/{$uuid}")
+            ->assertValidResponse();
+
+        $this->getJson('/posts/invalid')
+            ->assertValidResponse();
     }
 }
 

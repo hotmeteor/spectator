@@ -2,23 +2,44 @@
 
 namespace Spectator;
 
+use cebe\openapi\exceptions\TypeErrorException;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
+use Spectator\Exceptions\MalformedSpecException;
 use Spectator\Exceptions\MissingSpecException;
+use Throwable;
 
 class RequestFactory
 {
-    /*
-     * @method static void assertValidRequest()
-     */
     use Macroable;
 
+    /**
+     * @var Throwable|null
+     */
+    public ?Throwable $requestException = null;
+
+    /**
+     * @var Throwable|null
+     */
+    public ?Throwable $responseException = null;
+
+    /**
+     * @var string|null
+     */
     protected ?string $specName = null;
 
+    /**
+     * @var string|null
+     */
     protected ?string $pathPrefix = null;
+
+    /**
+     * @var array
+     */
+    private array $cachedSpecs = [];
 
     /**
      * Set the file name of the spec.
@@ -68,11 +89,11 @@ class RequestFactory
      *
      * return RequestFactory
      */
-    public function reset(): self
+    public function reset(): void
     {
         $this->specName = null;
-
-        return $this;
+        $this->requestException = null;
+        $this->responseException = null;
     }
 
     /**
@@ -80,27 +101,57 @@ class RequestFactory
      *
      * @return OpenApi
      *
-     * @throws MissingSpecException
      * @throws \cebe\openapi\exceptions\IOException
      * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \cebe\openapi\json\InvalidJsonPointerSyntaxException
+     * @throws MalformedSpecException
+     * @throws MissingSpecException
      */
     public function resolve(): OpenApi
     {
+        $this->requestException = null;
+        $this->responseException = null;
+
         if ($this->specName) {
             $file = $this->getFile();
 
-            switch (strtolower(pathinfo($this->specName, PATHINFO_EXTENSION))) {
-                case 'json':
-                    return Reader::readFromJsonFile($file);
-                case 'yml':
-                case 'yaml':
-                    return Reader::readFromYamlFile($file);
+            if ($this->cachedSpecs[$file] ?? null) {
+                return $this->cachedSpecs[$file];
+            }
+
+            try {
+                switch (strtolower(pathinfo($this->specName, PATHINFO_EXTENSION))) {
+                    case 'json':
+                        return $this->cachedSpecs[$file] = Reader::readFromJsonFile($file);
+                    case 'yml':
+                    case 'yaml':
+                        return $this->cachedSpecs[$file] = Reader::readFromYamlFile($file);
+                }
+            } catch (TypeErrorException $exception) {
+                throw new MalformedSpecException('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
             }
         }
 
         throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
+    }
+
+    /**
+     * @param  Throwable  $throwable
+     * @return void
+     */
+    public function captureRequestValidation(Throwable $throwable)
+    {
+        $this->requestException = $throwable;
+    }
+
+    /**
+     * @param  Throwable  $throwable
+     * @return void
+     */
+    public function captureResponseValidation(Throwable $throwable)
+    {
+        $this->responseException = $throwable;
     }
 
     /**
@@ -132,21 +183,21 @@ class RequestFactory
      *
      * @param  array  $source
      * @param $file
-     * @return false|string
+     * @return string
      *
      * @throws MissingSpecException
      */
-    protected function getLocalPath(array $source, $file)
+    protected function getLocalPath(array $source, $file): string
     {
         $path = $this->standardizePath($source['base_path']);
 
         $path = realpath("{$path}{$file}");
 
-        if (! file_exists($path)) {
-            throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
+        if (file_exists($path)) {
+            return $path;
         }
 
-        return $path;
+        throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
     }
 
     /**
@@ -156,7 +207,7 @@ class RequestFactory
      * @param $file
      * @return string
      */
-    protected function getRemotePath(array $source, $file)
+    protected function getRemotePath(array $source, $file): string
     {
         $path = $this->standardizePath($source['base_path']);
 
@@ -174,7 +225,7 @@ class RequestFactory
      * @param $file
      * @return string
      */
-    protected function getGithubPath(array $source, $file)
+    protected function getGithubPath(array $source, $file): string
     {
         $path = "https://{$source['token']}@raw.githubusercontent.com/{$source['repo']}/{$source['base_path']}/{$file}";
 
@@ -187,7 +238,7 @@ class RequestFactory
      * @param $file
      * @return string
      */
-    protected function standardizeFileName($file)
+    protected function standardizeFileName($file): string
     {
         if (Str::startsWith($file, '/')) {
             $file = Str::replaceFirst('/', '', $file);
@@ -200,9 +251,9 @@ class RequestFactory
      * Standardize a path.
      *
      * @param $path
-     * @return mixed|string
+     * @return string
      */
-    protected function standardizePath($path)
+    protected function standardizePath($path): string
     {
         if (! Str::endsWith($path, '/')) {
             $path = $path.'/';

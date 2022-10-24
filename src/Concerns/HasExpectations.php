@@ -2,85 +2,50 @@
 
 namespace Spectator\Concerns;
 
-use cebe\openapi\exceptions\TypeErrorException;
-use Illuminate\Support\Arr;
 use PHPUnit\Framework\Assert as PHPUnit;
-use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Helper\TableCell;
-use Symfony\Component\Console\Helper\TableCellStyle;
-use Symfony\Component\Console\Output\ConsoleOutput;
+use Throwable;
 
 trait HasExpectations
 {
-    protected $tableStyle;
-
     public function expectsFalse()
     {
-        return function ($contents, array $exceptions) {
-            $exception = $this->exceptionType($contents);
+        /*
+         * @param Throwable|null $throwable
+         * @param array $exceptions
+         * @return void
+         */
+        return function (Throwable $throwable = null, array $exceptions = []) {
+            if ($throwable) {
+                $class = get_class($throwable);
 
-            PHPUnit::assertFalse(
-                in_array($exception, $exceptions),
-                $this->decodeExceptionMessage($contents)
-            );
+                PHPUnit::assertFalse(
+                    in_array($class, $exceptions),
+                    $throwable->getMessage(),
+                );
+            } else {
+                PHPUnit::assertFalse(false);
+            }
         };
     }
 
     public function expectsTrue()
     {
-        return function ($contents, array $exceptions) {
-            $exception = $this->exceptionType($contents);
+        /*
+         * @param Throwable|null $throwable
+         * @param array $exceptions
+         * @return void
+         */
+        return function (Throwable $throwable = null, array $exceptions = []) {
+            if ($throwable) {
+                $class = get_class($throwable);
 
-            PHPUnit::assertTrue(
-                in_array($exception, $exceptions),
-                $this->decodeExceptionMessage($contents)
-            );
-        };
-    }
-
-    public function exceptionType()
-    {
-        return function ($contents) {
-            return Arr::get($contents, 'exception');
-        };
-    }
-
-    protected function decodeExceptionMessage()
-    {
-        return function ($contents) {
-            if (Arr::get($contents, 'exception') === TypeErrorException::class) {
-                return 'The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.';
+                PHPUnit::assertTrue(
+                    in_array($class, $exceptions),
+                    $throwable->getMessage(),
+                );
+            } else {
+                PHPUnit::assertTrue(true);
             }
-
-            $message = trim(Arr::get($contents, 'message', ''));
-
-            if (isset($contents['specErrors']) && count($contents['specErrors']) > 0 && ! config('spectator.suppress_errors')) {
-                $output = new ConsoleOutput();
-
-                $table = new Table($output);
-                $table->setStyle('borderless');
-
-                $table->setHeaders([
-                    new TableCell(
-                        $message,
-                        [
-                            'style' => new TableCellStyle([
-                                'cellFormat' => '<error>%s</error>',
-                            ]),
-                        ],
-                    ),
-                ]);
-
-                $errors = array_filter($contents['specErrors'], fn ($item) => $item !== $message);
-
-                foreach ($errors as $error) {
-                    $table->addRow(["<fg=red>⨯</> <fg=white>{$error}</>"]);
-                }
-
-                $table->render();
-            }
-
-            return $message;
         };
     }
 }
