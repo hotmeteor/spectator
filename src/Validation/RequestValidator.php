@@ -150,6 +150,30 @@ class RequestValidator extends AbstractValidator
     }
 
     /**
+     * @param  mixed  $parameter
+     * @param  string|null  $type
+     * @return mixed
+     */
+    private function castParameter($parameter, ?string $type)
+    {
+        if ($type === null) {
+            return $parameter;
+        }
+
+        if ($type === 'integer' && filter_var($parameter, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null) {
+            return (int) $parameter;
+        } elseif ($type === 'number' && filter_var($parameter, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE) !== null) {
+            return (float) $parameter;
+        } elseif ($type === 'boolean' && filter_var($parameter, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) !== null) {
+            return filter_var($parameter, FILTER_VALIDATE_BOOLEAN);
+        } elseif ($type === 'string') {
+            return (string) $parameter;
+        }
+
+        return $parameter;
+    }
+
+    /**
      * @throws RequestValidationException|SchemaValidationException
      */
     protected function validateBody(): void
