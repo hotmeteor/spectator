@@ -121,7 +121,7 @@ class RequestValidator extends AbstractValidator
                 } elseif ($parameter->in === 'query' && $this->hasQueryParam($parameter->name)) {
                     $parameter_value = $this->getQueryParam($parameter->name);
 
-                    if ($parameter->explode === false) {
+                    if ($parameter->explode === false && $parameter->schema->type === 'array') {
                         $parameter_value = explode(',', $parameter_value);
                     }
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
