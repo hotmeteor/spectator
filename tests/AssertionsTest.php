@@ -2,6 +2,7 @@
 
 namespace Spectator\Tests;
 
+use ErrorException;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
@@ -35,6 +36,46 @@ class AssertionsTest extends TestCase
         $this->getJson('/invalid')
             ->assertInvalidRequest()
             ->assertValidationMessage('Path [GET /invalid] not found in spec.');
+    }
+
+    public function test_fails_asserts_invalid_path()
+    {
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage('Path [GET /invalid] not found in spec.');
+
+        Route::get('/invalid', function () {
+            return [
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/invalid')
+            ->assertValidRequest();
+    }
+
+    public function test_fails_asserts_invalid_path_without_exception_handling()
+    {
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage('Path [GET /invalid] not found in spec.');
+
+        Route::get('/invalid', function () {
+            return [
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->withoutExceptionHandling();
+
+        $this->getJson('/invalid')
+            ->assertValidRequest();
     }
 
     public function test_exception_points_to_mixin_method()
