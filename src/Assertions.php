@@ -145,6 +145,19 @@ class Assertions
         });
     }
 
+    public function assertPathExists()
+    {
+        return fn () => $this->runAssertion(function () {
+            $exception = app('spectator')->requestException;
+
+            $this->expectsFalse($exception, [
+                InvalidPathException::class,
+            ]);
+
+            return $this;
+        });
+    }
+
     public function dumpSpecErrors()
     {
         return function () {
