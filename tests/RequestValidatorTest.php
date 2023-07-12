@@ -702,7 +702,7 @@ class RequestValidatorTest extends TestCase
         $payload,
         $is_valid
     ): void {
-        Spectator::using("RequiredReadOnly.v1.yml");
+        Spectator::using('RequiredReadOnly.v1.yml');
 
         Route::post('/users')->middleware(Middleware::class);
 
@@ -714,7 +714,7 @@ class RequestValidatorTest extends TestCase
                 ->assertInvalidRequest();
         }
     }
-    
+
     public function requiredReadOnlySchemaProvider(): array
     {
         $valid = true;
@@ -728,7 +728,7 @@ class RequestValidatorTest extends TestCase
                     'arrayProperty' => [
                         [
                             'name' => 'The Hobbit',
-                        ]
+                        ],
                     ],
                     'anyOfProperty' => [
                         'name' => 'The Hobbit',

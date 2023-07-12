@@ -682,7 +682,7 @@ class ResponseValidatorTest extends TestCase
         $payload,
         $is_valid
     ): void {
-        Spectator::using("RequiredWriteOnly.v1.yml");
+        Spectator::using('RequiredWriteOnly.v1.yml');
 
         Route::get('/users', static function () use ($payload) {
             return $payload;
@@ -696,7 +696,7 @@ class ResponseValidatorTest extends TestCase
                 ->assertInvalidResponse();
         }
     }
-    
+
     public function requiredWriteOnlySchemaProvider(): array
     {
         $valid = true;
@@ -710,7 +710,7 @@ class ResponseValidatorTest extends TestCase
                     'arrayProperty' => [
                         [
                             'id' => 2,
-                        ]
+                        ],
                     ],
                     'anyOfProperty' => [
                         'id' => 2,

@@ -3,7 +3,6 @@
 namespace Spectator\Validation;
 
 use cebe\openapi\spec\Operation;
-use cebe\openapi\spec\Parameter;
 use cebe\openapi\spec\PathItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
