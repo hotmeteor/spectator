@@ -27,11 +27,7 @@ abstract class AbstractValidator
 
         $clone = clone $data;
 
-        try {
-            $clone = $this->filterProperties($clone, $mode);
-        } catch (\Throwable $e) {
-            var_dump($e->getMessage());
-        }
+        $clone = $this->filterProperties($clone, $mode);
 
         $v30 = Str::startsWith($this->version, '3.0');
 
@@ -78,10 +74,6 @@ abstract class AbstractValidator
             )
         );
 
-        // if (sizeof($filter_properties) === 0) {
-        //     break;
-        // }
-
         /**
          * Filter out properties from schema's properties.
          */
@@ -103,19 +95,43 @@ abstract class AbstractValidator
         }
 
         foreach ($data->properties as $key => $property) {
-            var_dump("Object Properties: $key");
+            if (isset($property->type)) {
+                $type = $property->type;
+            } elseif (isset($property->anyOf)) {
+                $type = 'anyOf';
+            } elseif (isset($property->allOf)) {
+                $type = 'allOf';
+            } elseif (isset($property->oneOf)) {
+                $type = 'oneOf';
+            } else {
+                $type = null;
+            }
 
-            switch ($property->type) {
+            switch ($type) {
                 case 'object':
+                    if (isset($property->anyOf)) {
+                        var_dump($property);
+                    }
                     $data->properties->$key = $this->filterProperties($property, $mode);
                     break;
 
                 case 'array':
                     $property->items = $this->filterProperties($property->items, $mode);
                     break;
-                
+
+                case 'anyOf':
+                case 'allOf':
+                case 'oneOf':
+                    $property->$type = array_map(
+                        function ($item) use ($mode) {
+                            return $this->filterProperties($item, $mode);
+                        },
+                        $property->$type,
+                    );
+                    break;
+            
                 default:
-                    var_dump('Unknown type: ' . $data->type);
+                    // Unknown type, skip
                     break;
             }
         }

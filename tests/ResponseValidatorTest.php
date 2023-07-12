@@ -707,10 +707,19 @@ class ResponseValidatorTest extends TestCase
                 [
                     'id' => 1,
                     'email' => 'adam@hotmeteor.com',
-                    'books' => [
+                    'arrayProperty' => [
                         [
-                            'name' => 'The Hobbit',
+                            'id' => 2,
                         ]
+                    ],
+                    'anyOfProperty' => [
+                        'id' => 2,
+                    ],
+                    'allOfProperty' => [
+                        'id' => 2,
+                    ],
+                    'oneOfProperty' => [
+                        'id' => 2,
                     ],
                 ],
                 $valid,

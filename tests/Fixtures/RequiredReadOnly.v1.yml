@@ -27,24 +27,52 @@ paths:
                   writeOnly: true
                 email:
                   type: string
-                books:
+                arrayProperty:
                   type: array
                   items:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                        readOnly: true
-                      name:
-                        type: string
-                        writeOnly: true
-                    required:
-                      - id
-                      - name
+                    $ref: '#/components/schemas/refObjectA'
+                anyOfProperty:
+                  anyOf:
+                    - $ref: '#/components/schemas/refObjectA'
+                    - $ref: '#/components/schemas/refObjectA'
+                allOfProperty:
+                  allOf:
+                    - $ref: '#/components/schemas/refObjectA'
+                    - $ref: '#/components/schemas/refObjectA'
+                oneOfProperty:
+                  oneOf:
+                    - $ref: '#/components/schemas/refObjectA'
+                    - $ref: '#/components/schemas/refObjectB'
               required:
                 - id
                 - name
                 - email
-                - books
+                - arrayProperty
+                - anyOfProperty
+                - allOfProperty
+                - oneOfProperty
 components:
-  schemas: {}
+  schemas:
+    refObjectA:
+      type: object
+      properties:
+        id:
+          type: number
+          readOnly: true
+        name:
+          type: string
+          writeOnly: true
+      required:
+        - id
+        - name
+    refObjectB:
+      type: object
+      properties:
+        something:
+          type: string
+          readOnly: true
+        somethingElse:
+          type: string
+      required:
+        - something
+        - somethingElse

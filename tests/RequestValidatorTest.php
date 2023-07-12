@@ -725,10 +725,19 @@ class RequestValidatorTest extends TestCase
                 [
                     'name' => 'Adam Campbell',
                     'email' => 'adam@hotmeteor.com',
-                    'books' => [
+                    'arrayProperty' => [
                         [
                             'name' => 'The Hobbit',
                         ]
+                    ],
+                    'anyOfProperty' => [
+                        'name' => 'The Hobbit',
+                    ],
+                    'allOfProperty' => [
+                        'name' => 'The Hobbit',
+                    ],
+                    'oneOfProperty' => [
+                        'name' => 'The Hobbit',
                     ],
                 ],
                 $valid,
