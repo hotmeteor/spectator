@@ -85,7 +85,7 @@ abstract class AbstractValidator
          * Filter out properties from schema's required properties array.
          * (Skip if nothing to filter out).
          */
-        if (isset($data->required)) { 
+        if (isset($data->required)) {
             $data->required = array_filter(
                 $data->required,
                 function ($property) use ($filter_properties) {
