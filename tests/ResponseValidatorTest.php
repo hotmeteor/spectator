@@ -674,4 +674,69 @@ class ResponseValidatorTest extends TestCase
         $response = $this->getJson('/pets');
         $response->assertValidResponse();
     }
+
+    /**
+     * @dataProvider requiredWriteOnlySchemaProvider
+     */
+    public function test_required_writeonly(
+        $payload,
+        $is_valid
+    ): void {
+        Spectator::using("RequiredWriteOnly.v1.yml");
+
+        Route::get('/users', static function () use ($payload) {
+            return $payload;
+        })->middleware(Middleware::class);
+
+        if ($is_valid) {
+            $this->getJson('/users')
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/users')
+                ->assertInvalidResponse();
+        }
+    }
+    
+    public function requiredWriteOnlySchemaProvider(): array
+    {
+        $valid = true;
+        $invalid = false;
+
+        return [
+            'valid, Writeonly not passed' => [
+                [
+                    'id' => 1,
+                    'email' => 'adam@hotmeteor.com',
+                    'books' => [
+                        [
+                            'name' => 'The Hobbit',
+                        ]
+                    ],
+                ],
+                $valid,
+            ],
+            'Invalid, Books not passed' => [
+                [
+                    'id' => 1,
+                    'email' => 'adam@hotmeteor.com',
+                ],
+                $invalid,
+            ],
+            'invalid, Writeonly passed' => [
+                [
+                    'id' => 1,
+                    'name' => 'Adam Campbell',
+                    'email' => 'adam@hotmeteor.com',
+                ],
+                $invalid,
+            ],
+            'invalid, required not passed' => [
+                [
+                    'name' => 'Adam Campbell',
+                    'email' => 'adam@hotmeteor.com',
+                ],
+                $invalid,
+            ],
+        ];
+    }
 }
