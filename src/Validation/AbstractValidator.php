@@ -14,7 +14,7 @@ abstract class AbstractValidator
      * Check if properties exist, and if so, prepare them based on version.
      *
      * @param  Schema  $schema
-     * @param  string|null $mode Access mode 'read' or 'write'
+     * @param  string|null  $mode  Access mode 'read' or 'write'
      * @return mixed
      */
     protected function prepareData(Schema $schema, string $mode = null)
@@ -39,10 +39,10 @@ abstract class AbstractValidator
     }
 
     /**
-     * Removes readonly properties
+     * Filters out readonly|writeonly properties.
      *
-     * @param $data
-     * @param  string|null $type Access mode 'read' or 'write'
+     * @param  $data
+     * @param  string|null  $type  Access mode 'read' or 'write'
      * @return mixed
      */
     protected function filterProperties(object $data, string $mode = null): object
@@ -68,7 +68,7 @@ abstract class AbstractValidator
         $filter_properties = array_keys(
             array_filter(
                 (array) $data->properties,
-                function($property) use ($filter_by) {
+                function ($property) use ($filter_by) {
                     return isset($property->$filter_by) && $property->$filter_by === true;
                 },
             )
@@ -83,13 +83,13 @@ abstract class AbstractValidator
 
         /**
          * Filter out properties from schema's required properties array.
-         * (Skip if nothing to filter out)
+         * (Skip if nothing to filter out).
          */
         if (isset($data->required)) { 
             $data->required = array_filter(
                 $data->required,
-                function($property) use ($filter_properties) {
-                    return !in_array($property, $filter_properties);
+                function ($property) use ($filter_properties) {
+                    return ! in_array($property, $filter_properties);
                 },
             );
         }
@@ -109,9 +109,6 @@ abstract class AbstractValidator
 
             switch ($type) {
                 case 'object':
-                    if (isset($property->anyOf)) {
-                        var_dump($property);
-                    }
                     $data->properties->$key = $this->filterProperties($property, $mode);
                     break;
 
@@ -129,7 +126,7 @@ abstract class AbstractValidator
                         $property->$type,
                     );
                     break;
-            
+
                 default:
                     // Unknown type, skip
                     break;
@@ -149,7 +146,7 @@ abstract class AbstractValidator
      *     ...
      * ]
      *
-     * @param $properties
+     * @param  $properties
      * @return mixed
      */
     protected function wrapAttributesToArray($properties)
