@@ -14,9 +14,10 @@ abstract class AbstractValidator
      * Check if properties exist, and if so, prepare them based on version.
      *
      * @param  Schema  $schema
+     * @param  string|null $mode Access mode 'read' or 'write'
      * @return mixed
      */
-    protected function prepareData(Schema $schema)
+    protected function prepareData(Schema $schema, string $mode = null)
     {
         $data = $schema->getSerializableData();
 
@@ -26,6 +27,12 @@ abstract class AbstractValidator
 
         $clone = clone $data;
 
+        try {
+            $clone = $this->filterProperties($clone, $mode);
+        } catch (\Throwable $e) {
+            var_dump($e->getMessage());
+        }
+
         $v30 = Str::startsWith($this->version, '3.0');
 
         if ($v30) {
@@ -33,6 +40,87 @@ abstract class AbstractValidator
         }
 
         return $clone;
+    }
+
+    /**
+     * Removes readonly properties
+     *
+     * @param $data
+     * @param  string|null $type Access mode 'read' or 'write'
+     * @return mixed
+     */
+    protected function filterProperties(object $data, string $mode = null): object
+    {
+        if (data_get($data, '$ref')) {
+            return $data;
+        }
+
+        switch ($mode) {
+            case 'read':
+                $filter_by = 'writeOnly';
+                break;
+            case 'write':
+                $filter_by = 'readOnly';
+                break;
+            default:
+                return $data;
+        }
+
+        /**
+         * Create a new array of properties that need to be filtered out.
+         */
+        $filter_properties = array_keys(
+            array_filter(
+                (array) $data->properties,
+                function($property) use ($filter_by) {
+                    return isset($property->$filter_by) && $property->$filter_by === true;
+                },
+            )
+        );
+
+        // if (sizeof($filter_properties) === 0) {
+        //     break;
+        // }
+
+        /**
+         * Filter out properties from schema's properties.
+         */
+        foreach ($filter_properties as $property) {
+            unset($data->properties->$property);
+        }
+
+        /**
+         * Filter out properties from schema's required properties array.
+         * (Skip if nothing to filter out)
+         */
+        if (isset($data->required)) { 
+            $data->required = array_filter(
+                $data->required,
+                function($property) use ($filter_properties) {
+                    return !in_array($property, $filter_properties);
+                },
+            );
+        }
+
+        foreach ($data->properties as $key => $property) {
+            var_dump("Object Properties: $key");
+
+            switch ($property->type) {
+                case 'object':
+                    $data->properties->$key = $this->filterProperties($property, $mode);
+                    break;
+
+                case 'array':
+                    $property->items = $this->filterProperties($property->items, $mode);
+                    break;
+                
+                default:
+                    var_dump('Unknown type: ' . $data->type);
+                    break;
+            }
+        }
+
+        return $data;
     }
 
     /**

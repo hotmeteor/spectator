@@ -202,7 +202,7 @@ class RequestValidator extends AbstractValidator
                 $actual_body_schema = $this->parseBodySchema();
             }
         }
-        $expected_body_schema = $this->prepareData($expected_body_raw_schema);
+        $expected_body_schema = $this->prepareData($expected_body_raw_schema, 'write');
 
         // Run validation.
         $validator = new Validator();

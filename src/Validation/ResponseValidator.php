@@ -89,7 +89,7 @@ class ResponseValidator extends AbstractValidator
      */
     protected function validateResponse(Schema $schema, $body)
     {
-        $expected_schema = $this->prepareData($schema);
+        $expected_schema = $this->prepareData($schema, 'read');
 
         $validator = $this->validator();
         $result = $validator->validate($body, $expected_schema);
