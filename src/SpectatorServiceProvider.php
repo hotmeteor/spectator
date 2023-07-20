@@ -28,7 +28,7 @@ class SpectatorServiceProvider extends ServiceProvider
 
     protected function mergeConfig()
     {
-        $configPath = __DIR__ . '/../config/spectator.php';
+        $configPath = __DIR__.'/../config/spectator.php';
 
         $this->mergeConfigFrom($configPath, 'spectator');
     }
@@ -54,7 +54,7 @@ class SpectatorServiceProvider extends ServiceProvider
 
     protected function publishConfig()
     {
-        $configPath = __DIR__ . '/../config/spectator.php';
+        $configPath = __DIR__.'/../config/spectator.php';
 
         $this->publishes([$configPath => $this->getConfigPath()], 'config');
     }
