@@ -45,7 +45,7 @@ abstract class AbstractValidator
      *     ...
      * ]
      *
-     * @param $properties
+     * @param  $properties
      * @return mixed
      */
     protected function wrapAttributesToArray($properties)

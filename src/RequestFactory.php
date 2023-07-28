@@ -44,7 +44,7 @@ class RequestFactory
     /**
      * Set the file name of the spec.
      *
-     * @param $name
+     * @param  $name
      */
     public function using($name)
     {
@@ -64,8 +64,8 @@ class RequestFactory
     /**
      * Set the prefix for the API paths.
      *
-     * @param $pathPrefix
-     * return RequestFactory
+     * @param  $pathPrefix
+     *                      return RequestFactory
      */
     public function setPathPrefix($pathPrefix): self
     {
@@ -182,7 +182,7 @@ class RequestFactory
      * Retrieve a local spec file.
      *
      * @param  array  $source
-     * @param $file
+     * @param  $file
      * @return string
      *
      * @throws MissingSpecException
@@ -204,7 +204,7 @@ class RequestFactory
      * Retrieve a remote spec file.
      *
      * @param  array  $source
-     * @param $file
+     * @param  $file
      * @return string
      */
     protected function getRemotePath(array $source, $file): string
@@ -222,7 +222,7 @@ class RequestFactory
      * Build a Github path.
      *
      * @param  array  $source
-     * @param $file
+     * @param  $file
      * @return string
      */
     protected function getGithubPath(array $source, $file): string
@@ -235,7 +235,7 @@ class RequestFactory
     /**
      * Standardize a file name.
      *
-     * @param $file
+     * @param  $file
      * @return string
      */
     protected function standardizeFileName($file): string
@@ -250,7 +250,7 @@ class RequestFactory
     /**
      * Standardize a path.
      *
-     * @param $path
+     * @param  $path
      * @return string
      */
     protected function standardizePath($path): string
