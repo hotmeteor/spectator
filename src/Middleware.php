@@ -81,8 +81,8 @@ class Middleware
     }
 
     /**
-     * @param $exception
-     * @param $code
+     * @param  $exception
+     * @param  $code
      * @return JsonResponse
      */
     protected function formatResponse($exception, $code): JsonResponse
@@ -143,8 +143,8 @@ class Middleware
     }
 
     /**
-     * @param $request_path
-     * @param $request_method
+     * @param  $request_path
+     * @param  $request_method
      * @return PathItem
      *
      * @throws InvalidPathException
