@@ -35,7 +35,11 @@ class SpectatorServiceProvider extends ServiceProvider
 
     protected function registerMiddleware()
     {
-        $this->app[Kernel::class]->prependMiddlewareToGroup('api', Middleware::class);
+        $groups = config('spectator.middleware_groups');
+
+        foreach ($groups as $group) {
+            $this->app[Kernel::class]->prependMiddlewareToGroup($group, Middleware::class);
+        }
     }
 
     protected function decorateTestResponse()

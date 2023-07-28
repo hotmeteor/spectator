@@ -65,4 +65,15 @@ return [
     */
 
     'suppress_errors' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Middleware Groups
+    |--------------------------------------------------------------------------
+    |
+    | Specify the groups that spectator's middleware should be prepended to.
+    |
+    */
+
+    'middleware_groups' => ['api'],
 ];
