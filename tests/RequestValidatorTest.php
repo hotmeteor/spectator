@@ -656,6 +656,27 @@ class RequestValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
+    public function test_comma_separated_values()
+    {
+        Spectator::using('CommaSeparatedString.v1.json');
+
+        Route::get('/users', function () {
+            return [
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ];
+        })
+            ->middleware(Middleware::class);
+
+        $this->getJson('/users?include=foo,bar')
+            ->assertStatus(200)
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
     public function nullableObjectProvider(): array
     {
         return [
