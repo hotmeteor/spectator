@@ -66,8 +66,8 @@ class Middleware
         }
 
         try {
-            $request_path = $request->route()->uri();
-            $pathItem = $this->pathItem($request_path, $request->method());
+            $requestPath = $request->route()->uri();
+            $pathItem = $this->pathItem($requestPath, $request->method());
         } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
             $this->spectator->captureRequestValidation($exception);
 
@@ -75,7 +75,7 @@ class Middleware
         }
 
         try {
-            return $this->validate($request, $next, $request_path, $pathItem);
+            return $this->validate($request, $next, $requestPath, $pathItem);
         } catch (\Throwable $exception) {
             if ($this->exceptionHandler->shouldReport($exception)) {
                 return $this->formatResponse($exception, 500);
@@ -105,11 +105,11 @@ class Middleware
     /**
      * @param  Request  $request
      * @param  Closure  $next
-     * @param  string  $request_path
+     * @param  string  $requestPath
      * @param  PathItem  $pathItem
      * @return mixed
      */
-    protected function validate(Request $request, Closure $next, string $request_path, PathItem $pathItem)
+    protected function validate(Request $request, Closure $next, string $requestPath, PathItem $pathItem)
     {
         try {
             RequestValidator::validate(
@@ -125,7 +125,7 @@ class Middleware
 
         try {
             ResponseValidator::validate(
-                $request_path,
+                $requestPath,
                 $response,
                 $pathItem->{strtolower($request->method())},
                 $this->version
@@ -138,8 +138,8 @@ class Middleware
     }
 
     /**
-     * @param  $request_path
-     * @param  $request_method
+     * @param  $requestPath
+     * @param  $requestMethod
      * @return PathItem
      *
      * @throws InvalidPathException
@@ -150,10 +150,10 @@ class Middleware
      * @throws IOException
      * @throws InvalidJsonPointerSyntaxException
      */
-    protected function pathItem($request_path, $request_method): PathItem
+    protected function pathItem($requestPath, $requestMethod): PathItem
     {
-        if (! Str::startsWith($request_path, '/')) {
-            $request_path = '/'.$request_path;
+        if (! Str::startsWith($requestPath, '/')) {
+            $requestPath = '/'.$requestPath;
         }
 
         $openapi = $this->spectator->resolve();
@@ -161,19 +161,19 @@ class Middleware
         $this->version = $openapi->openapi;
 
         foreach ($openapi->paths as $path => $pathItem) {
-            if ($this->resolvePath($path) === $request_path) {
+            if ($this->resolvePath($path) === $requestPath) {
                 $methods = array_keys($pathItem->getOperations());
 
                 // Check if the method exists for this path, and if so return the full PathItem
-                if (in_array(strtolower($request_method), $methods, true)) {
+                if (in_array(strtolower($requestMethod), $methods, true)) {
                     return $pathItem;
                 }
 
-                throw new InvalidPathException("[{$request_method}] not a valid method for [{$request_path}].", 405);
+                throw new InvalidPathException("[{$requestMethod}] not a valid method for [{$requestPath}].", 405);
             }
         }
 
-        throw new InvalidPathException("Path [{$request_method} {$request_path}] not found in spec.", 404);
+        throw new InvalidPathException("Path [{$requestMethod} {$requestPath}] not found in spec.", 404);
     }
 
     /**
