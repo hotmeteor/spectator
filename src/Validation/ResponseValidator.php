@@ -81,9 +81,6 @@ class ResponseValidator extends AbstractValidator
     }
 
     /**
-     * @param  Schema  $schema
-     * @param  $body
-     *
      * @throws ResponseValidationException
      * @throws SchemaValidationException
      */
@@ -151,8 +148,6 @@ class ResponseValidator extends AbstractValidator
     }
 
     /**
-     * @param  $contentType
-     * @param  $schemaType
      * @return mixed
      *
      * @throws ResponseValidationException

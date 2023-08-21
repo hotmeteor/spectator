@@ -14,33 +14,16 @@ use Spectator\Exceptions\SchemaValidationException;
 
 class RequestValidator extends AbstractValidator
 {
-    /**
-     * @var Request
-     */
     protected Request $request;
 
-    /**
-     * @var PathItem
-     */
     protected PathItem $pathItem;
 
-    /**
-     * @var string
-     */
     protected string $method;
 
-    /**
-     * @var array
-     */
     protected array $parameters;
 
     /**
      * RequestValidator constructor.
-     *
-     * @param  Request  $request
-     * @param  PathItem  $pathItem
-     * @param  string  $method
-     * @param  string  $version
      */
     public function __construct(Request $request, PathItem $pathItem, string $method, string $version = '3.0')
     {
@@ -51,10 +34,6 @@ class RequestValidator extends AbstractValidator
     }
 
     /**
-     * @param  Request  $request
-     * @param  PathItem  $pathItem
-     * @param  string  $method
-     *
      * @throws RequestValidationException|SchemaValidationException
      */
     public static function validate(Request $request, PathItem $pathItem, string $method)
@@ -154,7 +133,6 @@ class RequestValidator extends AbstractValidator
 
     /**
      * @param  mixed  $parameter
-     * @param  string|null  $type
      * @return mixed
      */
     private function castParameter($parameter, ?string $type)
@@ -218,9 +196,6 @@ class RequestValidator extends AbstractValidator
         }
     }
 
-    /**
-     * @return Operation
-     */
     protected function operation(): Operation
     {
         return $this->pathItem->{$this->method};

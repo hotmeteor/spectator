@@ -16,35 +16,18 @@ class RequestFactory
 {
     use Macroable;
 
-    /**
-     * @var Throwable|null
-     */
     public ?Throwable $requestException = null;
 
-    /**
-     * @var Throwable|null
-     */
     public ?Throwable $responseException = null;
 
-    /**
-     * @var string|null
-     */
     protected ?string $specName = null;
 
-    /**
-     * @var string|null
-     */
     protected ?string $pathPrefix = null;
 
-    /**
-     * @var array
-     */
     private array $cachedSpecs = [];
 
     /**
      * Set the file name of the spec.
-     *
-     * @param  $name
      */
     public function using($name)
     {
@@ -53,8 +36,6 @@ class RequestFactory
 
     /**
      * Get the file name of the spec.
-     *
-     * @return string|null
      */
     public function getSpec(): ?string
     {
@@ -64,7 +45,7 @@ class RequestFactory
     /**
      * Set the prefix for the API paths.
      *
-     * @param  $pathPrefix
+     * @param    $pathPrefix
      *                      return RequestFactory
      */
     public function setPathPrefix($pathPrefix): self
@@ -76,8 +57,6 @@ class RequestFactory
 
     /**
      * Get the prefix for the API paths.
-     *
-     * @return string
      */
     public function getPathPrefix(): string
     {
@@ -99,7 +78,6 @@ class RequestFactory
     /**
      * Resolve and parse the spec.
      *
-     * @return OpenApi
      *
      * @throws \cebe\openapi\exceptions\IOException
      * @throws \cebe\openapi\exceptions\TypeErrorException
@@ -137,7 +115,6 @@ class RequestFactory
     }
 
     /**
-     * @param  Throwable  $throwable
      * @return void
      */
     public function captureRequestValidation(Throwable $throwable)
@@ -146,7 +123,6 @@ class RequestFactory
     }
 
     /**
-     * @param  Throwable  $throwable
      * @return void
      */
     public function captureResponseValidation(Throwable $throwable)
@@ -181,9 +157,6 @@ class RequestFactory
     /**
      * Retrieve a local spec file.
      *
-     * @param  array  $source
-     * @param  $file
-     * @return string
      *
      * @throws MissingSpecException
      */
@@ -202,10 +175,6 @@ class RequestFactory
 
     /**
      * Retrieve a remote spec file.
-     *
-     * @param  array  $source
-     * @param  $file
-     * @return string
      */
     protected function getRemotePath(array $source, $file): string
     {
@@ -220,10 +189,6 @@ class RequestFactory
 
     /**
      * Build a Github path.
-     *
-     * @param  array  $source
-     * @param  $file
-     * @return string
      */
     protected function getGithubPath(array $source, $file): string
     {
@@ -234,9 +199,6 @@ class RequestFactory
 
     /**
      * Standardize a file name.
-     *
-     * @param  $file
-     * @return string
      */
     protected function standardizeFileName($file): string
     {
@@ -249,9 +211,6 @@ class RequestFactory
 
     /**
      * Standardize a path.
-     *
-     * @param  $path
-     * @return string
      */
     protected function standardizePath($path): string
     {
