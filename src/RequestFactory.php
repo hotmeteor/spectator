@@ -45,8 +45,8 @@ class RequestFactory
     /**
      * Set the prefix for the API paths.
      *
-     * @param    $pathPrefix
-     *                      return RequestFactory
+     * @param  $pathPrefix
+     * @return static
      */
     public function setPathPrefix($pathPrefix): self
     {
