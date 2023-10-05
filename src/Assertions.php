@@ -68,6 +68,11 @@ class Assertions
                 UnresolvableReferenceException::class,
             ]);
 
+            // If there's an issue with spectator throw so we don't have hidden exceptions.
+            if ($exception && strpos($exception->getTrace()[1]['file'], 'spectator/src') !== false) {
+                throw $exception;
+            }
+
             if ($status) {
                 $actual = $this->getStatusCode();
 
