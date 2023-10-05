@@ -57,7 +57,7 @@ class ResponseValidator extends AbstractValidator
         // This is a bit hacky, but will allow resolving other JSON responses like application/problem+json
         // when returning standard JSON responses from frameworks (See hotmeteor/spectator#114)
 
-        $specTypes = array_values(array_map(
+        $specTypes = array_combine(array_keys($response->content), array_map(
             fn ($type) => $contentType === 'application/json' && Str::endsWith($type, '+json') ? 'application/json' : $type,
             array_keys($response->content)
         ));
@@ -71,6 +71,9 @@ class ResponseValidator extends AbstractValidator
 
             throw new ResponseValidationException($message);
         }
+
+        // Lookup the content type specified in the spec that match the application/json content type
+        $contentType = array_flip($specTypes)[$contentType];
 
         $schema = $response->content[$contentType]->schema;
 
