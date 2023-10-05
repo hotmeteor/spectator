@@ -669,7 +669,7 @@ class ResponseValidatorTest extends TestCase
                     ['age' => 5, 'nickname' => 'nick'],
                     // PetByType
                     ['pet_type' => 'Dog', 'hunts' => false],
-                ]
+                ],
             ];
         })->middleware(Middleware::class);
 
