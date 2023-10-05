@@ -62,78 +62,89 @@ abstract class AbstractValidator
                 return $data;
         }
 
-        /**
-         * Create a new array of properties that need to be filtered out.
-         */
-        $filter_properties = array_keys(
-            array_filter(
-                (array) $data->properties,
-                function ($property) use ($filter_by) {
-                    return isset($property->$filter_by) && $property->$filter_by === true;
-                },
-            )
-        );
-
-        /**
-         * Filter out properties from schema's properties.
-         */
-        foreach ($filter_properties as $property) {
-            unset($data->properties->$property);
-        }
-
-        /**
-         * Filter out properties from schema's required properties array.
-         * (Skip if nothing to filter out).
-         */
-        if (isset($data->required)) {
-            $data->required = array_filter(
-                $data->required,
-                function ($property) use ($filter_properties) {
-                    return ! in_array($property, $filter_properties);
-                },
+        if (isset($data->properties)) {
+            /**
+             * Create a new array of properties that need to be filtered out.
+             */
+            $filter_properties = array_keys(
+                array_filter(
+                    (array) $data->properties,
+                    function ($property) use ($filter_by) {
+                        return isset($property->$filter_by) && $property->$filter_by === true;
+                    },
+                )
             );
-        }
 
-        foreach ($data->properties as $key => $property) {
-            if (isset($property->type)) {
-                $type = $property->type;
-            } elseif (isset($property->anyOf)) {
-                $type = 'anyOf';
-            } elseif (isset($property->allOf)) {
-                $type = 'allOf';
-            } elseif (isset($property->oneOf)) {
-                $type = 'oneOf';
-            } else {
-                $type = null;
+            /**
+             * Filter out properties from schema's properties.
+             */
+            foreach ($filter_properties as $property) {
+                unset($data->properties->$property);
             }
 
-            switch ($type) {
-                case 'object':
-                    $data->properties->$key = $this->filterProperties($property, $mode);
-                    break;
-
-                case 'array':
-                    $property->items = $this->filterProperties($property->items, $mode);
-                    break;
-
-                case 'anyOf':
-                case 'allOf':
-                case 'oneOf':
-                    $property->$type = array_map(
-                        function ($item) use ($mode) {
-                            return $this->filterProperties($item, $mode);
-                        },
-                        $property->$type,
-                    );
-                    break;
-
-                default:
-                    // Unknown type, skip
-                    break;
+            /**
+             * Filter out properties from schema's required properties array.
+             * (Skip if nothing to filter out).
+             */
+            if (isset($data->required)) {
+                $data->required = array_filter(
+                    $data->required,
+                    function ($property) use ($filter_properties) {
+                        return ! in_array($property, $filter_properties);
+                    },
+                );
             }
+
+            foreach ($data->properties as $key => $property) {
+                $data->properties->$key = $this->parseProperty($property, $mode);
+            }
+        } else {
+            $data = $this->parseProperty($data, $mode);
         }
 
         return $data;
+    }
+
+    private function parseProperty($property, ?string $mode)
+    {
+        if (isset($property->type)) {
+            $type = $property->type;
+        } elseif (isset($property->anyOf)) {
+            $type = 'anyOf';
+        } elseif (isset($property->allOf)) {
+            $type = 'allOf';
+        } elseif (isset($property->oneOf)) {
+            $type = 'oneOf';
+        } else {
+            $type = null;
+        }
+
+        switch ($type) {
+            case 'object':
+                $property = $this->filterProperties($property, $mode);
+                break;
+
+            case 'array':
+                $property->items = $this->filterProperties($property->items, $mode);
+                break;
+
+            case 'anyOf':
+            case 'allOf':
+            case 'oneOf':
+                $property->$type = array_map(
+                    function ($item) use ($mode) {
+                        return $this->filterProperties($item, $mode);
+                    },
+                    $property->$type,
+                );
+                break;
+
+            default:
+                // Unknown type, skip
+                break;
+        }
+
+        return $property;
     }
 
     /**

@@ -13,11 +13,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  anyOf:
-                    - $ref: '#/components/schemas/PetByAge'
-                    - $ref: '#/components/schemas/PetByType'
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      anyOf:
+                        - $ref: '#/components/schemas/PetByAge'
+                        - $ref: '#/components/schemas/PetByType'
 components:
   schemas:
     PetByAge:

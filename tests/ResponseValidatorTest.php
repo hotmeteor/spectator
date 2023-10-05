@@ -660,19 +660,21 @@ class ResponseValidatorTest extends TestCase
 
     public function test_array_any_of(): void
     {
-        Spectator::using('ArrayAnyOf.v1.yaml');
+        Spectator::using('ArrayAnyOf.v1.yml');
 
-        Route::patch('/pets', static function () {
+        Route::get('/pets', static function () {
             return [
-                // PetByAge
-                ['age' => 5, 'nickname' => 'nick'],
-                // PetByType
-                ['pet_type' => 'Dog', 'hunts' => false],
+                'data' => [
+                    // PetByAge
+                    ['age' => 5, 'nickname' => 'nick'],
+                    // PetByType
+                    ['pet_type' => 'Dog', 'hunts' => false],
+                ]
             ];
         })->middleware(Middleware::class);
 
         $response = $this->getJson('/pets');
-        $response->assertValidResponse();
+        $response->assertValidRequest()->assertValidResponse();
     }
 
     /**
