@@ -80,7 +80,7 @@ class AssertionsTest extends TestCase
 
     public function test_exception_points_to_mixin_method()
     {
-        $this->expectException(\ErrorException::class);
+        $this->expectException(ErrorException::class);
         $this->expectExceptionCode(0);
         $this->expectExceptionMessage('No response object matching returned status code [500].');
 
@@ -125,7 +125,7 @@ class AssertionsTest extends TestCase
 
     public function test_asserts_path_does_not_exist()
     {
-        $this->expectException(\ErrorException::class);
+        $this->expectException(ErrorException::class);
         $this->expectExceptionCode(0);
         $this->expectExceptionMessage('Path [GET /invalid] not found in spec.');
 
