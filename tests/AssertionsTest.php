@@ -114,4 +114,24 @@ class AssertionsTest extends TestCase
             ->assertValidRequest()
             ->assertValidResponse(422);
     }
+
+    public function test_asserts_path_exists()
+    {
+        Route::get('/users')->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertPathExists();
+    }
+
+    public function test_asserts_path_does_not_exist()
+    {
+        $this->expectException(\ErrorException::class);
+        $this->expectExceptionCode(0);
+        $this->expectExceptionMessage('Path [GET /invalid] not found in spec.');
+
+        Route::get('/invalid')->middleware(Middleware::class);
+
+        $this->getJson('/invalid')
+            ->assertPathExists();
+    }
 }

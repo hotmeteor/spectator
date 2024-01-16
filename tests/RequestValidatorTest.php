@@ -715,6 +715,77 @@ class RequestValidatorTest extends TestCase
         $this->getJson('/posts/invalid')
             ->assertValidResponse();
     }
+
+    /**
+     * @dataProvider requiredReadOnlySchemaProvider
+     */
+    public function test_required_readonly(
+        $payload,
+        $is_valid
+    ): void {
+        Spectator::using('RequiredReadOnly.v1.yml');
+
+        Route::post('/users')->middleware(Middleware::class);
+
+        if ($is_valid) {
+            $this->postJson('/users', $payload)
+                ->assertValidRequest();
+        } else {
+            $this->postJson('/users', $payload)
+                ->assertInvalidRequest();
+        }
+    }
+
+    public function requiredReadOnlySchemaProvider(): array
+    {
+        $valid = true;
+        $invalid = false;
+
+        return [
+            'valid, Readonly not passed' => [
+                [
+                    'name' => 'Adam Campbell',
+                    'email' => 'adam@hotmeteor.com',
+                    'arrayProperty' => [
+                        [
+                            'name' => 'The Hobbit',
+                        ],
+                    ],
+                    'anyOfProperty' => [
+                        'name' => 'The Hobbit',
+                    ],
+                    'allOfProperty' => [
+                        'name' => 'The Hobbit',
+                    ],
+                    'oneOfProperty' => [
+                        'name' => 'The Hobbit',
+                    ],
+                ],
+                $valid,
+            ],
+            'Invalid, Books not passed' => [
+                [
+                    'name' => 'Adam Campbell',
+                    'email' => 'adam@hotmeteor.com',
+                ],
+                $invalid,
+            ],
+            'invalid, Readonly passed' => [
+                [
+                    'id' => 1,
+                    'name' => 'Adam Campbell',
+                    'email' => 'adam@hotmeteor.com',
+                ],
+                $invalid,
+            ],
+            'invalid, Required not passed' => [
+                [
+                    'email' => 'adam@hotmeteor.com',
+                ],
+                $invalid,
+            ],
+        ];
+    }
 }
 
 class TestUser extends Model
