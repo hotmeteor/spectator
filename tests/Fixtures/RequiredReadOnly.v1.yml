@@ -1,0 +1,78 @@
+openapi: 3.0.0
+info:
+  title: Test.v1
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /users:
+    post:
+      summary: Create user
+      tags: []
+      responses:
+        '201':
+          description: Created
+      operationId: post-users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  readOnly: true
+                name:
+                  type: string
+                  writeOnly: true
+                email:
+                  type: string
+                arrayProperty:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/refObjectA'
+                anyOfProperty:
+                  anyOf:
+                    - $ref: '#/components/schemas/refObjectA'
+                    - $ref: '#/components/schemas/refObjectA'
+                allOfProperty:
+                  allOf:
+                    - $ref: '#/components/schemas/refObjectA'
+                    - $ref: '#/components/schemas/refObjectA'
+                oneOfProperty:
+                  oneOf:
+                    - $ref: '#/components/schemas/refObjectA'
+                    - $ref: '#/components/schemas/refObjectB'
+              required:
+                - id
+                - name
+                - email
+                - arrayProperty
+                - anyOfProperty
+                - allOfProperty
+                - oneOfProperty
+components:
+  schemas:
+    refObjectA:
+      type: object
+      properties:
+        id:
+          type: number
+          readOnly: true
+        name:
+          type: string
+          writeOnly: true
+      required:
+        - id
+        - name
+    refObjectB:
+      type: object
+      properties:
+        something:
+          type: string
+          readOnly: true
+        somethingElse:
+          type: string
+      required:
+        - something
+        - somethingElse
