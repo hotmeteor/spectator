@@ -27,8 +27,8 @@ class MiddlewareTest extends TestCase
 
             return [
                 [
-                    'id' => 1,
-                    'name' => 'Jim',
+                    'id'    => 1,
+                    'name'  => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
