@@ -13,15 +13,16 @@ abstract class AbstractValidator
     /**
      * Check if properties exist, and if so, prepare them based on version.
      *
-     * @param  Schema  $schema
-     * @param  string|null  $mode  Access mode 'read' or 'write'
+     * @param Schema      $schema
+     * @param string|null $mode   Access mode 'read' or 'write'
+     *
      * @return mixed
      */
     protected function prepareData(Schema $schema, string $mode = null)
     {
         $data = $schema->getSerializableData();
 
-        if (! isset($data->properties)) {
+        if (!isset($data->properties)) {
             return $data;
         }
 
@@ -41,8 +42,9 @@ abstract class AbstractValidator
     /**
      * Filters out readonly|writeonly properties.
      *
-     * @param  $data
-     * @param  string|null  $type  Access mode 'read' or 'write'
+     * @param             $data
+     * @param string|null $type Access mode 'read' or 'write'
+     *
      * @return mixed
      */
     protected function filterProperties(object $data, string $mode = null): object
@@ -89,7 +91,7 @@ abstract class AbstractValidator
             $data->required = array_filter(
                 $data->required,
                 function ($property) use ($filter_properties) {
-                    return ! in_array($property, $filter_properties);
+                    return !in_array($property, $filter_properties);
                 },
             );
         }
@@ -146,7 +148,8 @@ abstract class AbstractValidator
      *     ...
      * ]
      *
-     * @param  $properties
+     * @param $properties
+     *
      * @return mixed
      */
     protected function wrapAttributesToArray($properties)
@@ -177,7 +180,7 @@ abstract class AbstractValidator
             }
 
             // Before we check recursive cases, make sure this object defines a "type".
-            if (! isset($attributes->type)) {
+            if (!isset($attributes->type)) {
                 break;
             }
 

@@ -26,8 +26,8 @@ class AssertionsTest extends TestCase
         Route::get('/invalid', function () {
             return [
                 [
-                    'id' => 1,
-                    'name' => 'Jim',
+                    'id'    => 1,
+                    'name'  => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -46,8 +46,8 @@ class AssertionsTest extends TestCase
         Route::get('/invalid', function () {
             return [
                 [
-                    'id' => 1,
-                    'name' => 'Jim',
+                    'id'    => 1,
+                    'name'  => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -65,8 +65,8 @@ class AssertionsTest extends TestCase
         Route::get('/invalid', function () {
             return [
                 [
-                    'id' => 1,
-                    'name' => 'Jim',
+                    'id'    => 1,
+                    'name'  => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -106,7 +106,7 @@ class AssertionsTest extends TestCase
         })->middleware(Middleware::class);
 
         $response = $this->postJson('/users', [
-            'name' => 'Jane Doe',
+            'name'  => 'Jane Doe',
             'email' => 'jane.doe@example.com',
         ]);
 
