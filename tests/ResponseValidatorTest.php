@@ -26,8 +26,8 @@ class ResponseValidatorTest extends TestCase
         Route::get('/users', static function () {
             return [
                 [
-                    'id' => 1,
-                    'name' => 'Jim',
+                    'id'    => 1,
+                    'name'  => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -56,7 +56,7 @@ class ResponseValidatorTest extends TestCase
         Route::get('/users', static function () {
             return [
                 [
-                    'id' => 1,
+                    'id'    => 1,
                     'email' => 'invalid',
                 ],
             ];
@@ -73,8 +73,8 @@ class ResponseValidatorTest extends TestCase
         Route::get('/users', function () {
             return response()->json([
                 [
-                    'id' => 1,
-                    'name' => 'Jim',
+                    'id'    => 1,
+                    'name'  => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ], 422, ['Content-Type' => 'application/problem+json']);
@@ -103,7 +103,7 @@ class ResponseValidatorTest extends TestCase
         Route::get('/users', function () {
             return response()->json([
                 [
-                    'id' => 1,
+                    'id'    => 1,
                     'email' => 'invalid',
                 ],
             ], 422, ['Content-Type' => 'application/problem+json']);
@@ -160,8 +160,8 @@ class ResponseValidatorTest extends TestCase
         Route::get('/api/v2/users', static function () {
             return [
                 [
-                    'id' => 1,
-                    'name' => 'Jim',
+                    'id'    => 1,
+                    'name'  => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -208,8 +208,8 @@ class ResponseValidatorTest extends TestCase
         Route::get('/users/{user}', static function () use ($state) {
             $return = [
                 'first_name' => 'Joe',
-                'last_name' => 'Bloggs',
-                'posts' => [
+                'last_name'  => 'Bloggs',
+                'posts'      => [
                     ['title' => 'My first post!'],
                 ],
             ];
@@ -339,7 +339,7 @@ class ResponseValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $request = [
-            'bark' => true,
+            'bark'  => true,
             'breed' => 'Dingo',
         ];
 
@@ -360,7 +360,7 @@ class ResponseValidatorTest extends TestCase
         return [
             'valid response, first type' => [
                 [
-                    'bark' => true,
+                    'bark'  => true,
                     'breed' => 'Dingo',
                 ],
                 $valid,
@@ -368,23 +368,23 @@ class ResponseValidatorTest extends TestCase
             'valid response, second type' => [
                 [
                     'hunts' => true,
-                    'age' => 2,
+                    'age'   => 2,
                 ],
                 $valid,
             ],
             'invalid response' => [
                 [
-                    'bark' => true,
+                    'bark'  => true,
                     'hunts' => false,
                 ],
                 $invalid,
             ],
             'invalid response, mixed' => [
                 [
-                    'bark' => true,
+                    'bark'  => true,
                     'hunts' => false,
                     'breed' => 'Husky',
-                    'age' => 3,
+                    'age'   => 3,
                 ],
                 $invalid,
             ],
@@ -431,7 +431,7 @@ class ResponseValidatorTest extends TestCase
             'valid, other required' => [
                 [
                     'pet_type' => 'Cat',
-                    'hunts' => true,
+                    'hunts'    => true,
                 ],
                 $valid,
             ],
@@ -439,14 +439,14 @@ class ResponseValidatorTest extends TestCase
                 [
                     'nickname' => 'Fido',
                     'pet_type' => 'Dog',
-                    'age' => 4,
+                    'age'      => 4,
                 ],
                 $valid,
             ],
             'invalid request, missing required' => [
                 [
                     'nickname' => 'Mr. Paws',
-                    'hunts' => false,
+                    'hunts'    => false,
                 ],
                 $invalid,
             ],
@@ -467,8 +467,8 @@ class ResponseValidatorTest extends TestCase
 
         $request = [
             'pet_type' => 'Cat',
-            'age' => 3,
-            'hunts' => true,
+            'age'      => 3,
+            'hunts'    => true,
         ];
 
         $handled_request = $this->patchJson('/pets', $request);
@@ -489,23 +489,23 @@ class ResponseValidatorTest extends TestCase
             'valid, Cat' => [
                 [
                     'pet_type' => 'Cat',
-                    'age' => 3,
-                    'hunts' => true,
+                    'age'      => 3,
+                    'hunts'    => true,
                 ],
                 $valid,
             ],
             'valid, Dog' => [
                 [
                     'pet_type' => 'Dog',
-                    'bark' => true,
+                    'bark'     => true,
                 ],
                 $valid,
             ],
             'valid, Dog 2' => [
                 [
                     'pet_type' => 'Dog',
-                    'bark' => true,
-                    'breed' => 'Dingo',
+                    'bark'     => true,
+                    'breed'    => 'Dingo',
                 ],
                 $valid,
             ],
@@ -517,7 +517,7 @@ class ResponseValidatorTest extends TestCase
             ],
             'invalid request, invalid attribute' => [
                 [
-                    'age' => 3,
+                    'age'  => 3,
                     'bark' => true,
                 ],
                 $invalid,
@@ -554,8 +554,8 @@ class ResponseValidatorTest extends TestCase
 
         Route::get('/item', static function () {
             return [
-                'name' => 'Table',
-                'type' => 1234,
+                'name'        => 'Table',
+                'type'        => 1234,
                 'description' => 'Furniture',
             ];
         })->middleware(Middleware::class);
@@ -573,14 +573,14 @@ class ResponseValidatorTest extends TestCase
         Route::get('/tags', static function () {
             return [
                 'status' => 'success',
-                'data' => [
+                'data'   => [
                     [
-                        'id' => '3fafec77-402b-35f9-b26a-bd6430da3a29',
+                        'id'   => '3fafec77-402b-35f9-b26a-bd6430da3a29',
                         'name' => 'Photography',
                         'slug' => 'photography',
                     ],
                     [
-                        'id' => '3fafec77-402b-35f9-b26a-bd6430da3a29',
+                        'id'   => '3fafec77-402b-35f9-b26a-bd6430da3a29',
                         'name' => 'Marketing',
                         'slug' => null,
                     ],
@@ -623,8 +623,8 @@ class ResponseValidatorTest extends TestCase
 
         Route::get('/orgs/{orgUuid}', static function () use ($uuid) {
             return [
-                'id' => $uuid,
-                'name' => 'My Org',
+                'id'     => $uuid,
+                'name'   => 'My Org',
                 'orders' => [],
             ];
         })->middleware(Middleware::class);
@@ -642,8 +642,8 @@ class ResponseValidatorTest extends TestCase
 
         Route::get('/orgs/{orgUuid}', static function () use ($uuid) {
             return [
-                'id' => $uuid,
-                'name' => 'My Org',
+                'id'     => $uuid,
+                'name'   => 'My Org',
                 'orders' => [[]],
             ];
         })->middleware(Middleware::class);
@@ -705,8 +705,8 @@ class ResponseValidatorTest extends TestCase
         return [
             'valid, Writeonly not passed' => [
                 [
-                    'id' => 1,
-                    'email' => 'adam@hotmeteor.com',
+                    'id'            => 1,
+                    'email'         => 'adam@hotmeteor.com',
                     'arrayProperty' => [
                         [
                             'id' => 2,
@@ -726,22 +726,22 @@ class ResponseValidatorTest extends TestCase
             ],
             'Invalid, Books not passed' => [
                 [
-                    'id' => 1,
+                    'id'    => 1,
                     'email' => 'adam@hotmeteor.com',
                 ],
                 $invalid,
             ],
             'invalid, Writeonly passed' => [
                 [
-                    'id' => 1,
-                    'name' => 'Adam Campbell',
+                    'id'    => 1,
+                    'name'  => 'Adam Campbell',
                     'email' => 'adam@hotmeteor.com',
                 ],
                 $invalid,
             ],
             'invalid, required not passed' => [
                 [
-                    'name' => 'Adam Campbell',
+                    'name'  => 'Adam Campbell',
                     'email' => 'adam@hotmeteor.com',
                 ],
                 $invalid,
