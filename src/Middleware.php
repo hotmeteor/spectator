@@ -38,16 +38,16 @@ class Middleware
     }
 
     /**
+     * @return JsonResponse|Request
+     *
      * @throws InvalidPathException
      * @throws MissingSpecException
      * @throws RequestValidationException
      * @throws \Throwable
-     *
-     * @return JsonResponse|Request
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!$this->spectator->getSpec()) {
+        if (! $this->spectator->getSpec()) {
             return $next($request);
         }
 
@@ -79,7 +79,7 @@ class Middleware
 
         return Response::json(array_merge([
             'exception' => get_class($exception),
-            'message'   => $exception->getMessage(),
+            'message' => $exception->getMessage(),
         ], $errors), $code);
     }
 
@@ -125,7 +125,7 @@ class Middleware
      */
     protected function pathItem($requestPath, $requestMethod): PathItem
     {
-        if (!Str::startsWith($requestPath, '/')) {
+        if (! Str::startsWith($requestPath, '/')) {
             $requestPath = '/'.$requestPath;
         }
 

@@ -44,10 +44,6 @@ class RequestFactory
 
     /**
      * Set the prefix for the API paths.
-     *
-     * @param $pathPrefix
-     *
-     * @return RequestFactory
      */
     public function setPathPrefix($pathPrefix): self
     {
@@ -134,13 +130,13 @@ class RequestFactory
     /**
      * Retrieve the spec file.
      *
-     * @throws MissingSpecException
-     *
      * @return mixed
+     *
+     * @throws MissingSpecException
      */
     protected function getFile()
     {
-        if (!$source = Arr::get(config('spectator.sources', []), config('spectator.default'))) {
+        if (! $source = Arr::get(config('spectator.sources', []), config('spectator.default'))) {
             throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
         }
 
@@ -215,7 +211,7 @@ class RequestFactory
      */
     protected function standardizePath($path): string
     {
-        if (!Str::endsWith($path, '/')) {
+        if (! Str::endsWith($path, '/')) {
             $path = $path.'/';
         }
 
