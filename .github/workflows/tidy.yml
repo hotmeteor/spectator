@@ -1,25 +1,26 @@
 name: Tidy
 on:
   push:
-    branches:
-      - develop
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          ref: ${{ github.head_ref }}
 
       - name: "laravel-pint"
-        uses: aglipanci/laravel-pint-action@1.0.0
+        uses: aglipanci/laravel-pint-action@2.3.1
         with:
           preset: laravel
 
       - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: PHP Linting (Pint)
           skip_fetch: true

@@ -26,21 +26,21 @@ return [
 
     'sources' => [
         'local' => [
-            'source'    => 'local',
+            'source' => 'local',
             'base_path' => env('SPEC_PATH'),
         ],
 
         'remote' => [
-            'source'    => 'remote',
+            'source' => 'remote',
             'base_path' => env('SPEC_PATH'),
-            'params'    => env('SPEC_URL_PARAMS', ''),
+            'params' => env('SPEC_URL_PARAMS', ''),
         ],
 
         'github' => [
-            'source'    => 'github',
+            'source' => 'github',
             'base_path' => env('SPEC_GITHUB_PATH'),
-            'repo'      => env('SPEC_GITHUB_REPO'),
-            'token'     => env('SPEC_GITHUB_TOKEN'),
+            'repo' => env('SPEC_GITHUB_REPO'),
+            'token' => env('SPEC_GITHUB_TOKEN'),
         ],
     ],
 

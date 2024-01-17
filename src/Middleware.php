@@ -22,26 +22,14 @@ use Spectator\Validation\ResponseValidator;
 
 class Middleware
 {
-    /**
-     * @var ExceptionHandler
-     */
     protected ExceptionHandler $exceptionHandler;
 
-    /**
-     * @var RequestFactory
-     */
     protected RequestFactory $spectator;
 
-    /**
-     * @var string
-     */
     protected string $version = '3.0';
 
     /**
      * Middleware constructor.
-     *
-     * @param RequestFactory   $spectator
-     * @param ExceptionHandler $exceptionHandler
      */
     public function __construct(RequestFactory $spectator, ExceptionHandler $exceptionHandler)
     {
@@ -50,19 +38,16 @@ class Middleware
     }
 
     /**
-     * @param Request $request
-     * @param Closure $next
+     * @return JsonResponse|Request
      *
      * @throws InvalidPathException
      * @throws MissingSpecException
      * @throws RequestValidationException
      * @throws \Throwable
-     *
-     * @return JsonResponse|Request
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!$this->spectator->getSpec()) {
+        if (! $this->spectator->getSpec()) {
             return $next($request);
         }
 
@@ -86,12 +71,6 @@ class Middleware
         }
     }
 
-    /**
-     * @param $exception
-     * @param $code
-     *
-     * @return JsonResponse
-     */
     protected function formatResponse($exception, $code): JsonResponse
     {
         $errors = method_exists($exception, 'getErrors')
@@ -100,16 +79,11 @@ class Middleware
 
         return Response::json(array_merge([
             'exception' => get_class($exception),
-            'message'   => $exception->getMessage(),
+            'message' => $exception->getMessage(),
         ], $errors), $code);
     }
 
     /**
-     * @param Request  $request
-     * @param Closure  $next
-     * @param string   $requestPath
-     * @param PathItem $pathItem
-     *
      * @return mixed
      */
     protected function validate(Request $request, Closure $next, string $requestPath, PathItem $pathItem)
@@ -141,9 +115,6 @@ class Middleware
     }
 
     /**
-     * @param $requestPath
-     * @param $requestMethod
-     *
      * @throws InvalidPathException
      * @throws MalformedSpecException
      * @throws MissingSpecException
@@ -151,12 +122,10 @@ class Middleware
      * @throws UnresolvableReferenceException
      * @throws IOException
      * @throws InvalidJsonPointerSyntaxException
-     *
-     * @return PathItem
      */
     protected function pathItem($requestPath, $requestMethod): PathItem
     {
-        if (!Str::startsWith($requestPath, '/')) {
+        if (! Str::startsWith($requestPath, '/')) {
             $requestPath = '/'.$requestPath;
         }
 
@@ -180,11 +149,6 @@ class Middleware
         throw new InvalidPathException("Path [{$requestMethod} {$requestPath}] not found in spec.", 404);
     }
 
-    /**
-     * @param string $path
-     *
-     * @return string
-     */
     protected function resolvePath(string $path): string
     {
         $separator = '/';

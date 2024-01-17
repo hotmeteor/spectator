@@ -31,8 +31,8 @@ class RequestValidatorTest extends TestCase
         Route::get('/v1/users', function () {
             return [
                 [
-                    'id'    => 1,
-                    'name'  => 'Jim',
+                    'id' => 1,
+                    'name' => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -51,8 +51,8 @@ class RequestValidatorTest extends TestCase
         Route::get('/v1/users', function () {
             return [
                 [
-                    'id'    => 1,
-                    'name'  => 'Jim',
+                    'id' => 1,
+                    'name' => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -69,8 +69,8 @@ class RequestValidatorTest extends TestCase
         Route::get('/v1/users', function () {
             return [
                 [
-                    'id'    => 1,
-                    'name'  => 'Jim',
+                    'id' => 1,
+                    'name' => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -90,7 +90,7 @@ class RequestValidatorTest extends TestCase
 
         Route::get('/v1/orgs/{orgUuid}', function () use ($uuid) {
             return [
-                'id'   => 1,
+                'id' => 1,
                 'uuid' => $uuid,
                 'name' => 'My Org',
             ];
@@ -112,7 +112,7 @@ class RequestValidatorTest extends TestCase
         Route::prefix('v1')->group(function () use ($uuid) {
             Route::get('/orgs/{orgUuid}', function () use ($uuid) {
                 return [
-                    'id'   => 1,
+                    'id' => 1,
                     'uuid' => $uuid,
                     'name' => 'My Org',
                 ];
@@ -130,8 +130,8 @@ class RequestValidatorTest extends TestCase
 
         Route::get('/users/{user}', function () {
             return [
-                'id'    => 1,
-                'name'  => 'Jim',
+                'id' => 1,
+                'name' => 'Jim',
                 'email' => 'test@test.test',
             ];
         })->middleware(Middleware::class);
@@ -148,7 +148,7 @@ class RequestValidatorTest extends TestCase
 
         Route::get('/posts/{postUuid}', function () {
             return [
-                'id'    => 1,
+                'id' => 1,
                 'title' => 'My Post',
             ];
         })->middleware(Middleware::class);
@@ -165,7 +165,7 @@ class RequestValidatorTest extends TestCase
 
         Route::get('/posts/{postUuid}', function () {
             return [
-                'id'    => 1,
+                'id' => 1,
                 'title' => 'My Post',
             ];
         })->middleware(Middleware::class);
@@ -182,7 +182,7 @@ class RequestValidatorTest extends TestCase
 
         Route::get('/posts/{postUuid}/comments/{comment}', function () {
             return [
-                'id'      => 1,
+                'id' => 1,
                 'message' => 'My Comment',
             ];
         })->middleware(Middleware::class);
@@ -204,7 +204,7 @@ class RequestValidatorTest extends TestCase
         Route::post('/users')->middleware(Middleware::class);
 
         $payload = [
-            'name'  => 'Adam Campbell',
+            'name' => 'Adam Campbell',
             'email' => 'adam@hotmeteor.com',
         ];
 
@@ -323,7 +323,7 @@ class RequestValidatorTest extends TestCase
         return [
             'valid request, first type' => [
                 [
-                    'bark'  => true,
+                    'bark' => true,
                     'breed' => 'Dingo',
                 ],
                 $valid,
@@ -331,23 +331,23 @@ class RequestValidatorTest extends TestCase
             'valid request, second type' => [
                 [
                     'hunts' => true,
-                    'age'   => 2,
+                    'age' => 2,
                 ],
                 $valid,
             ],
             'invalid request' => [
                 [
-                    'bark'  => true,
+                    'bark' => true,
                     'hunts' => false,
                 ],
                 $invalid,
             ],
             'invalid request, mixed' => [
                 [
-                    'bark'  => true,
+                    'bark' => true,
                     'hunts' => false,
                     'breed' => 'Husky',
-                    'age'   => 3,
+                    'age' => 3,
                 ],
                 $invalid,
             ],
@@ -390,7 +390,7 @@ class RequestValidatorTest extends TestCase
             'valid, other required' => [
                 [
                     'pet_type' => 'Cat',
-                    'hunts'    => true,
+                    'hunts' => true,
                 ],
                 $valid,
             ],
@@ -398,14 +398,14 @@ class RequestValidatorTest extends TestCase
                 [
                     'nickname' => 'Fido',
                     'pet_type' => 'Dog',
-                    'age'      => 4,
+                    'age' => 4,
                 ],
                 $valid,
             ],
             'invalid request, missing required' => [
                 [
                     'nickname' => 'Mr. Paws',
-                    'hunts'    => false,
+                    'hunts' => false,
                 ],
                 $invalid,
             ],
@@ -442,23 +442,23 @@ class RequestValidatorTest extends TestCase
             'valid, Cat' => [
                 [
                     'pet_type' => 'Cat',
-                    'age'      => 3,
-                    'hunts'    => true,
+                    'age' => 3,
+                    'hunts' => true,
                 ],
                 $valid,
             ],
             'valid, Dog' => [
                 [
                     'pet_type' => 'Dog',
-                    'bark'     => true,
+                    'bark' => true,
                 ],
                 $valid,
             ],
             'valid, Dog 2' => [
                 [
                     'pet_type' => 'Dog',
-                    'bark'     => true,
-                    'breed'    => 'Dingo',
+                    'bark' => true,
+                    'breed' => 'Dingo',
                 ],
                 $valid,
             ],
@@ -470,7 +470,7 @@ class RequestValidatorTest extends TestCase
             ],
             'invalid request, invalid attribute' => [
                 [
-                    'age'  => 3,
+                    'age' => 3,
                     'bark' => true,
                 ],
                 $invalid,
@@ -547,7 +547,7 @@ class RequestValidatorTest extends TestCase
 
         $this->post(
             '/users',
-            ['name'         => 'Adam Campbell', 'picture' => UploadedFile::fake()->image('test.jpg')],
+            ['name' => 'Adam Campbell', 'picture' => UploadedFile::fake()->image('test.jpg')],
             ['Content-Type' => 'multipart/form-data']
         )
             ->assertInvalidRequest()
@@ -557,7 +557,7 @@ class RequestValidatorTest extends TestCase
 
         $this->post(
             '/users',
-            ['name'         => 'Adam Campbell', 'email' => 'test@test.com'],
+            ['name' => 'Adam Campbell', 'email' => 'test@test.com'],
             ['Content-Type' => 'multipart/form-data']
         )
             ->assertInvalidRequest()
@@ -567,7 +567,7 @@ class RequestValidatorTest extends TestCase
 
         $this->post(
             '/users',
-            ['name'         => 'Adam Campbell', 'email' => 'test@test.com', 'picture' => UploadedFile::fake()->image('test.jpg')],
+            ['name' => 'Adam Campbell', 'email' => 'test@test.com', 'picture' => UploadedFile::fake()->image('test.jpg')],
             ['Content-Type' => 'multipart/form-data']
         )
             ->assertValidRequest();
@@ -585,7 +585,7 @@ class RequestValidatorTest extends TestCase
             '/users/multiple-files',
             [
                 'picture' => UploadedFile::fake()->image('test.jpg'),
-                'files'   => [
+                'files' => [
                     ['name' => 'test.jpg', 'file' => UploadedFile::fake()->image('test.jpg')],
                     ['name' => 'test.jpg', 'file' => UploadedFile::fake()->image('test.jpg')],
                 ],
@@ -602,8 +602,8 @@ class RequestValidatorTest extends TestCase
             '/users/multiple-files',
             [
                 'picture' => UploadedFile::fake()->image('test.jpg'),
-                'files'   => [],
-                'resume'  => [
+                'files' => [],
+                'resume' => [
                     'name' => 'test.pdf',
                     'file' => UploadedFile::fake()->create('test.pdf'),
                 ],
@@ -642,8 +642,8 @@ class RequestValidatorTest extends TestCase
         Route::get('/users', function () {
             return [
                 [
-                    'id'    => 1,
-                    'name'  => 'Jim',
+                    'id' => 1,
+                    'name' => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -663,8 +663,8 @@ class RequestValidatorTest extends TestCase
         Route::get('/users', function () {
             return [
                 [
-                    'id'    => 1,
-                    'name'  => 'Jim',
+                    'id' => 1,
+                    'name' => 'Jim',
                     'email' => 'test@test.test',
                 ],
             ];
@@ -696,7 +696,7 @@ class RequestValidatorTest extends TestCase
 
         Route::get('/posts/{postUuid}', function () {
             return [
-                'id'    => 1,
+                'id' => 1,
                 'title' => 'My Post',
             ];
         })->middleware(Middleware::class);
@@ -744,8 +744,8 @@ class RequestValidatorTest extends TestCase
         return [
             'valid, Readonly not passed' => [
                 [
-                    'name'          => 'Adam Campbell',
-                    'email'         => 'adam@hotmeteor.com',
+                    'name' => 'Adam Campbell',
+                    'email' => 'adam@hotmeteor.com',
                     'arrayProperty' => [
                         [
                             'name' => 'The Hobbit',
@@ -765,15 +765,15 @@ class RequestValidatorTest extends TestCase
             ],
             'Invalid, Books not passed' => [
                 [
-                    'name'  => 'Adam Campbell',
+                    'name' => 'Adam Campbell',
                     'email' => 'adam@hotmeteor.com',
                 ],
                 $invalid,
             ],
             'invalid, Readonly passed' => [
                 [
-                    'id'    => 1,
-                    'name'  => 'Adam Campbell',
+                    'id' => 1,
+                    'name' => 'Adam Campbell',
                     'email' => 'adam@hotmeteor.com',
                 ],
                 $invalid,
