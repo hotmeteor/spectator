@@ -1,8 +1,9 @@
 name: Tidy
 on:
   push:
-    branches:
-      - develop
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   lint:
