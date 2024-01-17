@@ -22,26 +22,14 @@ use Spectator\Validation\ResponseValidator;
 
 class Middleware
 {
-    /**
-     * @var ExceptionHandler
-     */
     protected ExceptionHandler $exceptionHandler;
 
-    /**
-     * @var RequestFactory
-     */
     protected RequestFactory $spectator;
 
-    /**
-     * @var string
-     */
     protected string $version = '3.0';
 
     /**
      * Middleware constructor.
-     *
-     * @param  RequestFactory  $spectator
-     * @param  ExceptionHandler  $exceptionHandler
      */
     public function __construct(RequestFactory $spectator, ExceptionHandler $exceptionHandler)
     {
@@ -50,8 +38,6 @@ class Middleware
     }
 
     /**
-     * @param  Request  $request
-     * @param  Closure  $next
      * @return JsonResponse|Request
      *
      * @throws InvalidPathException
@@ -85,11 +71,6 @@ class Middleware
         }
     }
 
-    /**
-     * @param  $exception
-     * @param  $code
-     * @return JsonResponse
-     */
     protected function formatResponse($exception, $code): JsonResponse
     {
         $errors = method_exists($exception, 'getErrors')
@@ -103,10 +84,6 @@ class Middleware
     }
 
     /**
-     * @param  Request  $request
-     * @param  Closure  $next
-     * @param  string  $requestPath
-     * @param  PathItem  $pathItem
      * @return mixed
      */
     protected function validate(Request $request, Closure $next, string $requestPath, PathItem $pathItem)
@@ -138,10 +115,6 @@ class Middleware
     }
 
     /**
-     * @param  $requestPath
-     * @param  $requestMethod
-     * @return PathItem
-     *
      * @throws InvalidPathException
      * @throws MalformedSpecException
      * @throws MissingSpecException
@@ -176,10 +149,6 @@ class Middleware
         throw new InvalidPathException("Path [{$requestMethod} {$requestPath}] not found in spec.", 404);
     }
 
-    /**
-     * @param  string  $path
-     * @return string
-     */
     protected function resolvePath(string $path): string
     {
         $separator = '/';

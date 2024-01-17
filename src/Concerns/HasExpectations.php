@@ -14,7 +14,7 @@ trait HasExpectations
          * @param array $exceptions
          * @return void
          */
-        return function (Throwable $throwable = null, array $exceptions = []) {
+        return function (?Throwable $throwable = null, array $exceptions = []) {
             if ($throwable) {
                 $class = get_class($throwable);
 
@@ -35,7 +35,7 @@ trait HasExpectations
          * @param array $exceptions
          * @return void
          */
-        return function (Throwable $throwable = null, array $exceptions = []) {
+        return function (?Throwable $throwable = null, array $exceptions = []) {
             if ($throwable) {
                 $class = get_class($throwable);
 

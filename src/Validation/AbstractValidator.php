@@ -13,11 +13,10 @@ abstract class AbstractValidator
     /**
      * Check if properties exist, and if so, prepare them based on version.
      *
-     * @param  Schema  $schema
      * @param  string|null  $mode  Access mode 'read' or 'write'
      * @return mixed
      */
-    protected function prepareData(Schema $schema, string $mode = null)
+    protected function prepareData(Schema $schema, ?string $mode = null)
     {
         $data = $schema->getSerializableData();
 
@@ -41,11 +40,10 @@ abstract class AbstractValidator
     /**
      * Filters out readonly|writeonly properties.
      *
-     * @param  $data
      * @param  string|null  $type  Access mode 'read' or 'write'
      * @return mixed
      */
-    protected function filterProperties(object $data, string $mode = null): object
+    protected function filterProperties(object $data, ?string $mode = null): object
     {
         if (data_get($data, '$ref')) {
             return $data;
@@ -146,7 +144,6 @@ abstract class AbstractValidator
      *     ...
      * ]
      *
-     * @param  $properties
      * @return mixed
      */
     protected function wrapAttributesToArray($properties)
