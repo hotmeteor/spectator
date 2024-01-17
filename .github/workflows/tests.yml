@@ -63,6 +63,7 @@ jobs:
     - name: Install dependencies
       if: steps.composer-cache.outputs.cache-hit != 'true'
       run: |
+        composer remove --dev laravel/pint --no-interaction --no-update
         composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
         composer update --prefer-dist --no-progress --no-suggest
 
