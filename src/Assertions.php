@@ -123,7 +123,7 @@ class Assertions
         return fn ($errors) => $this->runAssertion(function () use ($errors) {
             $matches = 0;
 
-            if (!is_array($errors)) {
+            if (! is_array($errors)) {
                 $errors = [$errors];
             }
 

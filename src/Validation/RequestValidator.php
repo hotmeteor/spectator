@@ -71,13 +71,13 @@ class RequestValidator extends AbstractValidator
 
         foreach ($required_parameters as $parameter) {
             // Verify presence, if required.
-            if ($parameter->in === 'path' && !$route->hasParameter($parameter->name)) {
+            if ($parameter->in === 'path' && ! $route->hasParameter($parameter->name)) {
                 throw new RequestValidationException("Missing required parameter {$parameter->name} in URL path.");
-            } elseif ($parameter->in === 'query' && !$this->hasQueryParam($parameter->name)) {
+            } elseif ($parameter->in === 'query' && ! $this->hasQueryParam($parameter->name)) {
                 throw new RequestValidationException("Missing required query parameter [?{$parameter->name}=].");
-            } elseif ($parameter->in === 'header' && !$this->request->headers->has($parameter->name)) {
+            } elseif ($parameter->in === 'header' && ! $this->request->headers->has($parameter->name)) {
                 throw new RequestValidationException("Missing required header [{$parameter->name}].");
-            } elseif ($parameter->in === 'cookie' && !$this->request->cookies->has($parameter->name)) {
+            } elseif ($parameter->in === 'cookie' && ! $this->request->cookies->has($parameter->name)) {
                 throw new RequestValidationException("Missing required cookie [{$parameter->name}].");
             }
         }
@@ -133,8 +133,7 @@ class RequestValidator extends AbstractValidator
     }
 
     /**
-     * @param mixed $parameter
-     *
+     * @param  mixed  $parameter
      * @return mixed
      */
     private function castParameter($parameter, ?string $type)
@@ -171,7 +170,7 @@ class RequestValidator extends AbstractValidator
 
         // Content types should match.
         $content_type = $this->request->header('Content-Type');
-        if (!array_key_exists($content_type, $expected_body->content)) {
+        if (! array_key_exists($content_type, $expected_body->content)) {
             throw new RequestValidationException('Request did not match any specified media type for request body.');
         }
 
@@ -219,7 +218,7 @@ class RequestValidator extends AbstractValidator
 
     private function toObject($data)
     {
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return $data;
         } elseif (Arr::isAssoc($data)) {
             return (object) array_map([$this, 'toObject'], $data);

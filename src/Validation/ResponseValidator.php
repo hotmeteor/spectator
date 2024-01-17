@@ -63,7 +63,7 @@ class ResponseValidator extends AbstractValidator
         ));
 
         // Does the response match any of the specified media types?
-        if (!in_array($contentType, $specTypes)) {
+        if (! in_array($contentType, $specTypes)) {
             $message = 'Response did not match any specified content type.';
             $message .= PHP_EOL.PHP_EOL.'  Expected: '.$specTypes[0];
             $message .= PHP_EOL.'  Actual: '.$contentType;
@@ -149,9 +149,9 @@ class ResponseValidator extends AbstractValidator
     }
 
     /**
-     * @throws ResponseValidationException
-     *
      * @return mixed
+     *
+     * @throws ResponseValidationException
      */
     protected function body($contentType, $schemaType)
     {
