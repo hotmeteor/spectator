@@ -253,7 +253,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function nullableProvider(): array
+    public static function nullableProvider(): array
     {
         $validResponse = true;
         $invalidResponse = false;
@@ -352,7 +352,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function oneOfSchemaProvider(): array
+    public static function oneOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -416,7 +416,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function anyOfSchemaProvider(): array
+    public static function anyOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -480,7 +480,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function allOfSchemaProvider(): array
+    public static function allOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -697,7 +697,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function requiredWriteOnlySchemaProvider(): array
+    public static function requiredWriteOnlySchemaProvider(): array
     {
         $valid = true;
         $invalid = false;

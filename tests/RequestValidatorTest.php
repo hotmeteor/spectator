@@ -233,7 +233,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function nullableProvider(): array
+    public static function nullableProvider(): array
     {
         $validResponse = true;
 
@@ -315,7 +315,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function oneOfSchemaProvider(): array
+    public static function oneOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -375,7 +375,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function anyOfSchemaProvider(): array
+    public static function anyOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -433,7 +433,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function allOfSchemaProvider(): array
+    public static function allOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -677,7 +677,7 @@ class RequestValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    public function nullableObjectProvider(): array
+    public static function nullableObjectProvider(): array
     {
         return [
             [['name' => 'dog', 'friend' => null], true],
@@ -736,7 +736,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function requiredReadOnlySchemaProvider(): array
+    public static function requiredReadOnlySchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
