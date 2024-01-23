@@ -4,7 +4,7 @@
 .php_cs.dist
 .php-cs-fixer.php
 .php-cs-fixer.cache
-.phpunit.result.cache
+.phpunit.cache
 composer.lock
 /assets/
 /phpunit.xml.bak

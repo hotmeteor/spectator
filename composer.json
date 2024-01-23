@@ -39,7 +39,7 @@
     }
   },
   "scripts": {
-    "test": "vendor/bin/phpunit"
+    "test": " COLLISION_PRINTER=1 vendor/bin/phpunit --no-output"
   },
   "extra": {
     "laravel": {
