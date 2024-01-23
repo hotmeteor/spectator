@@ -44,13 +44,16 @@ class Assertions
         return fn () => $this->runAssertion(function () {
             $exception = app('spectator')->requestException;
 
-            $this->expectsTrue($exception, [
-                InvalidPathException::class,
+            $this->expectsFalse($exception, [
                 MalformedSpecException::class,
                 MissingSpecException::class,
-                RequestValidationException::class,
                 TypeErrorException::class,
                 UnresolvableReferenceException::class,
+            ]);
+
+            $this->expectsTrue($exception, [
+                InvalidPathException::class,
+                RequestValidationException::class,
             ]);
 
             return $this;
@@ -63,6 +66,9 @@ class Assertions
             $exception = app('spectator')->responseException;
 
             $this->expectsFalse($exception, [
+                InvalidPathException::class,
+                MalformedSpecException::class,
+                MissingSpecException::class,
                 ResponseValidationException::class,
                 TypeErrorException::class,
                 UnresolvableReferenceException::class,
@@ -86,10 +92,16 @@ class Assertions
         return fn ($status = null) => $this->runAssertion(function () use ($status) {
             $exception = app('spectator')->responseException;
 
-            $this->expectsTrue($exception, [
-                ResponseValidationException::class,
+            $this->expectsFalse($exception, [
+                MalformedSpecException::class,
+                MissingSpecException::class,
                 TypeErrorException::class,
                 UnresolvableReferenceException::class,
+            ]);
+
+            $this->expectsTrue($exception, [
+                InvalidPathException::class,
+                ResponseValidationException::class,
             ]);
 
             if ($status) {
