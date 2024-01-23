@@ -531,10 +531,11 @@ class ResponseValidatorTest extends TestCase
 
         Route::get('/')->middleware(Middleware::class);
 
+        $this->expectException(\ErrorException::class);
+        $this->expectExceptionMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
+
         $this->getJson('/')
-            ->assertInvalidRequest()
-            ->assertInvalidResponse()
-            ->assertValidationMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
+            ->assertInvalidResponse();
     }
 
     // https://swagger.io/docs/specification/data-models/inheritance-and-polymorphism/
@@ -660,9 +661,9 @@ class ResponseValidatorTest extends TestCase
 
     public function test_array_any_of(): void
     {
-        Spectator::using('ArrayAnyOf.v1.yaml');
+        Spectator::using('ArrayAnyOf.v1.yml');
 
-        Route::patch('/pets', static function () {
+        Route::get('/pets', static function () {
             return [
                 // PetByAge
                 ['age' => 5, 'nickname' => 'nick'],
