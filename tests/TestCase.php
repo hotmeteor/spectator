@@ -26,4 +26,11 @@ abstract class TestCase extends Orchestra
     {
         return ['Spectator\SpectatorServiceProvider'];
     }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->withoutExceptionHandling();
+    }
 }

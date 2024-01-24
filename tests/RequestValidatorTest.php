@@ -22,8 +22,6 @@ class RequestValidatorTest extends TestCase
         parent::setUp();
 
         $this->app->register(SpectatorServiceProvider::class);
-
-        $this->withoutExceptionHandling();
     }
 
     public function test_cannot_resolve_prefixed_path(): void

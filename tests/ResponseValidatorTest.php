@@ -20,8 +20,6 @@ class ResponseValidatorTest extends TestCase
         $this->app->register(SpectatorServiceProvider::class);
 
         Spectator::using('Test.v1.json');
-
-        $this->withoutExceptionHandling();
     }
 
     public function test_validates_valid_json_response(): void

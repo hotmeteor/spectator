@@ -19,8 +19,6 @@ class AssertionsTest extends TestCase
         $this->app->register(SpectatorServiceProvider::class);
 
         Spectator::using('Test.v1.json');
-
-        $this->withoutExceptionHandling();
     }
 
     public function test_asserts_invalid_path()
