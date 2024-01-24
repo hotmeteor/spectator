@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Spectator\Middleware;
 use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ResponseValidatorTest extends TestCase
 {
@@ -85,6 +86,27 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(422);
     }
 
+    public function test_validates_invalid_content_type(): void
+    {
+        Route::get('/users', static function () {
+            return response('ok', 200, ['Content-Type' => 'application/xml']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertInvalidResponse()
+            ->assertValidationMessage(
+                <<<'EOT'
+                Response did not match any specified content type.
+                
+                  Expected: application/json
+                  Actual: application/xml
+                
+                  ---
+                EOT
+            );
+    }
+
     public function test_validates_invalid_problem_json_response()
     {
         Route::get('/users', function () {
@@ -117,6 +139,8 @@ class ResponseValidatorTest extends TestCase
 
     public function test_validates_problem_json_response_using_components()
     {
+        $this->withoutExceptionHandling([NotFoundHttpException::class]);
+
         Spectator::using('Test.v1.json');
 
         $uuid = (string) Str::uuid();
@@ -529,12 +553,13 @@ class ResponseValidatorTest extends TestCase
     {
         Spectator::using('Malformed.v1.yaml');
 
-        Route::get('/')->middleware(Middleware::class);
+        Route::get('/', fn () => 'ok')->middleware(Middleware::class);
+
+        $this->expectException(\ErrorException::class);
+        $this->expectExceptionMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
 
         $this->getJson('/')
-            ->assertInvalidRequest()
-            ->assertInvalidResponse()
-            ->assertValidationMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
+            ->assertInvalidResponse();
     }
 
     // https://swagger.io/docs/specification/data-models/inheritance-and-polymorphism/
@@ -660,9 +685,9 @@ class ResponseValidatorTest extends TestCase
 
     public function test_array_any_of(): void
     {
-        Spectator::using('ArrayAnyOf.v1.yaml');
+        Spectator::using('ArrayAnyOf.v1.yml');
 
-        Route::patch('/pets', static function () {
+        Route::get('/pets', static function () {
             return [
                 // PetByAge
                 ['age' => 5, 'nickname' => 'nick'],
