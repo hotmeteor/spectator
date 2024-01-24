@@ -88,6 +88,27 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(422);
     }
 
+    public function test_validates_invalid_content_type(): void
+    {
+        Route::get('/users', static function () {
+            return response('ok', 200, ['Content-Type' => 'application/xml']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertInvalidResponse()
+            ->assertValidationMessage(
+                <<<'EOT'
+                Response did not match any specified content type.
+                
+                  Expected: application/json
+                  Actual: application/xml
+                
+                  ---
+                EOT
+            );
+    }
+
     public function test_validates_invalid_problem_json_response()
     {
         Route::get('/users', function () {
@@ -120,6 +141,8 @@ class ResponseValidatorTest extends TestCase
 
     public function test_validates_problem_json_response_using_components()
     {
+        $this->withoutExceptionHandling([NotFoundHttpException::class]);
+
         Spectator::using('Test.v1.json');
 
         $uuid = (string) Str::uuid();
@@ -136,8 +159,6 @@ class ResponseValidatorTest extends TestCase
 
         $response = $this->getJson("/orders/{$uuid}")
             ->assertValidResponse(200);
-
-        $this->withoutExceptionHandling([NotFoundHttpException::class]);
 
         $response = $this->getJson('/orders/invalid')
             ->assertValidResponse(404);
