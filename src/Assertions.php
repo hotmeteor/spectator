@@ -7,6 +7,7 @@ use cebe\openapi\exceptions\UnresolvableReferenceException;
 use Closure;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Assert as PHPUnit;
+use PHPUnit\Framework\ExpectationFailedException;
 use Spectator\Concerns\HasExpectations;
 use Spectator\Exceptions\InvalidPathException;
 use Spectator\Exceptions\MalformedSpecException;
@@ -186,8 +187,8 @@ class Assertions
 
             try {
                 return $closure();
-            } catch (\Exception $exception) {
-                throw new \ErrorException($exception->getMessage(), $exception->getCode(), E_WARNING, $original['file'], $original['line']);
+            } catch (ExpectationFailedException $exception) {
+                throw new \ErrorException($exception->getMessage(), $exception->getCode(), E_WARNING, $original['file'], $original['line'], $exception);
             }
         };
     }

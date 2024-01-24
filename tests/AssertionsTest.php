@@ -19,6 +19,8 @@ class AssertionsTest extends TestCase
         $this->app->register(SpectatorServiceProvider::class);
 
         Spectator::using('Test.v1.json');
+
+        $this->withoutExceptionHandling();
     }
 
     public function test_asserts_invalid_path()
@@ -80,6 +82,8 @@ class AssertionsTest extends TestCase
 
     public function test_exception_points_to_mixin_method()
     {
+        $this->withExceptionHandling();
+
         $this->expectException(ErrorException::class);
         $this->expectExceptionCode(0);
         $this->expectExceptionMessage('No response object matching returned status code [500].');
@@ -93,8 +97,10 @@ class AssertionsTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function test_request_assertion_does_not_format_laravel_validation_response_errors_when_errors_are_not_suppressed(): void
-    {
+    public function test_request_assertion_does_not_format_laravel_validation_response_errors_when_errors_are_not_suppressed(
+    ): void {
+        $this->withoutExceptionHandling([ValidationException::class]);
+
         Config::set('spectator.suppress_errors', false);
 
         Route::post('/users', function () {
@@ -117,7 +123,7 @@ class AssertionsTest extends TestCase
 
     public function test_asserts_path_exists()
     {
-        Route::get('/users')->middleware(Middleware::class);
+        Route::get('/users', fn () => 'ok')->middleware(Middleware::class);
 
         $this->getJson('/users')
             ->assertPathExists();
@@ -129,7 +135,7 @@ class AssertionsTest extends TestCase
         $this->expectExceptionCode(0);
         $this->expectExceptionMessage('Path [GET /invalid] not found in spec.');
 
-        Route::get('/invalid')->middleware(Middleware::class);
+        Route::get('/invalid', fn () => 'ok')->middleware(Middleware::class);
 
         $this->getJson('/invalid')
             ->assertPathExists();

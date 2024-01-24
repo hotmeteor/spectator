@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Spectator\Middleware;
 use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ResponseValidatorTest extends TestCase
 {
@@ -19,6 +20,8 @@ class ResponseValidatorTest extends TestCase
         $this->app->register(SpectatorServiceProvider::class);
 
         Spectator::using('Test.v1.json');
+
+        $this->withoutExceptionHandling();
     }
 
     public function test_validates_valid_json_response(): void
@@ -133,6 +136,8 @@ class ResponseValidatorTest extends TestCase
 
         $response = $this->getJson("/orders/{$uuid}")
             ->assertValidResponse(200);
+
+        $this->withoutExceptionHandling([NotFoundHttpException::class]);
 
         $response = $this->getJson('/orders/invalid')
             ->assertValidResponse(404);
@@ -529,7 +534,7 @@ class ResponseValidatorTest extends TestCase
     {
         Spectator::using('Malformed.v1.yaml');
 
-        Route::get('/')->middleware(Middleware::class);
+        Route::get('/', fn () => 'ok')->middleware(Middleware::class);
 
         $this->expectException(\ErrorException::class);
         $this->expectExceptionMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');

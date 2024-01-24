@@ -16,6 +16,8 @@ class MiddlewareTest extends TestCase
         $this->app->register(SpectatorServiceProvider::class);
 
         Spectator::using('Test.v1.json');
+
+        $this->withoutExceptionHandling();
     }
 
     public function test_only_processes_request_once(): void

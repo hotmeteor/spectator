@@ -22,6 +22,8 @@ class RequestValidatorTest extends TestCase
         parent::setUp();
 
         $this->app->register(SpectatorServiceProvider::class);
+
+        $this->withoutExceptionHandling();
     }
 
     public function test_cannot_resolve_prefixed_path(): void
@@ -201,7 +203,7 @@ class RequestValidatorTest extends TestCase
     ): void {
         Spectator::using("Nullable.$version.json");
 
-        Route::post('/users')->middleware(Middleware::class);
+        Route::post('/users', fn () => 'ok')->middleware(Middleware::class);
 
         $payload = [
             'name' => 'Adam Campbell',
@@ -526,7 +528,7 @@ class RequestValidatorTest extends TestCase
         Spectator::using('Test.v1.json');
 
         // When testing query parameters, they are not found nor checked by RequestValidator->validateParameters().
-        Route::get('/users-by-id/{user}', function (int $user) {
+        Route::get('/users-by-id/{user}', function (string $user) {
             return [];
         })->middleware(Middleware::class);
 
@@ -725,7 +727,7 @@ class RequestValidatorTest extends TestCase
     ): void {
         Spectator::using('RequiredReadOnly.v1.yml');
 
-        Route::post('/users')->middleware(Middleware::class);
+        Route::post('/users', fn () => 'ok')->middleware(Middleware::class);
 
         if ($is_valid) {
             $this->postJson('/users', $payload)
