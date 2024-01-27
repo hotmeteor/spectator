@@ -71,5 +71,21 @@ paths:
           name: orgUuid
           in: path
           required: true
+  /array-of-strings:
+    get:
+      summary: Get arrays of string
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
 components:
   schemas: {}

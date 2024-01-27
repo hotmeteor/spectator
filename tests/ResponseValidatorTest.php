@@ -683,6 +683,44 @@ class ResponseValidatorTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider arrayOfStringsProvider
+     */
+    public function test_array_of_strings(mixed $payload, bool $isValid): void
+    {
+        Spectator::using('Arrays.v1.yaml');
+
+        Route::get('/array-of-strings', static function () use ($payload) {
+            return ['data' => $payload];
+        })->middleware(Middleware::class);
+
+        if ($isValid) {
+            $this->getJson('/array-of-strings')
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/array-of-strings')
+                ->assertInvalidResponse();
+        }
+    }
+
+    public static function arrayOfStringsProvider(): array
+    {
+        return [
+            'valid' => [
+                ['foo', 'bar'],
+                true,
+            ],
+            'invalid as string' => [
+                'foo',
+                false,
+            ],
+            'invalid as object' => [
+                ['foo' => 'bar'],
+                false,
+            ],
+        ];
+    }
+
     public function test_array_any_of(): void
     {
         Spectator::using('ArrayAnyOf.v1.yml');

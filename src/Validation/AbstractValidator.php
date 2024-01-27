@@ -60,6 +60,10 @@ abstract class AbstractValidator
                 return $data;
         }
 
+        if (! isset($data->properties)) {
+            return $data;
+        }
+
         /**
          * Create a new array of properties that need to be filtered out.
          */
