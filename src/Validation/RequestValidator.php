@@ -95,6 +95,8 @@ class RequestValidator extends AbstractValidator
                     $parameter_value = $route->parameters()[$parameter->name];
                     if ($parameter_value instanceof Model) {
                         $parameter_value = $route->originalParameters()[$parameter->name];
+                    } elseif ($parameter_value instanceof \BackedEnum) {
+                        $parameter_value = $route->originalParameters()[$parameter->name];
                     }
                 } elseif ($parameter->in === 'query' && $this->hasQueryParam($parameter->name)) {
                     $parameter_value = $this->getQueryParam($parameter->name);
@@ -109,7 +111,7 @@ class RequestValidator extends AbstractValidator
                 }
 
                 if ($parameter_value) {
-                    if ($expected_parameter_schema->type && gettype($parameter_value) !== $expected_parameter_schema->type) {
+                    if (isset($expected_parameter_schema->type) && gettype($parameter_value) !== $expected_parameter_schema->type) {
                         $expected_type = $expected_parameter_schema->type;
 
                         if ($expected_type === 'number') {
