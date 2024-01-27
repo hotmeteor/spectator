@@ -773,4 +773,46 @@ class ResponseValidatorTest extends TestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider objectAsDictionaryProvider
+     */
+    public function test_object_as_dictionary(mixed $payload, bool $isValid): void
+    {
+        Spectator::using('Dictionary.v1.yml');
+
+        Route::get('/dictionary-of-integers', static function () use ($payload) {
+            return ['data' => $payload];
+        })->middleware(Middleware::class);
+
+        if ($isValid) {
+            $this->getJson('/dictionary-of-integers')
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/dictionary-of-integers')
+                ->assertInvalidResponse();
+        }
+    }
+
+    public static function objectAsDictionaryProvider(): array
+    {
+        return [
+            'valid' => [
+                ['foo' => 1, 'bar' => -1],
+                true,
+            ],
+            'invalid as string' => [
+                'foo',
+                false,
+            ],
+            'invalid as array' => [
+                [1, 2],
+                false,
+            ],
+            'invalid as dictionary of string' => [
+                ['foo' => 'foo', 'bar' => 'bar'],
+                false,
+            ],
+        ];
+    }
 }
