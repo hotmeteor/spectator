@@ -69,6 +69,25 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('All array items must match schema');
     }
 
+    public function test_validates_valid_streamed_json_response(): void
+    {
+        Route::get('/users', static function () {
+            return response()->stream(function () {
+                echo json_encode([
+                    [
+                        'id' => 1,
+                        'name' => 'Jim',
+                        'email' => 'test@test.test',
+                    ],
+                ]);
+            }, 200, ['Content-Type' => 'application/json']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
     public function test_validates_valid_problem_json_response()
     {
         Route::get('/users', function () {
