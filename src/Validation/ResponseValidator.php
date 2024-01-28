@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Exceptions\SchemaValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ResponseValidator extends AbstractValidator
 {
@@ -163,7 +164,7 @@ class ResponseValidator extends AbstractValidator
      */
     protected function body($contentType, $schemaType)
     {
-        $body = $this->response->getContent();
+        $body = $this->response instanceof StreamedResponse ? $this->streamedContent() : $this->response->getContent();
 
         if (in_array($schemaType, ['object', 'array', 'allOf', 'anyOf', 'oneOf'], true)) {
             if (in_array($contentType, ['application/json', 'application/vnd.api+json', 'application/problem+json'])) {
@@ -174,6 +175,23 @@ class ResponseValidator extends AbstractValidator
         }
 
         return $body;
+    }
+
+    protected function streamedContent(): string
+    {
+        $content = '';
+
+        ob_start(function (string $buffer) use (&$content): string {
+            $content .= $buffer;
+
+            return '';
+        });
+
+        $this->response->sendContent();
+
+        ob_end_clean();
+
+        return $content;
     }
 
     /**
