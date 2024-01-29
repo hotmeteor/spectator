@@ -60,6 +60,10 @@ abstract class AbstractValidator
                 return $data;
         }
 
+        if (isset($data->type) && $data->type === 'object') {
+            $data->properties ??= new \stdClass();
+        }
+
         if (! isset($data->properties)) {
             return $data;
         }
