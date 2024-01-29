@@ -31,6 +31,10 @@ abstract class AbstractValidator
 
         $data = $this->migrateNullableTo31Style($data);
 
+        if (isset($data->type) && $data->type === 'object') {
+            $data->properties ??= new \stdClass();
+        }
+
         match (true) {
             isset($data->properties) => (function () use ($data, $mode) {
                 $data = $this->filterProperties($data, $mode);
