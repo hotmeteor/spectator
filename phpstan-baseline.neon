@@ -1,0 +1,26 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to an undefined method Spectator\\\\Assertions\\:\\:getStatusCode\\(\\)\\.$#"
+			count: 2
+			path: src/Assertions.php
+
+		-
+			message: "#^Method Spectator\\\\Assertions\\:\\:expectsFalse\\(\\) invoked with 2 parameters, 0 required\\.$#"
+			count: 5
+			path: src/Assertions.php
+
+		-
+			message: "#^Method Spectator\\\\Assertions\\:\\:expectsTrue\\(\\) invoked with 2 parameters, 0 required\\.$#"
+			count: 2
+			path: src/Assertions.php
+
+		-
+			message: "#^Method Spectator\\\\Assertions\\:\\:runAssertion\\(\\) invoked with 1 parameter, 0 required\\.$#"
+			count: 7
+			path: src/Assertions.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: src/Exceptions/SchemaValidationException.php
