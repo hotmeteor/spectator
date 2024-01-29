@@ -70,6 +70,7 @@ abstract class AbstractValidator
         if (is_string($data->type)) {
             return $data->type === 'object';
         }
+
         if (is_array($data->type)) {
             return in_array('object', $data->type);
         }
