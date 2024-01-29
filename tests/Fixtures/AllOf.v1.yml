@@ -27,6 +27,29 @@ paths:
                   - $ref: '#/components/schemas/Dog'
                 discriminator:
                   propertyName: pet_type
+  /all-of-with-nullable:
+    get:
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - type: object
+                          properties:
+                            id:
+                              type: integer
+                            owner:
+                              type: string
+                              nullable: true
+                        - $ref: '#/components/schemas/Dog'
+
 components:
   schemas:
     Pet:

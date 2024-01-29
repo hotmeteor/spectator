@@ -664,6 +664,80 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider allOfWithNullableProvider
+     */
+    public function test_handles_allOf_with_nullable($payload, $isValid): void
+    {
+        Spectator::using('AllOf.v1.yml');
+
+        Route::get('/all-of-with-nullable', static function () use ($payload) {
+            return ['data' => [$payload]];
+        })->middleware(Middleware::class);
+
+        $request = [
+            'pet_type' => 'Cat',
+            'age' => 3,
+            'hunts' => true,
+        ];
+
+        $handled_request = $this->getJson('/all-of-with-nullable', $request);
+
+        if ($isValid) {
+            $handled_request->assertValidResponse();
+        } else {
+            $handled_request->assertInvalidResponse();
+        }
+    }
+
+    public static function allOfWithNullableProvider(): array
+    {
+        $valid = true;
+        $invalid = false;
+
+        return [
+            'valid, Dog with owner' => [
+                [
+                    'id' => 1,
+                    'owner' => 'John Doe',
+                    'pet_type' => 'Dog',
+                    'bark' =>true,
+                    'breed' => 'Husky',
+                ],
+                $valid,
+            ],
+            'valid, Dog without owner' => [
+                [
+                    'id' => 1,
+                    'owner' => null,
+                    'pet_type' => 'Dog',
+                    'bark' =>true,
+                    'breed' => 'Husky',
+                ],
+                $valid,
+            ],
+            'invalid, owner missing' => [
+                [
+                    'id' => 1,
+                    'pet_type' => 'Dog',
+                    'bark' =>true,
+                    'breed' => 'Husky',
+                ],
+                $invalid,
+            ],
+            'invalid, invalid owner missing' => [
+                [
+                    'id' => 1,
+                    'pet_type' => 'Dog',
+                    'owner' => false,
+                    'bark' =>true,
+                    'breed' => 'Husky',
+                ],
+                $invalid,
+            ],
+        ];
+    }
+
     public function test_handles_invalid_spec(): void
     {
         Spectator::using('Malformed.v1.yaml');
