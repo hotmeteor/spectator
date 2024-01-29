@@ -241,11 +241,8 @@ class ResponseValidatorTest extends TestCase
     /**
      * @dataProvider nullableProvider
      */
-    public function test_handle_nullables(
-        $version,
-        $state,
-        $is_valid
-    ): void {
+    public function test_handle_nullables($version, $state, $isValid): void
+    {
         Spectator::using("Nullable.$version.json");
 
         Route::get('/users/{user}', static function () use ($state) {
@@ -285,7 +282,7 @@ class ResponseValidatorTest extends TestCase
             return $return;
         })->middleware(Middleware::class);
 
-        if ($is_valid) {
+        if ($isValid) {
             $this->getJson('/users/1')
                 ->assertValidRequest()
                 ->assertValidResponse();
@@ -546,12 +543,12 @@ class ResponseValidatorTest extends TestCase
             'age' => 1,
         ];
 
-        $handled_request = $this->patchJson('/pets', $request);
+        $handledRequest = $this->patchJson('/pets', $request);
 
         if ($isValid) {
-            $handled_request->assertValidResponse();
+            $handledRequest->assertValidResponse();
         } else {
-            $handled_request->assertInvalidResponse();
+            $handledRequest->assertInvalidResponse();
         }
     }
 
@@ -610,12 +607,12 @@ class ResponseValidatorTest extends TestCase
             'hunts' => true,
         ];
 
-        $handled_request = $this->patchJson('/pets', $request);
+        $handledRequest = $this->patchJson('/pets', $request);
 
         if ($isValid) {
-            $handled_request->assertValidResponse();
+            $handledRequest->assertValidResponse();
         } else {
-            $handled_request->assertInvalidResponse();
+            $handledRequest->assertInvalidResponse();
         }
     }
 
@@ -681,12 +678,12 @@ class ResponseValidatorTest extends TestCase
             'hunts' => true,
         ];
 
-        $handled_request = $this->getJson('/all-of-with-nullable', $request);
+        $handledRequest = $this->getJson('/all-of-with-nullable', $request);
 
         if ($isValid) {
-            $handled_request->assertValidResponse();
+            $handledRequest->assertValidResponse();
         } else {
-            $handled_request->assertInvalidResponse();
+            $handledRequest->assertInvalidResponse();
         }
     }
 

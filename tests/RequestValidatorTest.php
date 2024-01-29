@@ -196,11 +196,8 @@ class RequestValidatorTest extends TestCase
     /**
      * @dataProvider nullableProvider
      */
-    public function test_handle_nullables(
-        $version,
-        $state,
-        $is_valid
-    ): void {
+    public function test_handle_nullables($version, $state, $isValid): void
+    {
         Spectator::using("Nullable.$version.json");
 
         Route::post('/users', fn () => 'ok')->middleware(Middleware::class);
@@ -226,7 +223,7 @@ class RequestValidatorTest extends TestCase
             $payload['nickname'] = null;
         }
 
-        if ($is_valid) {
+        if ($isValid) {
             $this->postJson('/users', $payload)
                 ->assertValidRequest();
         } else {

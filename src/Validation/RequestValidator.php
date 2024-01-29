@@ -67,9 +67,9 @@ class RequestValidator extends AbstractValidator
             $this->operation()->parameters
         );
 
-        $required_parameters = array_filter($parameters, fn ($parameter) => $parameter->required === true);
+        $requiredParameters = array_filter($parameters, fn ($parameter) => $parameter->required === true);
 
-        foreach ($required_parameters as $parameter) {
+        foreach ($requiredParameters as $parameter) {
             // Verify presence, if required.
             if ($parameter->in === 'path' && ! $route->hasParameter($parameter->name)) {
                 throw new RequestValidationException("Missing required parameter {$parameter->name} in URL path.");
@@ -86,46 +86,46 @@ class RequestValidator extends AbstractValidator
             // Validate schemas, if provided.
             if ($parameter->schema) {
                 $validator = new Validator();
-                $expected_parameter_schema = $parameter->schema->getSerializableData();
+                $expectedParameterSchema = $parameter->schema->getSerializableData();
                 $result = null;
-                $parameter_value = null;
+                $parameterValue = null;
 
                 // Get parameter, then validate it.
                 if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
-                    $parameter_value = $route->parameters()[$parameter->name];
-                    if ($parameter_value instanceof Model) {
-                        $parameter_value = $route->originalParameters()[$parameter->name];
-                    } elseif ($parameter_value instanceof \BackedEnum) {
-                        $parameter_value = $route->originalParameters()[$parameter->name];
+                    $parameterValue = $route->parameters()[$parameter->name];
+                    if ($parameterValue instanceof Model) {
+                        $parameterValue = $route->originalParameters()[$parameter->name];
+                    } elseif ($parameterValue instanceof \BackedEnum) {
+                        $parameterValue = $route->originalParameters()[$parameter->name];
                     }
                 } elseif ($parameter->in === 'query' && $this->hasQueryParam($parameter->name)) {
-                    $parameter_value = $this->getQueryParam($parameter->name);
+                    $parameterValue = $this->getQueryParam($parameter->name);
 
                     if ($parameter->explode === false && $parameter->schema->type === 'array') {
-                        $parameter_value = explode(',', $parameter_value);
+                        $parameterValue = explode(',', $parameterValue);
                     }
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
-                    $parameter_value = $this->request->headers->get($parameter->name);
+                    $parameterValue = $this->request->headers->get($parameter->name);
                 } elseif ($parameter->in === 'cookie' && $this->request->cookies->has($parameter->name)) {
-                    $parameter_value = $this->request->cookies->get($parameter->name);
+                    $parameterValue = $this->request->cookies->get($parameter->name);
                 }
 
-                if ($parameter_value) {
-                    if (isset($expected_parameter_schema->type) && gettype($parameter_value) !== $expected_parameter_schema->type) {
-                        $expected_type = $expected_parameter_schema->type;
+                if ($parameterValue) {
+                    if (isset($expectedParameterSchema->type) && gettype($parameterValue) !== $expectedParameterSchema->type) {
+                        $expectedType = $expectedParameterSchema->type;
 
-                        if ($expected_type === 'number') {
-                            $expected_type = is_float($parameter_value) ? 'float' : 'int';
+                        if ($expectedType === 'number') {
+                            $expectedType = is_float($parameterValue) ? 'float' : 'int';
                         }
 
-                        settype($parameter_value, $expected_type);
+                        settype($parameterValue, $expectedType);
                     }
 
-                    $result = $validator->validate($parameter_value, $expected_parameter_schema);
+                    $result = $validator->validate($parameterValue, $expectedParameterSchema);
 
                     // If the result is not valid, then display failure reason.
                     if ($result->isValid() === false) {
-                        $message = RequestValidationException::validationErrorMessage($expected_parameter_schema, $result->error());
+                        $message = RequestValidationException::validationErrorMessage($expectedParameterSchema, $result->error());
 
                         throw RequestValidationException::withError($message, $result->error());
                     }
@@ -162,39 +162,39 @@ class RequestValidator extends AbstractValidator
      */
     protected function validateBody(): void
     {
-        $expected_body = $this->operation()->requestBody;
-        $actual_body = $this->request->getContent();
+        $expectedBody = $this->operation()->requestBody;
+        $actualBody = $this->request->getContent();
 
         // If required, then body should be non-empty.
-        if ($expected_body->required === true && empty($actual_body)) {
+        if ($expectedBody->required === true && empty($actualBody)) {
             throw new RequestValidationException('Request body required.');
         }
 
         // Content types should match.
-        $content_type = $this->request->header('Content-Type');
-        if (! array_key_exists($content_type, $expected_body->content)) {
+        $contentType = $this->request->header('Content-Type');
+        if (! array_key_exists($contentType, $expectedBody->content)) {
             throw new RequestValidationException('Request did not match any specified media type for request body.');
         }
 
         // Capture schemas for validation.
-        $expected_body_raw_schema = $expected_body->content[$content_type]->schema;
-        $actual_body_schema = $actual_body;
-        if ($expected_body_raw_schema->type === 'object' || $expected_body_raw_schema->type === 'array' || $expected_body_raw_schema->oneOf || $expected_body_raw_schema->anyOf) {
-            if (in_array($content_type, ['application/json', 'application/vnd.api+json'])) {
-                $actual_body_schema = json_decode($actual_body_schema);
+        $expectedBodyRawSchema = $expectedBody->content[$contentType]->schema;
+        $actualBodySchema = $actualBody;
+        if ($expectedBodyRawSchema->type === 'object' || $expectedBodyRawSchema->type === 'array' || $expectedBodyRawSchema->oneOf || $expectedBodyRawSchema->anyOf) {
+            if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
+                $actualBodySchema = json_decode($actualBodySchema);
             } else {
-                $actual_body_schema = $this->parseBodySchema();
+                $actualBodySchema = $this->parseBodySchema();
             }
         }
-        $expected_body_schema = $this->prepareData($expected_body_raw_schema, 'write');
+        $expectedBodySchema = $this->prepareData($expectedBodyRawSchema, 'write');
 
         // Run validation.
         $validator = new Validator();
-        $result = $validator->validate($actual_body_schema, $expected_body_schema);
+        $result = $validator->validate($actualBodySchema, $expectedBodySchema);
 
         // If the result is not valid, then display failure reason.
         if ($result->isValid() === false) {
-            $message = RequestValidationException::validationErrorMessage($expected_body_schema, $result->error());
+            $message = RequestValidationException::validationErrorMessage($expectedBodySchema, $result->error());
 
             throw RequestValidationException::withError($message, $result->error());
         }
