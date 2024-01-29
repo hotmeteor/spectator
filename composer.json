@@ -42,6 +42,9 @@
     "test": " COLLISION_PRINTER=1 vendor/bin/phpunit --no-output"
   },
   "extra": {
+    "branch-alias": {
+      "dev-master": "2.x-dev"
+    },
     "laravel": {
       "providers": [
         "Spectator\\SpectatorServiceProvider"
