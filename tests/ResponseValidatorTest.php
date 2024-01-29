@@ -737,7 +737,7 @@ class ResponseValidatorTest extends TestCase
 
     public function test_handles_invalid_spec(): void
     {
-        Spectator::using('Malformed.v1.yaml');
+        Spectator::using('Malformed.v1.yml');
 
         Route::get('/', fn () => 'ok')->middleware(Middleware::class);
 
@@ -828,7 +828,7 @@ class ResponseValidatorTest extends TestCase
 
     public function test_response_succeeds_with_empty_array(): void
     {
-        Spectator::using('Arrays.v1.yaml');
+        Spectator::using('Arrays.v1.yml');
 
         $uuid = (string) Str::uuid();
 
@@ -847,7 +847,7 @@ class ResponseValidatorTest extends TestCase
 
     public function test_response_fails_with_invalid_array(): void
     {
-        Spectator::using('Arrays.v1.yaml');
+        Spectator::using('Arrays.v1.yml');
 
         $uuid = (string) Str::uuid();
 
@@ -874,7 +874,7 @@ class ResponseValidatorTest extends TestCase
      */
     public function test_array_of_strings(mixed $payload, bool $isValid): void
     {
-        Spectator::using('Arrays.v1.yaml');
+        Spectator::using('Arrays.v1.yml');
 
         Route::get('/array-of-strings', static function () use ($payload) {
             return ['data' => $payload];

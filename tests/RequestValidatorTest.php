@@ -86,7 +86,7 @@ class RequestValidatorTest extends TestCase
     {
         Config::set('spectator.path_prefix', 'v1');
 
-        Spectator::using('Global.v1.yaml');
+        Spectator::using('Global.v1.yml');
 
         $uuid = (string) Str::uuid();
 
@@ -107,7 +107,7 @@ class RequestValidatorTest extends TestCase
     {
         Config::set('spectator.path_prefix', 'v1');
 
-        Spectator::using('Global.v1.yaml');
+        Spectator::using('Global.v1.yml');
 
         $uuid = (string) Str::uuid();
 
