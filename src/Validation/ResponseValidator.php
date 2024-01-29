@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Exceptions\SchemaValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ResponseValidator extends AbstractValidator
 {
@@ -57,20 +58,28 @@ class ResponseValidator extends AbstractValidator
         // This is a bit hacky, but will allow resolving other JSON responses like application/problem+json
         // when returning standard JSON responses from frameworks (See hotmeteor/spectator#114)
 
-        $specTypes = array_values(array_map(
-            fn ($type) => $contentType === 'application/json' && Str::endsWith($type, '+json') ? 'application/json' : $type,
-            array_keys($response->content)
-        ));
+        $specTypes = array_combine(
+            array_keys($response->content),
+            array_map(
+                fn ($type) => $contentType === 'application/json' && Str::endsWith($type, '+json')
+                    ? 'application/json'
+                    : $type,
+                array_keys($response->content)
+            )
+        );
 
         // Does the response match any of the specified media types?
         if (! in_array($contentType, $specTypes)) {
             $message = 'Response did not match any specified content type.';
-            $message .= PHP_EOL.PHP_EOL.'  Expected: '.$specTypes[0];
+            $message .= PHP_EOL.PHP_EOL.'  Expected: '.implode(', ', array_values($specTypes));
             $message .= PHP_EOL.'  Actual: '.$contentType;
             $message .= PHP_EOL.PHP_EOL.'  ---';
 
             throw new ResponseValidationException($message);
         }
+
+        // Lookup the content type specified in the spec that match the application/json content type
+        $contentType = array_flip($specTypes)[$contentType];
 
         $schema = $response->content[$contentType]->schema;
 
@@ -155,7 +164,7 @@ class ResponseValidator extends AbstractValidator
      */
     protected function body($contentType, $schemaType)
     {
-        $body = $this->response->getContent();
+        $body = $this->response instanceof StreamedResponse ? $this->streamedContent() : $this->response->getContent();
 
         if (in_array($schemaType, ['object', 'array', 'allOf', 'anyOf', 'oneOf'], true)) {
             if (in_array($contentType, ['application/json', 'application/vnd.api+json', 'application/problem+json'])) {
@@ -166,6 +175,23 @@ class ResponseValidator extends AbstractValidator
         }
 
         return $body;
+    }
+
+    protected function streamedContent(): string
+    {
+        $content = '';
+
+        ob_start(function (string $buffer) use (&$content): string {
+            $content .= $buffer;
+
+            return '';
+        });
+
+        $this->response->sendContent();
+
+        ob_end_clean();
+
+        return $content;
     }
 
     /**

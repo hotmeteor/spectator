@@ -4,6 +4,8 @@ namespace Spectator\Tests;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Routing\Exceptions\BackedEnumCaseNotFoundException;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -201,7 +203,7 @@ class RequestValidatorTest extends TestCase
     ): void {
         Spectator::using("Nullable.$version.json");
 
-        Route::post('/users')->middleware(Middleware::class);
+        Route::post('/users', fn () => 'ok')->middleware(Middleware::class);
 
         $payload = [
             'name' => 'Adam Campbell',
@@ -233,7 +235,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function nullableProvider(): array
+    public static function nullableProvider(): array
     {
         $validResponse = true;
 
@@ -315,7 +317,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function oneOfSchemaProvider(): array
+    public static function oneOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -375,7 +377,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function anyOfSchemaProvider(): array
+    public static function anyOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -433,7 +435,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function allOfSchemaProvider(): array
+    public static function allOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -526,7 +528,7 @@ class RequestValidatorTest extends TestCase
         Spectator::using('Test.v1.json');
 
         // When testing query parameters, they are not found nor checked by RequestValidator->validateParameters().
-        Route::get('/users-by-id/{user}', function (int $user) {
+        Route::get('/users-by-id/{user}', function (string $user) {
             return [];
         })->middleware(Middleware::class);
 
@@ -677,7 +679,7 @@ class RequestValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    public function nullableObjectProvider(): array
+    public static function nullableObjectProvider(): array
     {
         return [
             [['name' => 'dog', 'friend' => null], true],
@@ -725,7 +727,7 @@ class RequestValidatorTest extends TestCase
     ): void {
         Spectator::using('RequiredReadOnly.v1.yml');
 
-        Route::post('/users')->middleware(Middleware::class);
+        Route::post('/users', fn () => 'ok')->middleware(Middleware::class);
 
         if ($is_valid) {
             $this->postJson('/users', $payload)
@@ -736,7 +738,7 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function requiredReadOnlySchemaProvider(): array
+    public static function requiredReadOnlySchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -786,8 +788,72 @@ class RequestValidatorTest extends TestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider enumProvider
+     */
+    public function test_enum_in_path(string $type, bool $isValid): void
+    {
+        Spectator::using('Enum.yml');
+
+        $this->withoutExceptionHandling([BackedEnumCaseNotFoundException::class]);
+
+        Route::get('/enum-in-path/{type}', function (TestEnum $type) {
+            return response()->noContent();
+        })->middleware([SubstituteBindings::class, Middleware::class]);
+
+        if ($isValid) {
+            $this->getJson("/enum-in-path/{$type}")
+                ->assertValidRequest();
+        } else {
+            $this->getJson("/enum-in-path/{$type}")
+                ->assertInvalidRequest();
+        }
+    }
+
+    /**
+     * @dataProvider enumProvider
+     */
+    public function test_enum_in_path_via_reference(string $type, bool $isValid): void
+    {
+        Spectator::using('Enum.yml');
+
+        $this->withoutExceptionHandling([BackedEnumCaseNotFoundException::class]);
+
+        Route::get('/enum-in-path-via-reference/{type}', function (TestEnum $type) {
+            return response()->noContent();
+        })->middleware([SubstituteBindings::class, Middleware::class]);
+
+        if ($isValid) {
+            $this->getJson("/enum-in-path-via-reference/{$type}")
+                ->assertValidRequest();
+        } else {
+            $this->getJson("/enum-in-path-via-reference/{$type}")
+                ->assertInvalidRequest();
+        }
+    }
+
+    public static function enumProvider(): array
+    {
+        return [
+            'valid enum' => [
+                'name',
+                true,
+            ],
+            'invalid enum' => [
+                'foo',
+                false,
+            ],
+        ];
+    }
 }
 
 class TestUser extends Model
 {
+}
+
+enum TestEnum: string
+{
+    case name = 'name';
+    case email = 'email';
 }

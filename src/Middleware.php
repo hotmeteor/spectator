@@ -17,6 +17,7 @@ use Spectator\Exceptions\InvalidPathException;
 use Spectator\Exceptions\MalformedSpecException;
 use Spectator\Exceptions\MissingSpecException;
 use Spectator\Exceptions\RequestValidationException;
+use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Validation\RequestValidator;
 use Spectator\Validation\ResponseValidator;
 
@@ -56,6 +57,7 @@ class Middleware
             $pathItem = $this->pathItem($requestPath, $request->method());
         } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
             $this->spectator->captureRequestValidation($exception);
+            $this->spectator->captureResponseValidation($exception);
 
             return $next($request);
         }
@@ -94,7 +96,7 @@ class Middleware
                 $pathItem,
                 $request->method()
             );
-        } catch (\Exception $exception) {
+        } catch (RequestValidationException $exception) {
             $this->spectator->captureRequestValidation($exception);
         }
 
@@ -107,7 +109,7 @@ class Middleware
                 $pathItem->{strtolower($request->method())},
                 $this->version
             );
-        } catch (\Exception $exception) {
+        } catch (ResponseValidationException $exception) {
             $this->spectator->captureResponseValidation($exception);
         }
 

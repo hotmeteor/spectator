@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Spectator\Middleware;
 use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ResponseValidatorTest extends TestCase
 {
@@ -68,6 +69,25 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('All array items must match schema');
     }
 
+    public function test_validates_valid_streamed_json_response(): void
+    {
+        Route::get('/users', static function () {
+            return response()->stream(function () {
+                echo json_encode([
+                    [
+                        'id' => 1,
+                        'name' => 'Jim',
+                        'email' => 'test@test.test',
+                    ],
+                ]);
+            }, 200, ['Content-Type' => 'application/json']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
     public function test_validates_valid_problem_json_response()
     {
         Route::get('/users', function () {
@@ -83,6 +103,27 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/users')
             ->assertValidRequest()
             ->assertValidResponse(422);
+    }
+
+    public function test_validates_invalid_content_type(): void
+    {
+        Route::get('/users', static function () {
+            return response('ok', 200, ['Content-Type' => 'application/xml']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertInvalidResponse()
+            ->assertValidationMessage(
+                <<<'EOT'
+                Response did not match any specified content type.
+                
+                  Expected: application/json
+                  Actual: application/xml
+                
+                  ---
+                EOT
+            );
     }
 
     public function test_validates_invalid_problem_json_response()
@@ -117,6 +158,8 @@ class ResponseValidatorTest extends TestCase
 
     public function test_validates_problem_json_response_using_components()
     {
+        $this->withoutExceptionHandling([NotFoundHttpException::class]);
+
         Spectator::using('Test.v1.json');
 
         $uuid = (string) Str::uuid();
@@ -253,7 +296,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function nullableProvider(): array
+    public static function nullableProvider(): array
     {
         $validResponse = true;
         $invalidResponse = false;
@@ -326,6 +369,102 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
+    public function test_array_of_objects_with_nullable(): void
+    {
+        Spectator::using('Nullable.3.0.json');
+
+        Route::get('/users', static function () {
+            return [
+                ['name' => 'John Doe', 'email' => 'john.doe@test.com'],
+                ['name' => 'Jane Doe', 'email' => 'jane.doe@test.com', 'nickname' => null],
+                ['name' => 'Adam Campbell', 'email' => 'test@test.com', 'nickname' => 'hotmeteor'],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
+    /**
+     * @dataProvider nullableArrayOfNullableStringsProvider
+     */
+    public function test_nullable_array_of_nullable_strings($version, $payload, $isValid): void
+    {
+        Spectator::using("Nullable.$version.json");
+
+        Route::get('/nullable-array-of-nullable-string', static function () use ($payload) {
+            return ['data' => $payload];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/nullable-array-of-nullable-string')
+            ->assertValidRequest()
+            ->assertValidResponse();
+
+        if ($isValid) {
+            $this->getJson('/nullable-array-of-nullable-string')
+                ->assertValidRequest()
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/nullable-array-of-nullable-string')
+                ->assertValidRequest()
+                ->assertInvalidResponse();
+        }
+    }
+
+    public static function nullableArrayOfNullableStringsProvider()
+    {
+        $validResponse = true;
+        $invalidResponse = false;
+
+        $v30 = '3.0';
+        $v31 = '3.1';
+
+        return [
+            '3.0, null' => [
+                $v30,
+                null,
+                $validResponse,
+            ],
+            '3.0, array of strings' => [
+                $v30,
+                ['foo', 'bar'],
+                $validResponse,
+            ],
+            '3.0, array with null' => [
+                $v30,
+                ['foo', null],
+                $validResponse,
+            ],
+            '3.0, array with int' => [
+                $v30,
+                ['foo', null],
+                $invalidResponse,
+            ],
+            '3.1, null' => [
+                $v31,
+                null,
+                $validResponse,
+            ],
+            '3.1, array of strings' => [
+                $v31,
+                ['foo', 'bar'],
+                $validResponse,
+            ],
+            '3.1, array with null' => [
+                $v31,
+                ['foo', null],
+                $validResponse,
+            ],
+            '3.1, array with int' => [
+                $v31,
+                ['foo', null],
+                $invalidResponse,
+            ],
+
+        ];
+    }
+
     /**
      * @dataProvider oneOfSchemaProvider
      */
@@ -352,7 +491,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function oneOfSchemaProvider(): array
+    public static function oneOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -416,7 +555,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function anyOfSchemaProvider(): array
+    public static function anyOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -480,7 +619,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function allOfSchemaProvider(): array
+    public static function allOfSchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -525,16 +664,91 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider allOfWithNullableProvider
+     */
+    public function test_handles_allOf_with_nullable($payload, $isValid): void
+    {
+        Spectator::using('AllOf.v1.yml');
+
+        Route::get('/all-of-with-nullable', static function () use ($payload) {
+            return ['data' => [$payload]];
+        })->middleware(Middleware::class);
+
+        $request = [
+            'pet_type' => 'Cat',
+            'age' => 3,
+            'hunts' => true,
+        ];
+
+        $handled_request = $this->getJson('/all-of-with-nullable', $request);
+
+        if ($isValid) {
+            $handled_request->assertValidResponse();
+        } else {
+            $handled_request->assertInvalidResponse();
+        }
+    }
+
+    public static function allOfWithNullableProvider(): array
+    {
+        $valid = true;
+        $invalid = false;
+
+        return [
+            'valid, Dog with owner' => [
+                [
+                    'id' => 1,
+                    'owner' => 'John Doe',
+                    'pet_type' => 'Dog',
+                    'bark' => true,
+                    'breed' => 'Husky',
+                ],
+                $valid,
+            ],
+            'valid, Dog without owner' => [
+                [
+                    'id' => 1,
+                    'owner' => null,
+                    'pet_type' => 'Dog',
+                    'bark' => true,
+                    'breed' => 'Husky',
+                ],
+                $valid,
+            ],
+            'invalid, owner missing' => [
+                [
+                    'id' => 1,
+                    'pet_type' => 'Dog',
+                    'bark' => true,
+                    'breed' => 'Husky',
+                ],
+                $invalid,
+            ],
+            'invalid, invalid owner missing' => [
+                [
+                    'id' => 1,
+                    'pet_type' => 'Dog',
+                    'owner' => false,
+                    'bark' => true,
+                    'breed' => 'Husky',
+                ],
+                $invalid,
+            ],
+        ];
+    }
+
     public function test_handles_invalid_spec(): void
     {
         Spectator::using('Malformed.v1.yaml');
 
-        Route::get('/')->middleware(Middleware::class);
+        Route::get('/', fn () => 'ok')->middleware(Middleware::class);
+
+        $this->expectException(\ErrorException::class);
+        $this->expectExceptionMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
 
         $this->getJson('/')
-            ->assertInvalidRequest()
-            ->assertInvalidResponse()
-            ->assertValidationMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
+            ->assertInvalidResponse();
     }
 
     // https://swagger.io/docs/specification/data-models/inheritance-and-polymorphism/
@@ -658,11 +872,49 @@ class ResponseValidatorTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider arrayOfStringsProvider
+     */
+    public function test_array_of_strings(mixed $payload, bool $isValid): void
+    {
+        Spectator::using('Arrays.v1.yaml');
+
+        Route::get('/array-of-strings', static function () use ($payload) {
+            return ['data' => $payload];
+        })->middleware(Middleware::class);
+
+        if ($isValid) {
+            $this->getJson('/array-of-strings')
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/array-of-strings')
+                ->assertInvalidResponse();
+        }
+    }
+
+    public static function arrayOfStringsProvider(): array
+    {
+        return [
+            'valid' => [
+                ['foo', 'bar'],
+                true,
+            ],
+            'invalid as string' => [
+                'foo',
+                false,
+            ],
+            'invalid as object' => [
+                ['foo' => 'bar'],
+                false,
+            ],
+        ];
+    }
+
     public function test_array_any_of(): void
     {
-        Spectator::using('ArrayAnyOf.v1.yaml');
+        Spectator::using('ArrayAnyOf.v1.yml');
 
-        Route::patch('/pets', static function () {
+        Route::get('/pets', static function () {
             return [
                 // PetByAge
                 ['age' => 5, 'nickname' => 'nick'],
@@ -697,7 +949,7 @@ class ResponseValidatorTest extends TestCase
         }
     }
 
-    public function requiredWriteOnlySchemaProvider(): array
+    public static function requiredWriteOnlySchemaProvider(): array
     {
         $valid = true;
         $invalid = false;
@@ -745,6 +997,94 @@ class ResponseValidatorTest extends TestCase
                     'email' => 'adam@hotmeteor.com',
                 ],
                 $invalid,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider objectAsDictionaryProvider
+     */
+    public function test_object_as_dictionary(mixed $payload, bool $isValid): void
+    {
+        Spectator::using('Dictionary.v1.yml');
+
+        Route::get('/dictionary-of-integers', static function () use ($payload) {
+            return ['data' => $payload];
+        })->middleware(Middleware::class);
+
+        if ($isValid) {
+            $this->getJson('/dictionary-of-integers')
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/dictionary-of-integers')
+                ->assertInvalidResponse();
+        }
+    }
+
+    public static function objectAsDictionaryProvider(): array
+    {
+        return [
+            'valid' => [
+                ['foo' => 1, 'bar' => -1],
+                true,
+            ],
+            'invalid as string' => [
+                'foo',
+                false,
+            ],
+            'invalid as array' => [
+                [1, 2],
+                false,
+            ],
+            'invalid as dictionary of string' => [
+                ['foo' => 'foo', 'bar' => 'bar'],
+                false,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider nullableObjectAsDictionaryProvider
+     */
+    public function test_nullable_object_as_dictionary(mixed $payload, bool $isValid): void
+    {
+        Spectator::using('Dictionary.v1.yml');
+
+        Route::get('/nullable-dictionary-of-integers', static function () use ($payload) {
+            return ['data' => $payload];
+        })->middleware(Middleware::class);
+
+        if ($isValid) {
+            $this->getJson('/nullable-dictionary-of-integers')
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/nullable-dictionary-of-integers')
+                ->assertInvalidResponse();
+        }
+    }
+
+    public static function nullableObjectAsDictionaryProvider(): array
+    {
+        return [
+            'valid' => [
+                ['foo' => 1, 'bar' => -1],
+                true,
+            ],
+            'valid as null' => [
+                null,
+                true,
+            ],
+            'invalid as string' => [
+                'foo',
+                false,
+            ],
+            'invalid as array' => [
+                [1, 2],
+                false,
+            ],
+            'invalid as dictionary of string' => [
+                ['foo' => 'foo', 'bar' => 'bar'],
+                false,
             ],
         ];
     }
