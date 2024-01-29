@@ -66,7 +66,6 @@ abstract class AbstractValidator
 
         if (! isset($data->properties)) {
             return $data;
-
         }
 
         /**
