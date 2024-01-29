@@ -31,7 +31,7 @@ abstract class AbstractValidator
 
         $data = $this->migrateNullableTo31Style($data);
 
-        if (isset($data->type) && $data->type === 'object') {
+        if ($this->shouldHaveProperties($data)) {
             $data->properties ??= new \stdClass();
         }
 
@@ -59,6 +59,22 @@ abstract class AbstractValidator
         };
 
         return $data;
+    }
+
+    private function shouldHaveProperties(object $data): bool
+    {
+        if (! isset($data->type)) {
+            return false;
+        }
+
+        if (is_string($data->type)) {
+            return $data->type === 'object';
+        }
+        if (is_array($data->type)) {
+            return in_array('object', $data->type);
+        }
+
+        return false;
     }
 
     /**

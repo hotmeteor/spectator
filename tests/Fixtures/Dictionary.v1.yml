@@ -21,5 +21,22 @@ paths:
                     type: object
                     additionalProperties:
                       type: integer
+  /nullable-dictionary-of-integers:
+    get:
+      summary: Get nullable dictionary of integers
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    nullable: true
+                    additionalProperties:
+                      type: integer
 components:
   schemas: {}
