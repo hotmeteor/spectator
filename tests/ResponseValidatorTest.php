@@ -371,9 +371,9 @@ class ResponseValidatorTest extends TestCase
 
     public function test_array_of_objects_with_nullable(): void
     {
-        Spectator::using("Nullable.3.0.json");
+        Spectator::using('Nullable.3.0.json');
 
-        Route::get('/users', static function (){
+        Route::get('/users', static function () {
             return [
                 ['name' => 'John Doe', 'email' => 'john.doe@test.com'],
                 ['name' => 'Jane Doe', 'email' => 'jane.doe@test.com', 'nickname' => null],
@@ -384,6 +384,85 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/users')
             ->assertValidRequest()
             ->assertValidResponse();
+    }
+
+    /**
+     * @dataProvider nullableArrayOfNullableStringsProvider
+     */
+    public function test_nullable_array_of_nullable_strings($version, $payload, $isValid): void
+    {
+        Spectator::using("Nullable.$version.json");
+
+        Route::get('/nullable-array-of-nullable-string', static function () use ($payload) {
+            return ['data' => $payload];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/nullable-array-of-nullable-string')
+            ->assertValidRequest()
+            ->assertValidResponse();
+
+        if ($isValid) {
+            $this->getJson('/nullable-array-of-nullable-string')
+                ->assertValidRequest()
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/nullable-array-of-nullable-string')
+                ->assertValidRequest()
+                ->assertInvalidResponse();
+        }
+    }
+
+    public static function nullableArrayOfNullableStringsProvider()
+    {
+        $validResponse = true;
+        $invalidResponse = false;
+
+        $v30 = '3.0';
+        $v31 = '3.1';
+
+        return [
+            '3.0, null' => [
+                $v30,
+                null,
+                $validResponse,
+            ],
+            '3.0, array of strings' => [
+                $v30,
+                ['foo', 'bar'],
+                $validResponse,
+            ],
+            '3.0, array with null' => [
+                $v30,
+                ['foo', null],
+                $validResponse,
+            ],
+            '3.0, array with int' => [
+                $v30,
+                ['foo', null],
+                $invalidResponse,
+            ],
+            '3.1, null' => [
+                $v31,
+                null,
+                $validResponse,
+            ],
+            '3.1, array of strings' => [
+                $v31,
+                ['foo', 'bar'],
+                $validResponse,
+            ],
+            '3.1, array with null' => [
+                $v31,
+                ['foo', null],
+                $validResponse,
+            ],
+            '3.1, array with int' => [
+                $v31,
+                ['foo', null],
+                $invalidResponse,
+            ],
+
+        ];
     }
 
     /**

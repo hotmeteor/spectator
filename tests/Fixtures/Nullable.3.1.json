@@ -41,21 +41,30 @@
                       "example": "Bloggs"
                     },
                     "email": {
-                      "type": ["string", "null"],
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "example": "test@test.com"
                     },
                     "settings": {
                       "type": "object",
                       "properties": {
                         "last_updated_at": {
-                          "type": ["string", "null"],
+                          "type": [
+                            "string",
+                            "null"
+                          ],
                           "example": "2020-10-10"
                         },
                         "notifications": {
                           "type": "object",
                           "properties": {
                             "email": {
-                              "type": ["string", "null"],
+                              "type": [
+                                "string",
+                                "null"
+                              ],
                               "example": "daily"
                             }
                           }
@@ -72,7 +81,10 @@
                             "example": "My first post"
                           },
                           "body": {
-                            "type": ["string", "null"],
+                            "type": [
+                              "string",
+                              "null"
+                            ],
                             "example": "Welcome to my blog!"
                           }
                         }
@@ -115,7 +127,10 @@
                     "example": "test@test.com"
                   },
                   "nickname": {
-                    "type": ["string", "null"],
+                    "type": [
+                      "string",
+                      "null"
+                    ],
                     "example": "hotmeteor"
                   }
                 },
@@ -128,6 +143,38 @@
           }
         },
         "operationId": "create-user"
+      }
+    },
+    "/nullable-array-of-nullable-string": {
+      "get": {
+        "summary": "Get nullable array of nullable string",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": [
+                        "array",
+                        "null"
+                      ],
+                      "items": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },

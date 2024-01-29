@@ -172,6 +172,34 @@
         },
         "operationId": "create-user"
       }
+    },
+    "/nullable-array-of-nullable-string": {
+      "get": {
+        "summary": "Get nullable array of nullable string",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "nullable": true,
+                      "items": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
