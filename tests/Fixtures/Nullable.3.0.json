@@ -92,6 +92,44 @@
       }
     },
     "/users": {
+      "get": {
+        "summary": "Get all users",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "example": "Adam Campbell"
+                      },
+                      "email": {
+                        "type": "string",
+                        "example": "test@tets.com"
+                      },
+                      "nickname": {
+                        "type": "string",
+                        "example": "hotmeteor",
+                        "nullable": true
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "email"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "summary": "Create user",
         "tags": [],

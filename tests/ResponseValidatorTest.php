@@ -369,6 +369,23 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
+    public function test_array_of_objects_with_nullable(): void
+    {
+        Spectator::using("Nullable.3.0.json");
+
+        Route::get('/users', static function (){
+            return [
+                ['name' => 'John Doe', 'email' => 'john.doe@test.com'],
+                ['name' => 'Jane Doe', 'email' => 'jane.doe@test.com', 'nickname' => null],
+                ['name' => 'Adam Campbell', 'email' => 'test@test.com', 'nickname' => 'hotmeteor'],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
     /**
      * @dataProvider oneOfSchemaProvider
      */
