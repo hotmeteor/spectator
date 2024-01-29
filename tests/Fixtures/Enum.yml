@@ -1,0 +1,46 @@
+openapi: 3.1.0
+info:
+  title: Enum
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /enum-in-path/{type}:
+    parameters:
+      - in: path
+        name: type
+        required: true
+        schema:
+          type: string
+          enum:
+            - name
+            - email
+    get:
+      summary: Request with enum in path
+      tags: []
+      responses:
+        '204':
+          description: No Content
+  /enum-in-path-via-reference/{type}:
+    parameters:
+      - in: path
+        name: type
+        required: true
+        schema:
+          $refs: '#/components/schemas/TestEnum'
+    get:
+      summary: Request with enum in path via reference
+      tags: []
+      responses:
+        '204':
+          description: No Content
+
+components:
+  schemas:
+    TestEnum:
+      type: string
+      enum:
+        - name
+        - email
+
+

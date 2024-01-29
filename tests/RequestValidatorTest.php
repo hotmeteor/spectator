@@ -4,6 +4,8 @@ namespace Spectator\Tests;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Routing\Exceptions\BackedEnumCaseNotFoundException;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -786,8 +788,72 @@ class RequestValidatorTest extends TestCase
             ],
         ];
     }
+
+    /**
+     * @dataProvider enumProvider
+     */
+    public function test_enum_in_path(string $type, bool $isValid): void
+    {
+        Spectator::using('Enum.yml');
+
+        $this->withoutExceptionHandling([BackedEnumCaseNotFoundException::class]);
+
+        Route::get('/enum-in-path/{type}', function (TestEnum $type) {
+            return response()->noContent();
+        })->middleware([SubstituteBindings::class, Middleware::class]);
+
+        if ($isValid) {
+            $this->getJson("/enum-in-path/{$type}")
+                ->assertValidRequest();
+        } else {
+            $this->getJson("/enum-in-path/{$type}")
+                ->assertInvalidRequest();
+        }
+    }
+
+    /**
+     * @dataProvider enumProvider
+     */
+    public function test_enum_in_path_via_reference(string $type, bool $isValid): void
+    {
+        Spectator::using('Enum.yml');
+
+        $this->withoutExceptionHandling([BackedEnumCaseNotFoundException::class]);
+
+        Route::get('/enum-in-path-via-reference/{type}', function (TestEnum $type) {
+            return response()->noContent();
+        })->middleware([SubstituteBindings::class, Middleware::class]);
+
+        if ($isValid) {
+            $this->getJson("/enum-in-path-via-reference/{$type}")
+                ->assertValidRequest();
+        } else {
+            $this->getJson("/enum-in-path-via-reference/{$type}")
+                ->assertInvalidRequest();
+        }
+    }
+
+    public static function enumProvider(): array
+    {
+        return [
+            'valid enum' => [
+                'name',
+                true,
+            ],
+            'invalid enum' => [
+                'foo',
+                false,
+            ],
+        ];
+    }
 }
 
 class TestUser extends Model
 {
+}
+
+enum TestEnum: string
+{
+    case name = 'name';
+    case email = 'email';
 }

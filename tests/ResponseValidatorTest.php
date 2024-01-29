@@ -69,6 +69,25 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('All array items must match schema');
     }
 
+    public function test_validates_valid_streamed_json_response(): void
+    {
+        Route::get('/users', static function () {
+            return response()->stream(function () {
+                echo json_encode([
+                    [
+                        'id' => 1,
+                        'name' => 'Jim',
+                        'email' => 'test@test.test',
+                    ],
+                ]);
+            }, 200, ['Content-Type' => 'application/json']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse();
+    }
+
     public function test_validates_valid_problem_json_response()
     {
         Route::get('/users', function () {
@@ -681,6 +700,44 @@ class ResponseValidatorTest extends TestCase
                 'All array items must match schema',
                 'The data (array) must match the type: object',
             ]);
+    }
+
+    /**
+     * @dataProvider arrayOfStringsProvider
+     */
+    public function test_array_of_strings(mixed $payload, bool $isValid): void
+    {
+        Spectator::using('Arrays.v1.yaml');
+
+        Route::get('/array-of-strings', static function () use ($payload) {
+            return ['data' => $payload];
+        })->middleware(Middleware::class);
+
+        if ($isValid) {
+            $this->getJson('/array-of-strings')
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/array-of-strings')
+                ->assertInvalidResponse();
+        }
+    }
+
+    public static function arrayOfStringsProvider(): array
+    {
+        return [
+            'valid' => [
+                ['foo', 'bar'],
+                true,
+            ],
+            'invalid as string' => [
+                'foo',
+                false,
+            ],
+            'invalid as object' => [
+                ['foo' => 'bar'],
+                false,
+            ],
+        ];
     }
 
     public function test_array_any_of(): void
