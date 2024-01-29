@@ -4,7 +4,6 @@ namespace Spectator\Validation;
 
 use cebe\openapi\spec\Schema;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 abstract class AbstractValidator
@@ -32,19 +31,19 @@ abstract class AbstractValidator
 
         $data = $this->migrateNullableTo31Style($data);
 
-        match(true) {
-            isset($data->properties) => (function() use ($data, $mode) {
+        match (true) {
+            isset($data->properties) => (function () use ($data, $mode) {
                 $data = $this->filterProperties($data, $mode);
                 foreach ($data->properties as $key => $property) {
                     $data->properties->$key = $this->prepareProperty($property, $mode);
                 }
             })(),
             isset($data->items) => $data->items = $this->prepareProperty($data->items, $mode),
-            isset($data->anyOf)=> $data->anyOf = array_map(
+            isset($data->anyOf) => $data->anyOf = array_map(
                 fn ($item) => $this->prepareProperty($item, $mode),
                 $data->anyOf,
             ),
-            isset($data->allOf)=> $data->allOf = array_map(
+            isset($data->allOf) => $data->allOf = array_map(
                 fn ($item) => $this->prepareProperty($item, $mode),
                 $data->allOf,
             ),
