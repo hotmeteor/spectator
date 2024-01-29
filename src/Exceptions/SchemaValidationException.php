@@ -25,13 +25,6 @@ abstract class SchemaValidationException extends \Exception implements Exception
         return $instance;
     }
 
-    protected function setErrors(ValidationError $error)
-    {
-        $formatter = new ErrorFormatter();
-
-        $this->errors = $formatter->formatFlat($error);
-    }
-
     /**
      * Return the exception errors.
      */

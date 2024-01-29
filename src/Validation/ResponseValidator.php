@@ -194,33 +194,8 @@ class ResponseValidator extends AbstractValidator
         return $content;
     }
 
-    /**
-     * @return string
-     */
-    protected function shortHandler()
-    {
-        return class_basename($this->operation->operationId) ?: $this->uri;
-    }
-
     protected function validator(): Validator
     {
-        $validator = new Validator();
-
-        return $validator;
-    }
-
-    protected function arrayKeysRecursive($array): array
-    {
-        $flat = [];
-
-        foreach ($array as $key => $value) {
-            if (is_array($value)) {
-                $flat = array_merge($flat, $this->arrayKeysRecursive($value));
-            } else {
-                $flat[] = $key;
-            }
-        }
-
-        return $flat;
+        return new Validator();
     }
 }
