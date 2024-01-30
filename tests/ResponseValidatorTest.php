@@ -241,11 +241,8 @@ class ResponseValidatorTest extends TestCase
     /**
      * @dataProvider nullableProvider
      */
-    public function test_handle_nullables(
-        $version,
-        $state,
-        $is_valid
-    ): void {
+    public function test_handle_nullables($version, $state, $isValid): void
+    {
         Spectator::using("Nullable.$version.json");
 
         Route::get('/users/{user}', static function () use ($state) {
@@ -285,7 +282,7 @@ class ResponseValidatorTest extends TestCase
             return $return;
         })->middleware(Middleware::class);
 
-        if ($is_valid) {
+        if ($isValid) {
             $this->getJson('/users/1')
                 ->assertValidRequest()
                 ->assertValidResponse();
@@ -546,12 +543,12 @@ class ResponseValidatorTest extends TestCase
             'age' => 1,
         ];
 
-        $handled_request = $this->patchJson('/pets', $request);
+        $handledRequest = $this->patchJson('/pets', $request);
 
         if ($isValid) {
-            $handled_request->assertValidResponse();
+            $handledRequest->assertValidResponse();
         } else {
-            $handled_request->assertInvalidResponse();
+            $handledRequest->assertInvalidResponse();
         }
     }
 
@@ -610,12 +607,12 @@ class ResponseValidatorTest extends TestCase
             'hunts' => true,
         ];
 
-        $handled_request = $this->patchJson('/pets', $request);
+        $handledRequest = $this->patchJson('/pets', $request);
 
         if ($isValid) {
-            $handled_request->assertValidResponse();
+            $handledRequest->assertValidResponse();
         } else {
-            $handled_request->assertInvalidResponse();
+            $handledRequest->assertInvalidResponse();
         }
     }
 
@@ -681,12 +678,12 @@ class ResponseValidatorTest extends TestCase
             'hunts' => true,
         ];
 
-        $handled_request = $this->getJson('/all-of-with-nullable', $request);
+        $handledRequest = $this->getJson('/all-of-with-nullable', $request);
 
         if ($isValid) {
-            $handled_request->assertValidResponse();
+            $handledRequest->assertValidResponse();
         } else {
-            $handled_request->assertInvalidResponse();
+            $handledRequest->assertInvalidResponse();
         }
     }
 
@@ -740,7 +737,7 @@ class ResponseValidatorTest extends TestCase
 
     public function test_handles_invalid_spec(): void
     {
-        Spectator::using('Malformed.v1.yaml');
+        Spectator::using('Malformed.v1.yml');
 
         Route::get('/', fn () => 'ok')->middleware(Middleware::class);
 
@@ -831,7 +828,7 @@ class ResponseValidatorTest extends TestCase
 
     public function test_response_succeeds_with_empty_array(): void
     {
-        Spectator::using('Arrays.v1.yaml');
+        Spectator::using('Arrays.v1.yml');
 
         $uuid = (string) Str::uuid();
 
@@ -850,7 +847,7 @@ class ResponseValidatorTest extends TestCase
 
     public function test_response_fails_with_invalid_array(): void
     {
-        Spectator::using('Arrays.v1.yaml');
+        Spectator::using('Arrays.v1.yml');
 
         $uuid = (string) Str::uuid();
 
@@ -877,7 +874,7 @@ class ResponseValidatorTest extends TestCase
      */
     public function test_array_of_strings(mixed $payload, bool $isValid): void
     {
-        Spectator::using('Arrays.v1.yaml');
+        Spectator::using('Arrays.v1.yml');
 
         Route::get('/array-of-strings', static function () use ($payload) {
             return ['data' => $payload];

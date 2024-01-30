@@ -95,13 +95,13 @@ class ResponseValidator extends AbstractValidator
      */
     protected function validateResponse(Schema $schema, $body)
     {
-        $expected_schema = $this->prepareData($schema, 'read');
+        $expectedSchema = $this->prepareData($schema, 'read');
 
         $validator = $this->validator();
-        $result = $validator->validate($body, $expected_schema);
+        $result = $validator->validate($body, $expectedSchema);
 
         if ($result->isValid() === false) {
-            $message = ResponseValidationException::validationErrorMessage($expected_schema, $result->error());
+            $message = ResponseValidationException::validationErrorMessage($expectedSchema, $result->error());
 
             throw ResponseValidationException::withError($message, $result->error());
         }
@@ -194,33 +194,8 @@ class ResponseValidator extends AbstractValidator
         return $content;
     }
 
-    /**
-     * @return string
-     */
-    protected function shortHandler()
-    {
-        return class_basename($this->operation->operationId) ?: $this->uri;
-    }
-
     protected function validator(): Validator
     {
-        $validator = new Validator();
-
-        return $validator;
-    }
-
-    protected function arrayKeysRecursive($array): array
-    {
-        $flat = [];
-
-        foreach ($array as $key => $value) {
-            if (is_array($value)) {
-                $flat = array_merge($flat, $this->arrayKeysRecursive($value));
-            } else {
-                $flat[] = $key;
-            }
-        }
-
-        return $flat;
+        return new Validator();
     }
 }

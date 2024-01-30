@@ -16,7 +16,7 @@ use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 
 /**
- * @mixin \Illuminate\Testing\TestResponse|Illuminate\Foundation\Testing\TestResponse
+ * @mixin \Illuminate\Testing\TestResponse
  */
 class Assertions
 {
