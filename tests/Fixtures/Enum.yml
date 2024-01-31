@@ -27,7 +27,7 @@ paths:
         name: type
         required: true
         schema:
-          $refs: '#/components/schemas/TestEnum'
+          $ref: '#/components/schemas/TestEnum'
     get:
       summary: Request with enum in path via reference
       tags: []

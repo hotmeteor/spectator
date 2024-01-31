@@ -442,10 +442,6 @@ class ResponseValidatorTest extends TestCase
             return ['data' => $payload];
         })->middleware(Middleware::class);
 
-        $this->getJson('/nullable-array-of-nullable-string')
-            ->assertValidRequest()
-            ->assertValidResponse();
-
         if ($isValid) {
             $this->getJson('/nullable-array-of-nullable-string')
                 ->assertValidRequest()
@@ -483,7 +479,7 @@ class ResponseValidatorTest extends TestCase
             ],
             '3.0, array with int' => [
                 $v30,
-                ['foo', null],
+                [1, null],
                 $invalidResponse,
             ],
             '3.1, null' => [
@@ -503,10 +499,9 @@ class ResponseValidatorTest extends TestCase
             ],
             '3.1, array with int' => [
                 $v31,
-                ['foo', null],
+                [1, null],
                 $invalidResponse,
             ],
-
         ];
     }
 
@@ -770,7 +765,7 @@ class ResponseValidatorTest extends TestCase
                 ],
                 $invalid,
             ],
-            'invalid, invalid owner missing' => [
+            'invalid, invalid owner' => [
                 [
                     'id' => 1,
                     'pet_type' => 'Dog',
