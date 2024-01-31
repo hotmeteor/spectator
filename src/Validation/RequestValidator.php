@@ -114,18 +114,27 @@ class RequestValidator extends AbstractValidator
                     if (isset($expectedParameterSchema->type) && gettype($parameterValue) !== $expectedParameterSchema->type) {
                         $expectedType = $expectedParameterSchema->type;
 
-                        if ($expectedType === 'number') {
-                            $expectedType = is_float($parameterValue) ? 'float' : 'int';
-                        }
+                        $expectedType = match ($expectedType) {
+                            'integer' => 'int',
+                            'number' => 'float',
+                            default => $expectedType,
+                        };
 
-                        settype($parameterValue, $expectedType);
+                        if (is_numeric($parameterValue)) {
+                            $parameterValue = match ($expectedType) {
+                                'int' => (int) $parameterValue,
+                                'float' => (float) $parameterValue,
+                                default => $parameterValue,
+                            };
+                        }
                     }
 
                     $result = $validator->validate($parameterValue, $expectedParameterSchema);
 
                     // If the result is not valid, then display failure reason.
                     if ($result->isValid() === false) {
-                        $message = RequestValidationException::validationErrorMessage($expectedParameterSchema, $result->error());
+                        $message = RequestValidationException::validationErrorMessage($expectedParameterSchema,
+                            $result->error());
 
                         throw RequestValidationException::withError($message, $result->error());
                     }

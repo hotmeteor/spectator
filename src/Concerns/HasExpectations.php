@@ -35,7 +35,7 @@ trait HasExpectations
          * @param array $exceptions
          * @return void
          */
-        return function (?Throwable $throwable = null, array $exceptions = []) {
+        return function (?Throwable $throwable = null, array $exceptions = [], string $message = '') {
             if ($throwable) {
                 $class = get_class($throwable);
 
@@ -44,7 +44,7 @@ trait HasExpectations
                     $throwable->getMessage(),
                 );
             } else {
-                PHPUnit::assertTrue(true);
+                PHPUnit::assertTrue(false, $message);
             }
         };
     }

@@ -48,6 +48,9 @@ paths:
                             owner:
                               type: string
                               nullable: true
+                          required:
+                            - id
+                            - owner
                         - $ref: '#/components/schemas/Dog'
 
 components:

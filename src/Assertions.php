@@ -55,7 +55,7 @@ class Assertions
             $this->expectsTrue($exception, [
                 InvalidPathException::class,
                 RequestValidationException::class,
-            ]);
+            ], 'Failed asserting that the request is invalid.');
 
             return $this;
         });
@@ -103,7 +103,7 @@ class Assertions
             $this->expectsTrue($exception, [
                 InvalidPathException::class,
                 ResponseValidationException::class,
-            ]);
+            ], 'Failed asserting that the response is invalid.');
 
             if ($status) {
                 $actual = $this->getStatusCode();
