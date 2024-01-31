@@ -2,6 +2,7 @@
 
 namespace Spectator\Tests;
 
+use ErrorException;
 use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,26 @@ class ResponseValidatorTest extends TestCase
             ->assertValidRequest()
             ->assertInvalidResponse()
             ->assertValidationMessage('All array items must match schema');
+    }
+
+    public function test_fails_to_invalidate_valid_json_response(): void
+    {
+        Route::get('/users', static function () {
+            return [
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ];
+        })->middleware(Middleware::class);
+
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage("Failed asserting that the response is invalid.\nFailed asserting that false is true.");
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertInvalidResponse();
     }
 
     public function test_validates_valid_streamed_json_response(): void
