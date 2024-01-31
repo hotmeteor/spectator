@@ -88,6 +88,33 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
+    public function test_validates_valid_empty_response(): void
+    {
+        Spectator::using('EmptyResponse.yml');
+
+        Route::get('/empty', static function () {
+            return response('');
+        })->middleware(Middleware::class);
+
+        $this->getJson('/empty')
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
+
+    public function test_validates_invalid_empty_response(): void
+    {
+        Spectator::using('EmptyResponse.yml');
+
+        Route::get('/empty', static function () {
+            return response('Hello world!');
+        })->middleware(Middleware::class);
+
+        $this->getJson('/empty')
+            ->assertValidRequest()
+            ->assertInvalidResponse(200)
+            ->assertValidationMessage('Response body is expected to be empty.');
+    }
+
     public function test_validates_valid_problem_json_response()
     {
         Route::get('/users', function () {

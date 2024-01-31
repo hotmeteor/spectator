@@ -1,0 +1,17 @@
+openapi: 3.0.0
+info:
+  title: EmptyResponse
+  version: '1.0'
+servers:
+  - url: 'https://api.protect.earth/'
+    description: Production
+paths:
+  /empty:
+    get:
+      summary: Get empty response
+      tags: []
+      responses:
+        '200':
+          description: Ok
+components:
+  schemas: {}

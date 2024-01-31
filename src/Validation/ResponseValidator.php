@@ -44,6 +44,8 @@ class ResponseValidator extends AbstractValidator
 
         if ($responseObject->content) {
             $this->parseResponse($responseObject);
+        } elseif ($this->responseContent() !== '') {
+            throw new ResponseValidationException('Response body is expected to be empty.');
         }
     }
 
@@ -164,7 +166,7 @@ class ResponseValidator extends AbstractValidator
      */
     protected function body($contentType, $schemaType)
     {
-        $body = $this->response instanceof StreamedResponse ? $this->streamedContent() : $this->response->getContent();
+        $body = $this->responseContent();
 
         if (in_array($schemaType, ['object', 'array', 'allOf', 'anyOf', 'oneOf'], true)) {
             if (in_array($contentType, ['application/json', 'application/vnd.api+json', 'application/problem+json'])) {
@@ -175,6 +177,11 @@ class ResponseValidator extends AbstractValidator
         }
 
         return $body;
+    }
+
+    protected function responseContent(): string
+    {
+        return $this->response instanceof StreamedResponse ? $this->streamedContent() : $this->response->getContent();
     }
 
     protected function streamedContent(): string
