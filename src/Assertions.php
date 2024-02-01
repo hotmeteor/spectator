@@ -64,6 +64,10 @@ class Assertions
     public function assertValidResponse()
     {
         return fn ($status = null) => $this->runAssertion(function () use ($status) {
+            if ($status) {
+                $this->assertStatus($status);
+            }
+
             $exception = app('spectator')->responseException;
 
             $this->expectsFalse($exception, [
@@ -75,15 +79,6 @@ class Assertions
                 UnresolvableReferenceException::class,
             ]);
 
-            if ($status) {
-                $actual = $this->getStatusCode();
-
-                PHPUnit::assertTrue(
-                    $actual === $status,
-                    "Expected status code {$status} but received {$actual}."
-                );
-            }
-
             return $this;
         });
     }
@@ -91,6 +86,10 @@ class Assertions
     public function assertInvalidResponse()
     {
         return fn ($status = null) => $this->runAssertion(function () use ($status) {
+            if ($status) {
+                $this->assertStatus($status);
+            }
+
             $exception = app('spectator')->responseException;
 
             $this->expectsFalse($exception, [
@@ -104,15 +103,6 @@ class Assertions
                 InvalidPathException::class,
                 ResponseValidationException::class,
             ], 'Failed asserting that the response is invalid.');
-
-            if ($status) {
-                $actual = $this->getStatusCode();
-
-                PHPUnit::assertTrue(
-                    $actual === $status,
-                    "Expected status code {$status} but received {$actual}."
-                );
-            }
 
             return $this;
         });

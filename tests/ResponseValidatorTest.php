@@ -136,6 +136,26 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('Response body is expected to be empty.');
     }
 
+    public function test_validates_status_code(): void
+    {
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage('Expected response status code [200] but received 201.');
+
+        Route::get('/users', static function () {
+            return response([
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ], 201);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
+
     public function test_validates_valid_problem_json_response()
     {
         Route::get('/users', function () {
