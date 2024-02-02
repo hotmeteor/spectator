@@ -129,13 +129,13 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('Test.v1.json');
 
-        Route::get('/users/{user}', function () {
+        Route::get('/users/{user}', function (TestUser $user) {
             return [
                 'id' => 1,
                 'name' => 'Jim',
                 'email' => 'test@test.test',
             ];
-        })->middleware(Middleware::class);
+        })->middleware([SubstituteBindings::class, Middleware::class]);
 
         $this->getJson('/users/1')
             ->assertValidRequest();
@@ -145,16 +145,16 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('Test.v1.json');
 
-        Route::bind('postUuid', TestUser::class);
+        Route::bind('postUuid', fn() => new TestUser);
 
         Route::get('/posts/{postUuid}', function () {
             return [
                 'id' => 1,
                 'title' => 'My Post',
             ];
-        })->middleware(Middleware::class);
+        })->middleware([SubstituteBindings::class, Middleware::class]);
 
-        $this->getJson('/posts/'.Str::uuid()->toString())
+        $this->getJson('/posts/' . Str::uuid()->toString())
             ->assertValidRequest();
     }
 
@@ -162,14 +162,14 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('Test.v1.json');
 
-        Route::bind('postUuid', TestUser::class);
+        Route::bind('postUuid', fn() => new TestUser);
 
         Route::get('/posts/{postUuid}', function () {
             return [
                 'id' => 1,
                 'title' => 'My Post',
             ];
-        })->middleware(Middleware::class);
+        })->middleware([SubstituteBindings::class, Middleware::class]);
 
         $this->getJson('/posts/invalid')
             ->assertInvalidRequest();
@@ -179,16 +179,16 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('Test.v1.json');
 
-        Route::bind('postUuid', TestUser::class);
+        Route::bind('postUuid', fn() => new TestUser);
 
         Route::get('/posts/{postUuid}/comments/{comment}', function () {
             return [
                 'id' => 1,
                 'message' => 'My Comment',
             ];
-        })->middleware(Middleware::class);
+        })->middleware([SubstituteBindings::class, Middleware::class]);
 
-        $this->getJson('/posts/'.Str::uuid()->toString().'/comments/1')
+        $this->getJson('/posts/' . Str::uuid()->toString() . '/comments/1')
             ->assertValidRequest();
     }
 
@@ -875,6 +875,10 @@ class RequestValidatorTest extends TestCase
 
 class TestUser extends Model
 {
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return new TestUser();
+    }
 }
 
 enum TestEnum: string
