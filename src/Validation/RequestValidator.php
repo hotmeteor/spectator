@@ -149,12 +149,6 @@ class RequestValidator extends AbstractValidator
     protected function validateBody(): void
     {
         $expectedBody = $this->operation()->requestBody;
-        $actualBody = $this->request->getContent();
-
-        // If required, then body should be non-empty.
-        if ($expectedBody->required === true && empty($actualBody)) {
-            throw new RequestValidationException('Request body required.');
-        }
 
         // Content types should match.
         $contentType = $this->request->header('Content-Type');
@@ -164,14 +158,20 @@ class RequestValidator extends AbstractValidator
 
         // Capture schemas for validation.
         $expectedBodyRawSchema = $expectedBody->content[$contentType]->schema;
-        $actualBodySchema = $actualBody;
-        if ($expectedBodyRawSchema->type === 'object' || $expectedBodyRawSchema->type === 'array' || $expectedBodyRawSchema->oneOf || $expectedBodyRawSchema->anyOf) {
-            if (in_array($contentType, ['application/json', 'application/vnd.api+json'])) {
-                $actualBodySchema = json_decode($actualBodySchema);
-            } else {
-                $actualBodySchema = $this->parseBodySchema();
-            }
+        if (
+            ($expectedBodyRawSchema->type === 'object' || $expectedBodyRawSchema->type === 'array' || $expectedBodyRawSchema->oneOf || $expectedBodyRawSchema->anyOf)
+            && in_array($contentType, ['application/json', 'application/vnd.api+json'])
+        ) {
+            $actualBodySchema = json_decode($this->request->getContent());
+        } else {
+            $actualBodySchema = $this->parseBodySchema();
         }
+
+        // If required, then body should be non-empty.
+        if ($expectedBody->required === true && empty($actualBodySchema)) {
+            throw new RequestValidationException('Request body required!');
+        }
+
         $expectedBodySchema = $this->prepareData($expectedBodyRawSchema, 'write');
 
         // Run validation.

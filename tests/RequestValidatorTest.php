@@ -565,7 +565,11 @@ class RequestValidatorTest extends TestCase
 
         $this->post(
             '/users',
-            ['name' => 'Adam Campbell', 'email' => 'test@test.com', 'picture' => UploadedFile::fake()->image('test.jpg')],
+            [
+                'name' => 'Adam Campbell',
+                'email' => 'test@test.com',
+                'picture' => UploadedFile::fake()->image('test.jpg'),
+            ],
             ['Content-Type' => 'multipart/form-data']
         )
             ->assertValidRequest();
@@ -837,6 +841,18 @@ class RequestValidatorTest extends TestCase
                 false,
             ],
         ];
+    }
+
+    public function test_validates_upload_file(): void
+    {
+        Spectator::using('Upload.yml');
+
+        Route::post('/upload', function () {
+            return response()->noContent();
+        })->middleware(Middleware::class);
+
+        $this->post('/upload', ['file' => UploadedFile::fake()->createWithContent('test.xlsx', 'Content')], ['Content-Type' => 'multipart/form-data'])
+            ->assertValidRequest();
     }
 }
 
