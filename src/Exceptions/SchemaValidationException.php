@@ -82,17 +82,15 @@ abstract class SchemaValidationException extends \Exception implements Exception
         // error alongside the item.
         $strings = [];
 
-        if (! is_null($schemaFormatted)) {
-            foreach ($schemaFormatted as $key => $schemaItem) {
-                if (isset($errorLocationMap[$key])) {
-                    $schemaItem = self::colorize($schemaItem, Format::TEXT_LIGHT_GREY);
-                    $strings[] = $schemaItem.' <== '.self::colorize($errorLocationMap[$key]['error'], Format::TEXT_RED);
-                } elseif (isset($errorKeywordLocationMap[$key])) {
-                    $schemaItem = self::colorize($schemaItem, Format::TEXT_LIGHT_GREY);
-                    $strings[] = $schemaItem.' <== '.self::colorize($errorKeywordLocationMap[$key]['error'], Format::TEXT_RED);
-                } else {
-                    $strings[] = self::colorize($schemaItem, Format::TEXT_GREEN);
-                }
+        foreach ($schemaFormatted as $key => $schemaItem) {
+            if (isset($errorLocationMap[$key])) {
+                $schemaItem = self::colorize($schemaItem, Format::TEXT_LIGHT_GREY);
+                $strings[] = $schemaItem.' <== '.self::colorize($errorLocationMap[$key]['error'], Format::TEXT_RED);
+            } elseif (isset($errorKeywordLocationMap[$key])) {
+                $schemaItem = self::colorize($schemaItem, Format::TEXT_LIGHT_GREY);
+                $strings[] = $schemaItem.' <== '.self::colorize($errorKeywordLocationMap[$key]['error'], Format::TEXT_RED);
+            } else {
+                $strings[] = self::colorize($schemaItem, Format::TEXT_GREEN);
             }
         }
 
