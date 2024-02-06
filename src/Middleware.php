@@ -53,7 +53,9 @@ class Middleware
         }
 
         try {
-            $requestPath = $request->route()->uri();
+            /** @var \Illuminate\Routing\Route $route */
+            $route = $request->route();
+            $requestPath = $route->uri();
             $pathItem = $this->pathItem($requestPath, $request->method());
         } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
             $this->spectator->captureRequestValidation($exception);

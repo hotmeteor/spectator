@@ -13,8 +13,7 @@ abstract class AbstractValidator
     /**
      * Check if properties exist, and if so, prepare them based on version.
      *
-     * @param  string|null  $mode  Access mode 'read' or 'write'
-     * @return mixed
+     * @param  'read'|'write'|null  $mode
      */
     protected function prepareData(Schema $schema, ?string $mode = null): object
     {

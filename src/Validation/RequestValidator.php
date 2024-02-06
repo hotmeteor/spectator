@@ -60,6 +60,7 @@ class RequestValidator extends AbstractValidator
      */
     protected function validateParameters()
     {
+        /** @var \Illuminate\Routing\Route $route */
         $route = $this->request->route();
 
         $parameters = array_merge(
