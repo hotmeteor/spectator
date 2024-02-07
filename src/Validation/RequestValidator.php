@@ -14,21 +14,15 @@ use Spectator\Exceptions\SchemaValidationException;
 
 class RequestValidator extends AbstractValidator
 {
-    protected Request $request;
-
-    protected PathItem $pathItem;
-
-    protected string $method;
-
-    protected array $parameters;
-
     /**
      * RequestValidator constructor.
      */
-    public function __construct(Request $request, PathItem $pathItem, string $method, string $version = '3.0')
-    {
-        $this->request = $request;
-        $this->pathItem = $pathItem;
+    public function __construct(
+        protected Request $request,
+        protected PathItem $pathItem,
+        protected string $method,
+        string $version = '3.0'
+    ) {
         $this->method = strtolower($method);
         $this->version = $version;
     }
@@ -36,7 +30,7 @@ class RequestValidator extends AbstractValidator
     /**
      * @throws RequestValidationException|SchemaValidationException
      */
-    public static function validate(Request $request, PathItem $pathItem, string $method)
+    public static function validate(Request $request, PathItem $pathItem, string $method): void
     {
         $instance = new self($request, $pathItem, $method);
 
@@ -46,7 +40,7 @@ class RequestValidator extends AbstractValidator
     /**
      * @throws RequestValidationException|SchemaValidationException
      */
-    protected function handle()
+    protected function handle(): void
     {
         $this->validateParameters();
 
@@ -58,7 +52,7 @@ class RequestValidator extends AbstractValidator
     /**
      * @throws RequestValidationException|SchemaValidationException
      */
-    protected function validateParameters()
+    protected function validateParameters(): void
     {
         /** @var \Illuminate\Routing\Route $route */
         $route = $this->request->route();
@@ -205,7 +199,10 @@ class RequestValidator extends AbstractValidator
         return $this->toObject($body);
     }
 
-    private function toObject($data)
+    /**
+     * @return ($data is array<string, mixed> ? object : ($data is array<int, mixed> ? array<int, mixed> : mixed))
+     */
+    private function toObject(mixed $data): mixed
     {
         if (! is_array($data)) {
             return $data;
@@ -221,7 +218,7 @@ class RequestValidator extends AbstractValidator
         return Arr::has($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
     }
 
-    private function getQueryParam(string $parameterName)
+    private function getQueryParam(string $parameterName): ?string
     {
         return Arr::get($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
     }

@@ -9,7 +9,7 @@ use Illuminate\Testing\TestResponse;
 
 class SpectatorServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         if (App::runningInConsole()) {
             $this->publishConfig();
@@ -18,7 +18,7 @@ class SpectatorServiceProvider extends ServiceProvider
         }
     }
 
-    public function register()
+    public function register(): void
     {
         $this->mergeConfig();
 
@@ -26,14 +26,14 @@ class SpectatorServiceProvider extends ServiceProvider
         $this->app->alias(RequestFactory::class, 'spectator');
     }
 
-    protected function mergeConfig()
+    protected function mergeConfig(): void
     {
         $configPath = __DIR__.'/../config/spectator.php';
 
         $this->mergeConfigFrom($configPath, 'spectator');
     }
 
-    protected function registerMiddleware()
+    protected function registerMiddleware(): void
     {
         $groups = config('spectator.middleware_groups');
 
@@ -42,17 +42,17 @@ class SpectatorServiceProvider extends ServiceProvider
         }
     }
 
-    protected function decorateTestResponse()
+    protected function decorateTestResponse(): void
     {
         TestResponse::mixin(new Assertions());
     }
 
-    protected function getConfigPath()
+    protected function getConfigPath(): string
     {
         return config_path('spectator.php');
     }
 
-    protected function publishConfig()
+    protected function publishConfig(): void
     {
         $configPath = __DIR__.'/../config/spectator.php';
 

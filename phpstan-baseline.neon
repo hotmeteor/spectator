@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Argument of an invalid type Closure supplied for foreach, only iterables are supported\\.$#"
+			count: 1
+			path: src/Assertions.php
+
+		-
 			message: "#^Method Spectator\\\\Assertions\\:\\:expectsFalse\\(\\) invoked with 2 parameters, 0 required\\.$#"
 			count: 5
 			path: src/Assertions.php
@@ -13,6 +18,11 @@ parameters:
 		-
 			message: "#^Method Spectator\\\\Assertions\\:\\:runAssertion\\(\\) invoked with 1 parameter, 0 required\\.$#"
 			count: 7
+			path: src/Assertions.php
+
+		-
+			message: "#^Parameter \\#2 \\$array of function implode expects array\\|null, Closure given\\.$#"
+			count: 1
 			path: src/Assertions.php
 
 		-
