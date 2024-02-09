@@ -29,8 +29,3 @@ parameters:
 			message: "#^Unsafe usage of new static\\(\\)\\.$#"
 			count: 1
 			path: src/Exceptions/SchemaValidationException.php
-
-		-
-			message: "#^Access to an undefined property object\\:\\:\\$type\\.$#"
-			count: 1
-			path: src/Validation/AbstractValidator.php

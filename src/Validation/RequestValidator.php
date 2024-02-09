@@ -11,6 +11,7 @@ use Illuminate\Support\Arr;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\SchemaValidationException;
+use stdClass;
 
 class RequestValidator extends AbstractValidator
 {
@@ -186,7 +187,7 @@ class RequestValidator extends AbstractValidator
         return $this->pathItem->{$this->method};
     }
 
-    protected function parseBodySchema(): object
+    protected function parseBodySchema(): stdClass
     {
         $body = $this->request->all();
 

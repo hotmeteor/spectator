@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string getSpec() Get the spec being used.
  * @method static string getPathPrefix() Get the path prefix being used.
  * @method static RequestFactory setPathPrefix(string|null $prefix) Set the path prefix being used.
- * @method static object resolve() Resolve the spec into an object.
+ * @method static \stdClass resolve() Resolve the spec into an object.
  * @method bool shouldValidateRequest() Indicate if request should be validated.
  *
  * @see \Spectator\RequestFactory
