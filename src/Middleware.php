@@ -45,8 +45,7 @@ class Middleware
         try {
             /** @var \Illuminate\Routing\Route $route */
             $route = $request->route();
-            $requestPath = $route->uri();
-            $pathItem = $this->pathItem($requestPath, $request->method());
+            $pathItem = $this->pathItem($route->uri(), $request->method());
         } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
             $this->spectator->captureRequestValidation($exception);
             $this->spectator->captureResponseValidation($exception);
@@ -55,7 +54,7 @@ class Middleware
         }
 
         try {
-            return $this->validate($request, $next, $requestPath, $pathItem);
+            return $this->validate($request, $next, $pathItem);
         } catch (Throwable $exception) {
             if ($this->exceptionHandler->shouldReport($exception)) {
                 return $this->formatResponse($exception, 500);
@@ -78,13 +77,14 @@ class Middleware
         ], $code);
     }
 
-    protected function validate(Request $request, Closure $next, string $requestPath, PathItem $pathItem): mixed
+    protected function validate(Request $request, Closure $next, PathItem $pathItem): mixed
     {
         try {
             RequestValidator::validate(
                 $request,
                 $pathItem,
-                $request->method()
+                $request->method(),
+                $this->version
             );
         } catch (RequestValidationException $exception) {
             $this->spectator->captureRequestValidation($exception);

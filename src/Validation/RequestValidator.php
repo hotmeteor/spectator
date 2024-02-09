@@ -31,9 +31,9 @@ class RequestValidator extends AbstractValidator
     /**
      * @throws RequestValidationException|SchemaValidationException
      */
-    public static function validate(Request $request, PathItem $pathItem, string $method): void
+    public static function validate(Request $request, PathItem $pathItem, string $method, string $version): void
     {
-        $instance = new self($request, $pathItem, $method);
+        $instance = new self($request, $pathItem, $method, $version);
 
         $instance->handle();
     }
