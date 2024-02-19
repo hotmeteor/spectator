@@ -20,6 +20,7 @@ use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Validation\RequestValidator;
 use Spectator\Validation\ResponseValidator;
+use Throwable;
 
 class Middleware
 {
@@ -29,32 +30,22 @@ class Middleware
 
     protected string $version = '3.0';
 
-    /**
-     * Middleware constructor.
-     */
     public function __construct(RequestFactory $spectator, ExceptionHandler $exceptionHandler)
     {
         $this->spectator = $spectator;
         $this->exceptionHandler = $exceptionHandler;
     }
 
-    /**
-     * @return JsonResponse|Request
-     *
-     * @throws InvalidPathException
-     * @throws MissingSpecException
-     * @throws RequestValidationException
-     * @throws \Throwable
-     */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
         if (! $this->spectator->getSpec()) {
             return $next($request);
         }
 
         try {
-            $requestPath = $request->route()->uri();
-            $pathItem = $this->pathItem($requestPath, $request->method());
+            /** @var \Illuminate\Routing\Route $route */
+            $route = $request->route();
+            $pathItem = $this->pathItem($route->uri(), $request->method());
         } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
             $this->spectator->captureRequestValidation($exception);
             $this->spectator->captureResponseValidation($exception);
@@ -63,8 +54,8 @@ class Middleware
         }
 
         try {
-            return $this->validate($request, $next, $requestPath, $pathItem);
-        } catch (\Throwable $exception) {
+            return $this->validate($request, $next, $pathItem);
+        } catch (Throwable $exception) {
             if ($this->exceptionHandler->shouldReport($exception)) {
                 return $this->formatResponse($exception, 500);
             }
@@ -73,28 +64,27 @@ class Middleware
         }
     }
 
-    protected function formatResponse($exception, $code): JsonResponse
+    protected function formatResponse(Throwable $exception, int $code): JsonResponse
     {
         $errors = method_exists($exception, 'getErrors')
             ? ['specErrors' => $exception->getErrors()]
             : [];
 
-        return Response::json(array_merge([
+        return Response::json([
             'exception' => get_class($exception),
             'message' => $exception->getMessage(),
-        ], $errors), $code);
+            ...$errors,
+        ], $code);
     }
 
-    /**
-     * @return mixed
-     */
-    protected function validate(Request $request, Closure $next, string $requestPath, PathItem $pathItem)
+    protected function validate(Request $request, Closure $next, PathItem $pathItem): mixed
     {
         try {
             RequestValidator::validate(
                 $request,
                 $pathItem,
-                $request->method()
+                $request->method(),
+                $this->version
             );
         } catch (RequestValidationException $exception) {
             $this->spectator->captureRequestValidation($exception);
@@ -104,7 +94,6 @@ class Middleware
 
         try {
             ResponseValidator::validate(
-                $requestPath,
                 $response,
                 $pathItem->{strtolower($request->method())},
                 $this->version
@@ -125,7 +114,7 @@ class Middleware
      * @throws IOException
      * @throws InvalidJsonPointerSyntaxException
      */
-    protected function pathItem($requestPath, $requestMethod): PathItem
+    protected function pathItem(string $requestPath, string $requestMethod): PathItem
     {
         if (! Str::startsWith($requestPath, '/')) {
             $requestPath = '/'.$requestPath;

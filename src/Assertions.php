@@ -22,7 +22,7 @@ class Assertions
 {
     use HasExpectations;
 
-    public function assertValidRequest()
+    public function assertValidRequest(): Closure
     {
         return fn () => $this->runAssertion(function () {
             $exception = app('spectator')->requestException;
@@ -40,7 +40,7 @@ class Assertions
         });
     }
 
-    public function assertInvalidRequest()
+    public function assertInvalidRequest(): Closure
     {
         return fn () => $this->runAssertion(function () {
             $exception = app('spectator')->requestException;
@@ -61,9 +61,9 @@ class Assertions
         });
     }
 
-    public function assertValidResponse()
+    public function assertValidResponse(): Closure
     {
-        return fn ($status = null) => $this->runAssertion(function () use ($status) {
+        return fn (?int $status = null) => $this->runAssertion(function () use ($status) {
             if ($status) {
                 $this->assertStatus($status);
             }
@@ -83,9 +83,9 @@ class Assertions
         });
     }
 
-    public function assertInvalidResponse()
+    public function assertInvalidResponse(): Closure
     {
-        return fn ($status = null) => $this->runAssertion(function () use ($status) {
+        return fn (?int $status = null) => $this->runAssertion(function () use ($status) {
             if ($status) {
                 $this->assertStatus($status);
             }
@@ -108,9 +108,9 @@ class Assertions
         });
     }
 
-    public function assertValidationMessage()
+    public function assertValidationMessage(): Closure
     {
-        return fn ($expected) => $this->runAssertion(function () use ($expected) {
+        return fn (string $expected) => $this->runAssertion(function () use ($expected) {
             PHPUnit::assertStringContainsString(
                 $expected,
                 implode(' ', $this->collectExceptionMessages()),
@@ -121,9 +121,12 @@ class Assertions
         });
     }
 
-    public function assertErrorsContain()
+    public function assertErrorsContain(): Closure
     {
-        return fn ($errors) => $this->runAssertion(function () use ($errors) {
+        /**
+         * @param  string|array<int, string>  $errors
+         */
+        return fn (string|array $errors) => $this->runAssertion(function () use ($errors) {
             $matches = 0;
 
             if (! is_array($errors)) {
@@ -148,7 +151,7 @@ class Assertions
         });
     }
 
-    public function assertPathExists()
+    public function assertPathExists(): Closure
     {
         return fn () => $this->runAssertion(function () {
             $exception = app('spectator')->requestException;
@@ -161,7 +164,7 @@ class Assertions
         });
     }
 
-    public function dumpSpecErrors()
+    public function dumpSpecErrors(): Closure
     {
         return function () {
             dump($this->collectExceptionMessages());
@@ -170,7 +173,7 @@ class Assertions
         };
     }
 
-    protected function runAssertion()
+    protected function runAssertion(): Closure
     {
         return function (Closure $closure) {
             $original = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 6)[5];
@@ -183,10 +186,10 @@ class Assertions
         };
     }
 
-    protected function collectExceptionMessages()
+    protected function collectExceptionMessages(): Closure
     {
-        /*
-         * @return array
+        /**
+         * @return array<int, string|null>
          */
         return function (): array {
             $requestException = app('spectator')->requestException;

@@ -24,14 +24,17 @@ class RequestFactory
 
     protected ?string $pathPrefix = null;
 
+    /** @var array<string, \cebe\openapi\spec\OpenApi> */
     private array $cachedSpecs = [];
 
     /**
      * Set the file name of the spec.
      */
-    public function using($name)
+    public function using(?string $name): self
     {
         $this->specName = $name;
+
+        return $this;
     }
 
     /**
@@ -45,7 +48,7 @@ class RequestFactory
     /**
      * Set the prefix for the API paths.
      */
-    public function setPathPrefix($pathPrefix): self
+    public function setPathPrefix(?string $pathPrefix): self
     {
         $this->pathPrefix = $pathPrefix;
 
@@ -57,17 +60,16 @@ class RequestFactory
      */
     public function getPathPrefix(): string
     {
-        return $this->pathPrefix ?? config('spectator.path_prefix');
+        return $this->pathPrefix ?? config('spectator.path_prefix') ?? '';
     }
 
     /**
      * Reset the name of the spec.
-     *
-     * return RequestFactory
      */
     public function reset(): void
     {
         $this->specName = null;
+        $this->pathPrefix = null;
         $this->requestException = null;
         $this->responseException = null;
     }
@@ -103,7 +105,7 @@ class RequestFactory
                     case 'yaml':
                         return $this->cachedSpecs[$file] = Reader::readFromYamlFile($file);
                 }
-            } catch (TypeErrorException $exception) {
+            } catch (TypeErrorException) {
                 throw new MalformedSpecException('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
             }
         }
@@ -111,18 +113,12 @@ class RequestFactory
         throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
     }
 
-    /**
-     * @return void
-     */
-    public function captureRequestValidation(Throwable $throwable)
+    public function captureRequestValidation(Throwable $throwable): void
     {
         $this->requestException = $throwable;
     }
 
-    /**
-     * @return void
-     */
-    public function captureResponseValidation(Throwable $throwable)
+    public function captureResponseValidation(Throwable $throwable): void
     {
         $this->responseException = $throwable;
     }
@@ -130,34 +126,32 @@ class RequestFactory
     /**
      * Retrieve the spec file.
      *
-     * @return mixed
-     *
      * @throws MissingSpecException
      */
-    protected function getFile()
+    protected function getFile(): string
     {
         if (! $source = Arr::get(config('spectator.sources', []), config('spectator.default'))) {
             throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
         }
 
-        $method = Str::camel("get_{$source['source']}_path");
+        $file = $this->standardizeFileName($this->specName);
 
-        if (method_exists($this, $method)) {
-            $file = $this->standardizeFileName($this->specName);
-
-            return $this->{$method}($source, $file);
-        }
-
-        throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.');
+        return match ($source['source']) {
+            'local' => $this->getLocalPath($source, $file),
+            'remote' => $this->getRemotePath($source, $file),
+            'github' => $this->getGithubPath($source, $file),
+            default => throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.'),
+        };
     }
 
     /**
      * Retrieve a local spec file.
      *
+     * @param  array<string, string>  $source
      *
      * @throws MissingSpecException
      */
-    protected function getLocalPath(array $source, $file): string
+    protected function getLocalPath(array $source, string $file): string
     {
         $path = $this->standardizePath($source['base_path']);
 
@@ -172,32 +166,32 @@ class RequestFactory
 
     /**
      * Retrieve a remote spec file.
+     *
+     * @param  array<string, string>  $source
      */
-    protected function getRemotePath(array $source, $file): string
+    protected function getRemotePath(array $source, string $file): string
     {
         $path = $this->standardizePath($source['base_path']);
 
         $params = Arr::get($source, 'params', '');
 
-        $path = "{$path}{$file}{$params}";
-
-        return $path;
+        return "{$path}{$file}{$params}";
     }
 
     /**
      * Build a Github path.
+     *
+     * @param  array<string, string>  $source
      */
-    protected function getGithubPath(array $source, $file): string
+    protected function getGithubPath(array $source, string $file): string
     {
-        $path = "https://{$source['token']}@raw.githubusercontent.com/{$source['repo']}/{$source['base_path']}/{$file}";
-
-        return $path;
+        return "https://{$source['token']}@raw.githubusercontent.com/{$source['repo']}/{$source['base_path']}/{$file}";
     }
 
     /**
      * Standardize a file name.
      */
-    protected function standardizeFileName($file): string
+    protected function standardizeFileName(string $file): string
     {
         if (Str::startsWith($file, '/')) {
             $file = Str::replaceFirst('/', '', $file);
@@ -209,7 +203,7 @@ class RequestFactory
     /**
      * Standardize a path.
      */
-    protected function standardizePath($path): string
+    protected function standardizePath(string $path): string
     {
         if (! Str::endsWith($path, '/')) {
             $path = $path.'/';

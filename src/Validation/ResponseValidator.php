@@ -9,27 +9,22 @@ use Illuminate\Support\Str;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Exceptions\SchemaValidationException;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ResponseValidator extends AbstractValidator
 {
-    protected $uri;
-
-    protected $response;
-
-    protected $operation;
-
-    public function __construct(string $uri, $response, Operation $operation, $version = '3.0')
-    {
-        $this->uri = $uri;
-        $this->response = $response;
-        $this->operation = $operation;
+    public function __construct(
+        protected HttpResponse $response,
+        protected Operation $operation,
+        string $version = '3.0'
+    ) {
         $this->version = $version;
     }
 
-    public static function validate(string $uri, $response, Operation $operation, $version = '3.0')
+    public static function validate(HttpResponse $response, Operation $operation, string $version = '3.0'): void
     {
-        $instance = new self($uri, $response, $operation, $version);
+        $instance = new self($response, $operation, $version);
 
         $instance->handle();
     }
@@ -38,7 +33,7 @@ class ResponseValidator extends AbstractValidator
      * @throws ResponseValidationException
      * @throws SchemaValidationException
      */
-    protected function handle()
+    protected function handle(): void
     {
         $responseObject = $this->response();
 
@@ -53,7 +48,7 @@ class ResponseValidator extends AbstractValidator
      * @throws ResponseValidationException
      * @throws SchemaValidationException
      */
-    protected function parseResponse(Response $response)
+    protected function parseResponse(Response $response): void
     {
         $contentType = $this->contentType();
 
@@ -95,11 +90,11 @@ class ResponseValidator extends AbstractValidator
      * @throws ResponseValidationException
      * @throws SchemaValidationException
      */
-    protected function validateResponse(Schema $schema, $body)
+    protected function validateResponse(Schema $schema, mixed $body): void
     {
         $expectedSchema = $this->prepareData($schema, 'read');
 
-        $validator = $this->validator();
+        $validator = new Validator();
         $result = $validator->validate($body, $expectedSchema);
 
         if ($result->isValid() === false) {
@@ -127,18 +122,12 @@ class ResponseValidator extends AbstractValidator
         throw new ResponseValidationException("No response object matching returned status code [{$this->response->getStatusCode()}].");
     }
 
-    /**
-     * @return string
-     */
-    protected function contentType()
+    protected function contentType(): ?string
     {
         return $this->response->headers->get('Content-Type');
     }
 
-    /**
-     * @return ?string
-     */
-    protected function schemaType(Schema $schema)
+    protected function schemaType(Schema $schema): ?string
     {
         if ($schema->type) {
             return $schema->type;
@@ -159,17 +148,12 @@ class ResponseValidator extends AbstractValidator
         return null;
     }
 
-    /**
-     * @return mixed
-     *
-     * @throws ResponseValidationException
-     */
-    protected function body($contentType, $schemaType)
+    protected function body(?string $contentType, ?string $schemaType): mixed
     {
         $body = $this->responseContent();
 
         if (in_array($schemaType, ['object', 'array', 'allOf', 'anyOf', 'oneOf'], true)) {
-            if (in_array($contentType, ['application/json', 'application/vnd.api+json', 'application/problem+json'])) {
+            if (in_array($contentType, ['application/json', 'application/vnd.api+json', 'application/problem+json'], true)) {
                 return json_decode($body);
             } else {
                 throw new ResponseValidationException("Unable to map [{$contentType}] to schema type [object].");
@@ -199,10 +183,5 @@ class ResponseValidator extends AbstractValidator
         ob_end_clean();
 
         return $content;
-    }
-
-    protected function validator(): Validator
-    {
-        return new Validator();
     }
 }

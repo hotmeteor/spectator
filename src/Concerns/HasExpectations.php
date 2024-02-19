@@ -2,19 +2,18 @@
 
 namespace Spectator\Concerns;
 
+use Closure;
 use PHPUnit\Framework\Assert as PHPUnit;
 use Throwable;
 
 trait HasExpectations
 {
-    public function expectsFalse()
+    public function expectsFalse(): Closure
     {
-        /*
-         * @param Throwable|null $throwable
-         * @param array $exceptions
-         * @return void
+        /**
+         * @param  array<int, class-string>  $exceptions
          */
-        return function (?Throwable $throwable = null, array $exceptions = []) {
+        return function (?Throwable $throwable = null, array $exceptions = []): void {
             if ($throwable) {
                 $class = get_class($throwable);
 
@@ -28,14 +27,12 @@ trait HasExpectations
         };
     }
 
-    public function expectsTrue()
+    public function expectsTrue(): Closure
     {
-        /*
-         * @param Throwable|null $throwable
-         * @param array $exceptions
-         * @return void
+        /**
+         * @param  array<int, class-string>  $exceptions
          */
-        return function (?Throwable $throwable = null, array $exceptions = [], string $message = '') {
+        return function (?Throwable $throwable = null, array $exceptions = [], string $message = ''): void {
             if ($throwable) {
                 $class = get_class($throwable);
 

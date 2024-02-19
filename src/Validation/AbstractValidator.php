@@ -5,6 +5,7 @@ namespace Spectator\Validation;
 use cebe\openapi\spec\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use stdClass;
 
 abstract class AbstractValidator
 {
@@ -13,15 +14,14 @@ abstract class AbstractValidator
     /**
      * Check if properties exist, and if so, prepare them based on version.
      *
-     * @param  string|null  $mode  Access mode 'read' or 'write'
-     * @return mixed
+     * @param  'read'|'write'|null  $mode
      */
-    protected function prepareData(Schema $schema, ?string $mode = null): object
+    protected function prepareData(Schema $schema, ?string $mode = null): stdClass
     {
         return $this->prepareProperty($schema->getSerializableData(), $mode);
     }
 
-    private function prepareProperty(object $data, ?string $mode): object
+    private function prepareProperty(stdClass $data, ?string $mode): stdClass
     {
         // Does this object contain an unresolved "$ref"? This occurs when `cebe\openapi\Reader`
         // encounters a cyclical reference. Skip it.
@@ -32,7 +32,7 @@ abstract class AbstractValidator
         $data = $this->migrateNullableTo31Style($data);
 
         if ($this->shouldHaveProperties($data)) {
-            $data->properties ??= new \stdClass();
+            $data->properties ??= new stdClass();
         }
 
         match (true) {
@@ -61,7 +61,7 @@ abstract class AbstractValidator
         return $data;
     }
 
-    private function shouldHaveProperties(object $data): bool
+    private function shouldHaveProperties(stdClass $data): bool
     {
         if (! isset($data->type)) {
             return false;
@@ -83,7 +83,7 @@ abstract class AbstractValidator
      *
      * @param  string|null  $mode  Access mode 'read' or 'write'
      */
-    private function filterProperties(object $data, ?string $mode): object
+    private function filterProperties(stdClass $data, ?string $mode): stdClass
     {
         $filterBy = match ($mode) {
             'read' => 'writeOnly',
@@ -125,7 +125,7 @@ abstract class AbstractValidator
     /**
      * Migrate Openapi 3.0 nullable declaration to Openapi 3.1 style.
      */
-    private function migrateNullableTo31Style(object $data): object
+    private function migrateNullableTo31Style(stdClass $data): stdClass
     {
         if (! Str::startsWith($this->version, '3.0')) {
             return $data;

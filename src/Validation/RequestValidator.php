@@ -11,24 +11,19 @@ use Illuminate\Support\Arr;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\SchemaValidationException;
+use stdClass;
 
 class RequestValidator extends AbstractValidator
 {
-    protected Request $request;
-
-    protected PathItem $pathItem;
-
-    protected string $method;
-
-    protected array $parameters;
-
     /**
      * RequestValidator constructor.
      */
-    public function __construct(Request $request, PathItem $pathItem, string $method, string $version = '3.0')
-    {
-        $this->request = $request;
-        $this->pathItem = $pathItem;
+    public function __construct(
+        protected Request $request,
+        protected PathItem $pathItem,
+        protected string $method,
+        string $version = '3.0'
+    ) {
         $this->method = strtolower($method);
         $this->version = $version;
     }
@@ -36,9 +31,9 @@ class RequestValidator extends AbstractValidator
     /**
      * @throws RequestValidationException|SchemaValidationException
      */
-    public static function validate(Request $request, PathItem $pathItem, string $method)
+    public static function validate(Request $request, PathItem $pathItem, string $method, string $version): void
     {
-        $instance = new self($request, $pathItem, $method);
+        $instance = new self($request, $pathItem, $method, $version);
 
         $instance->handle();
     }
@@ -46,7 +41,7 @@ class RequestValidator extends AbstractValidator
     /**
      * @throws RequestValidationException|SchemaValidationException
      */
-    protected function handle()
+    protected function handle(): void
     {
         $this->validateParameters();
 
@@ -58,8 +53,9 @@ class RequestValidator extends AbstractValidator
     /**
      * @throws RequestValidationException|SchemaValidationException
      */
-    protected function validateParameters()
+    protected function validateParameters(): void
     {
+        /** @var \Illuminate\Routing\Route $route */
         $route = $this->request->route();
 
         $parameters = array_merge(
@@ -191,7 +187,7 @@ class RequestValidator extends AbstractValidator
         return $this->pathItem->{$this->method};
     }
 
-    protected function parseBodySchema(): object
+    protected function parseBodySchema(): stdClass
     {
         $body = $this->request->all();
 
@@ -204,7 +200,10 @@ class RequestValidator extends AbstractValidator
         return $this->toObject($body);
     }
 
-    private function toObject($data)
+    /**
+     * @return ($data is array<string, mixed> ? object : ($data is array<int, mixed> ? array<int, mixed> : mixed))
+     */
+    private function toObject(mixed $data): mixed
     {
         if (! is_array($data)) {
             return $data;
@@ -220,7 +219,7 @@ class RequestValidator extends AbstractValidator
         return Arr::has($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
     }
 
-    private function getQueryParam(string $parameterName)
+    private function getQueryParam(string $parameterName): ?string
     {
         return Arr::get($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
     }
