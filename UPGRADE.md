@@ -21,4 +21,5 @@ While this should be a pretty easy upgrade, you should be aware of some of the c
   now prioritize the validation of the actual http code over the validation of the specification.
 - The validation is stricter than before. Tests that were passing before might now fail. You may need to update your
   tests or your openapi specifications.
+- A non-empty response body will be now considered invalid against a specification not defining a response content.
 - Internal modifications were made. If you extend Spectator, you may need to update your code.
