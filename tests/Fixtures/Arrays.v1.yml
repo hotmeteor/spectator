@@ -87,5 +87,19 @@ paths:
                     type: array
                     items:
                       type: string
+  /parameter-as-array:
+    parameters:
+      - name: arrayParam
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+    get:
+      summary: Get arrays of string
+      tags: [ ]
+      responses:
+        '204':
+          description: No Content
 components:
   schemas: {}

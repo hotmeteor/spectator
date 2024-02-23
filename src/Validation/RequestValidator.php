@@ -219,7 +219,10 @@ class RequestValidator extends AbstractValidator
         return Arr::has($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
     }
 
-    private function getQueryParam(string $parameterName): ?string
+    /**
+     * @return string|array<array-key, mixed>|null
+     */
+    private function getQueryParam(string $parameterName): string|array|null
     {
         return Arr::get($this->request->query->all(), $this->convertQueryParameterToDotted($parameterName));
     }

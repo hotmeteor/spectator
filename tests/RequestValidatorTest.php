@@ -519,6 +519,23 @@ class RequestValidatorTest extends TestCase
             ->assertValid();
     }
 
+    public function test_handles_array_query_parameters(): void
+    {
+        Spectator::using('Arrays.v1.yml');
+
+        // When testing query parameters, they are not found nor checked by RequestValidator->validateParameters().
+        Route::get('/parameter-as-array', function () {
+            return response()->noContent();
+        })->middleware(Middleware::class);
+
+        $this->get('/parameter-as-array?arrayParam=foo')
+            ->assertValidationMessage("The data (string) must match the type: array")
+            ->assertInvalidRequest();
+
+        $this->get('/parameter-as-array?arrayParam[]=foo&arrayParam[]=bar')
+            ->assertValidRequest();
+    }
+
     public function test_handles_query_parameters_int(): void
     {
         Spectator::using('Test.v1.json');
