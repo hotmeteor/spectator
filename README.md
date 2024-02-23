@@ -10,6 +10,11 @@ Write tests that verify your API spec doesn't drift from your implementation.
 [![Latest Version on Packagist](https://img.shields.io/packagist/vpre/hotmeteor/spectator.svg?style=flat-square)](https://packagist.org/packages/hotmeteor/spectator)
 ![PHP from Packagist](https://img.shields.io/packagist/php-v/hotmeteor/spectator)
 
+## Requirements
+
+- PHP 8.1
+- Laravel 10
+
 ## Installation
 
 You can install the package through Composer.
@@ -26,6 +31,16 @@ php artisan vendor:publish --provider="Spectator\SpectatorServiceProvider"
 
 The config file will be published in `config/spectator.php`.
 
+### Upgrading from v1 to v2
+
+**Important:** Spectator v2 requires PHP 8.1 and Laravel 10. If you are using an older version of PHP or Laravel, you should not upgrade to v2.
+
+While this should typically be a straightforward upgrade, you should be aware of some of the changes that have been made.
+
+Please read the [UPGRADE.md](UPGRADE.md) file for more information.
+
+## Configuration
+
 ### Sources
 
 **Sources** are references to where your API spec lives. Depending on the way you or your team works, or where your spec lives, you may want to configure different sources for different environments.
@@ -34,7 +49,7 @@ As you can see from the config, there's three source types available: `local`, `
 
 ---
 
-#### Local Example
+#### Local
 
 ```env
 ## Spectator config
@@ -45,7 +60,7 @@ SPEC_PATH=/spec/reference
 
 ---
 
-#### Remote Example
+#### Remote
 
 _This is using the raw access link from Github, but any remote source can be specified. The SPEC_URL_PARAMS can be used to append any additional parameters required for the remote url._
 
@@ -58,7 +73,7 @@ SPEC_URL_PARAMS="?token=ABEDC3E5AQ3HMUBPPCDTTMDAFPMSM"
 
 ---
 
-#### Github Example
+#### Github
 
 _This uses the Github Personal Access Token which allows you access to a remote repo containing your contract._
 
@@ -76,7 +91,7 @@ SPEC_GITHUB_TOKEN='your personal access token'
 
 ---
 
-#### Specifying Your File In Your Tests
+### Specifying the Target Spec File
 
 In your tests you will declare the spec file you want to test against:
 
@@ -94,11 +109,13 @@ public function testBasicExample()
 
 **Now, on to the good stuff.**
 
-At first, spec testing, or contract testing, may seem counter-intuitive, especially when compared with "feature" or "functional" testing as supported by Laravel's [HTTP Tests](https://laravel.com/docs/8.x/http-tests). While functional tests are ensuring that your request validation, controller behavior, events, responses, etc. all behave the way you expect when people interact with your API, contract tests are ensuring that **requests and responses are spec-compliant**, and that's it.
+At first, spec testing, or contract testing, may seem counter-intuitive, especially when compared with "feature" or "functional" testing as supported by Laravel's [HTTP Tests](https://laravel.com/docs/8.x/http-tests). 
+
+While _functional_ tests are ensuring that your request validation, controller behavior, events, responses, etc. all behave the way you expect when people interact with your API, _contract_ tests are ensuring that **requests and responses are spec-compliant** - _and that's it_. The data itself could be wrong, but that's outside the scope of a contract test.
 
 ### Writing Tests
 
-Spectator adds a few simple tools to the existing Laravel testing toolbox.
+Spectator introduces a few simple tools to the compliment existing Laravel testing toolbox.
 
 Here's an example of a typical JSON API test:
 
@@ -154,7 +171,12 @@ class ExampleTest extends TestCase
 
 The test is verifying that both the request and the response are valid according to the spec, in this case located in `Api.v1.json`. This type of testing promotes TDD: you can write endpoint contract tests against your endpoints _first_, and then ensure your spec and implementation are aligned.
 
-Within your spec, each possible response should be documented. For example, a single `POST` endpoint may result in a `2xx`, `4xx`, or even `5xx` code response. Additionally, your endpoints will likely have particular parameter validation that needs to be adhered to. This is what makes contract testing different from functional testing: in functional testing, successful and failed responses are tested for outcomes; in contract testing, requests and responses are tested for conformity and outcomes don't matter.
+Within your spec, each possible response should be documented. For example, a single `POST` endpoint may result in a `2xx`, `4xx`, or even `5xx` code response. Additionally, your endpoints will likely have particular parameter validation that needs to be adhered to. 
+
+This is what makes contract testing different from functional testing:
+
+- in **functional testing**, successful and failed responses are tested for outcomes
+- in **contract testing**, requests and responses are tested for conformity and outcomes don't matter.
 
 ### Debugging
 
@@ -186,6 +208,8 @@ A few custom symbols are used:
 
 ## Usage
 
+### Providing a Spec
+
 Define the spec file to test against. This can be defined in your `setUp()` method or in a specific test method.
 
 ```php
@@ -216,6 +240,8 @@ class ExampleTest extends TestCase
 }
 ```
 
+### Testing Requests
+
 When testing endpoints, there are a few new methods:
 
 ```php
@@ -239,7 +265,9 @@ $this
     ->assertValidResponse();
 ```
 
-That said, mixing functional and contract testing may become more difficult to manage and read later.
+That said, mixing functional and contract testing may become more difficult to manage and read later. It's strongly advised to keep the two types of tests separate.
+
+### Testing Responses
 
 Instead of using the built-in `->assertStatus($status)` method, you may also verify the response that is valid is actually the response you want to check. For example, you may receive a `200` **or** a `202` from a single endpoint, and you want to ensure you're validating the correct response.
 
@@ -304,15 +332,14 @@ For those interested in contributing to Spectator, it is worth familiarizing you
 
 ## Sponsors
 
-A huge thanks to all our sponsors who help push Spectator development forward! In particular, we'd like to say a special thank you to our partners:
-
-- Phil Sturgeon ([@philsturgeon](https://github.com/philsturgeon))
+A huge thanks to all our sponsors who help push Spectator development forward!
 
 If you'd like to become a sponsor, please [see here for more information](https://github.com/sponsors/hotmeteor). 💪
 
 ## Credits
 
-- [Adam Campbell](https://github.com/hotmeteor)
+- Created by [Adam Campbell](https://github.com/hotmeteor)
+- Maintained by [bastien-phi](https://github.com/bastien-phi), [Jarrod Parkes](https://github.com/jarrodparkes), and [Adam Campbell](https://github.com/hotmeteor)
 - Inspired by [Laravel OpenAPI](https://github.com/mdwheele/laravel-openapi) package by [Dustin Wheeler](https://github.com/mdwheele)
 - [All Contributors](../../contributors)
 
