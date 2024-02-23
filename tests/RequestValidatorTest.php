@@ -145,7 +145,7 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('Test.v1.json');
 
-        Route::bind('postUuid', fn() => new TestUser);
+        Route::bind('postUuid', fn () => new TestUser);
 
         Route::get('/posts/{postUuid}', function () {
             return [
@@ -154,7 +154,7 @@ class RequestValidatorTest extends TestCase
             ];
         })->middleware([SubstituteBindings::class, Middleware::class]);
 
-        $this->getJson('/posts/' . Str::uuid()->toString())
+        $this->getJson('/posts/'.Str::uuid()->toString())
             ->assertValidRequest();
     }
 
@@ -162,7 +162,7 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('Test.v1.json');
 
-        Route::bind('postUuid', fn() => new TestUser);
+        Route::bind('postUuid', fn () => new TestUser);
 
         Route::get('/posts/{postUuid}', function () {
             return [
@@ -179,7 +179,7 @@ class RequestValidatorTest extends TestCase
     {
         Spectator::using('Test.v1.json');
 
-        Route::bind('postUuid', fn() => new TestUser);
+        Route::bind('postUuid', fn () => new TestUser);
 
         Route::get('/posts/{postUuid}/comments/{comment}', function () {
             return [
@@ -188,7 +188,7 @@ class RequestValidatorTest extends TestCase
             ];
         })->middleware([SubstituteBindings::class, Middleware::class]);
 
-        $this->getJson('/posts/' . Str::uuid()->toString() . '/comments/1')
+        $this->getJson('/posts/'.Str::uuid()->toString().'/comments/1')
             ->assertValidRequest();
     }
 
@@ -869,6 +869,22 @@ class RequestValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->post('/upload', ['file' => UploadedFile::fake()->createWithContent('test.xlsx', 'Content')], ['Content-Type' => 'multipart/form-data'])
+            ->assertValidRequest();
+    }
+
+    public function test_parameter_decoupling(): void
+    {
+        Spectator::using('Test.v1.json');
+
+        Route::get('/users/{id}', function (TestUser $id) {
+            return [
+                'id' => 1,
+                'name' => 'Jim',
+                'email' => 'test@test.test',
+            ];
+        })->middleware([SubstituteBindings::class, Middleware::class]);
+
+        $this->getJson('/users/1')
             ->assertValidRequest();
     }
 }
