@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\SchemaValidationException;
@@ -20,20 +21,19 @@ class RequestValidator extends AbstractValidator
      */
     public function __construct(
         protected Request $request,
+        protected string $specPath,
         protected PathItem $pathItem,
-        protected string $method,
         string $version = '3.0'
     ) {
-        $this->method = strtolower($method);
         $this->version = $version;
     }
 
     /**
      * @throws RequestValidationException|SchemaValidationException
      */
-    public static function validate(Request $request, PathItem $pathItem, string $method, string $version): void
+    public static function validate(Request $request, string $specPath, PathItem $pathItem, string $version): void
     {
-        $instance = new self($request, $pathItem, $method, $version);
+        $instance = new self($request, $specPath, $pathItem, $version);
 
         $instance->handle();
     }
@@ -67,7 +67,7 @@ class RequestValidator extends AbstractValidator
 
         foreach ($requiredParameters as $parameter) {
             // Verify presence, if required.
-            if ($parameter->in === 'path' && ! $route->hasParameter($parameter->name)) {
+            if ($parameter->in === 'path' && ! $route->hasParameter($this->translateParameterName($parameter->name))) {
                 throw new RequestValidationException("Missing required parameter {$parameter->name} in URL path.");
             } elseif ($parameter->in === 'query' && ! $this->hasQueryParam($parameter->name)) {
                 throw new RequestValidationException("Missing required query parameter [?{$parameter->name}=].");
@@ -87,12 +87,12 @@ class RequestValidator extends AbstractValidator
                 $parameterValue = null;
 
                 // Get parameter, then validate it.
-                if ($parameter->in === 'path' && $route->hasParameter($parameter->name)) {
-                    $parameterValue = $route->parameters()[$parameter->name];
+                if ($parameter->in === 'path' && $route->hasParameter($parameterName = $this->translateParameterName($parameter->name))) {
+                    $parameterValue = $route->parameters()[$parameterName];
                     if ($parameterValue instanceof Model) {
-                        $parameterValue = $route->originalParameters()[$parameter->name];
+                        $parameterValue = $route->originalParameters()[$parameterName];
                     } elseif ($parameterValue instanceof \BackedEnum) {
-                        $parameterValue = $route->originalParameters()[$parameter->name];
+                        $parameterValue = $route->originalParameters()[$parameterName];
                     }
                 } elseif ($parameter->in === 'query' && $this->hasQueryParam($parameter->name)) {
                     $parameterValue = $this->getQueryParam($parameter->name);
@@ -137,6 +137,19 @@ class RequestValidator extends AbstractValidator
                 }
             }
         }
+    }
+
+    protected function translateParameterName(string $parameter): string
+    {
+        /** @var \Illuminate\Routing\Route $route */
+        $route = $this->request->route();
+
+        preg_match($route->getCompiled()->getRegex(), $this->specPath, $matches);
+
+        return Collection::make($matches)
+            ->filter(fn (string $value, int|string $key) => is_string($key))
+            ->flip()
+            ->get("{{$parameter}}", $parameter);
     }
 
     /**
@@ -184,7 +197,7 @@ class RequestValidator extends AbstractValidator
 
     protected function operation(): Operation
     {
-        return $this->pathItem->{$this->method};
+        return $this->pathItem->{strtolower($this->request->method())};
     }
 
     protected function parseBodySchema(): stdClass
