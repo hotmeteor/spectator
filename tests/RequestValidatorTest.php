@@ -529,7 +529,7 @@ class RequestValidatorTest extends TestCase
         })->middleware(Middleware::class);
 
         $this->get('/parameter-as-array?arrayParam=foo')
-            ->assertValidationMessage("The data (string) must match the type: array")
+            ->assertValidationMessage('The data (string) must match the type: array')
             ->assertInvalidRequest();
 
         $this->get('/parameter-as-array?arrayParam[]=foo&arrayParam[]=bar')
