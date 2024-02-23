@@ -339,7 +339,7 @@ If you'd like to become a sponsor, please [see here for more information](https:
 ## Credits
 
 - Created by [Adam Campbell](https://github.com/hotmeteor)
-- Maintained by [bastien-phi](https://github.com/bastien-phi), [Jarrod Parkes](https://github.com/jarrodparkes), and [Adam Campbell](https://github.com/hotmeteor)
+- Maintained by [Bastien Philippe](https://github.com/bastien-phi), [Jarrod Parkes](https://github.com/jarrodparkes), and [Adam Campbell](https://github.com/hotmeteor)
 - Inspired by [Laravel OpenAPI](https://github.com/mdwheele/laravel-openapi) package by [Dustin Wheeler](https://github.com/mdwheele)
 - [All Contributors](../../contributors)
 
