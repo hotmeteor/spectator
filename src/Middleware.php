@@ -125,21 +125,36 @@ class Middleware
 
         $this->version = $openapi->openapi;
 
+        $pathMatches = false;
+        $partialMatch = null;
+
         foreach ($openapi->paths as $path => $pathItem) {
             $resolvedPath = $this->resolvePath($path);
-            if (Str::match($route->getCompiled()->getRegex(), $resolvedPath) !== '') {
-                $methods = array_keys($pathItem->getOperations());
+            $methods = array_keys($pathItem->getOperations());
 
+            if ($resolvedPath === $requestPath) {
+                $pathMatches = true;
                 // Check if the method exists for this path, and if so return the full PathItem
                 if (in_array(strtolower($requestMethod), $methods, true)) {
                     return [$resolvedPath, $pathItem];
                 }
+            }
 
-                throw new InvalidPathException("[{$requestMethod}] not a valid method for [{$requestPath}].", 405);
+            if (Str::match($route->getCompiled()->getRegex(), $resolvedPath) !== '') {
+                $pathMatches = true;
+                if (in_array(strtolower($requestMethod), $methods, true)) {
+                    $partialMatch = [$resolvedPath, $pathItem];
+                }
             }
         }
 
-        throw new InvalidPathException("Path [{$requestMethod} {$requestPath}] not found in spec.", 404);
+        if ($partialMatch !== null) {
+            return $partialMatch;
+        }
+
+        throw $pathMatches
+            ? throw new InvalidPathException("[{$requestMethod}] not a valid method for [{$requestPath}].", 405)
+            : new InvalidPathException("Path [{$requestMethod} {$requestPath}] not found in spec.", 404);
     }
 
     protected function resolvePath(string $path): string
