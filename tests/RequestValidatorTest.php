@@ -536,6 +536,22 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
+    public function test_handles_array_of_object_query_parameters(): void
+    {
+        Spectator::using('Arrays.v1.yml');
+
+        Route::get('/parameter-as-array-of-objects', function () {
+            return response()->noContent();
+        })->middleware(Middleware::class);
+
+        $this->get('/parameter-as-array-of-objects?arrayParam[0][id]=1&arrayParam[0][name]=foo&arrayParam[1][id]=2')
+            ->assertValidationMessage('The required properties (name) are missing')
+            ->assertInvalidRequest();
+
+        $this->get('/parameter-as-array-of-objects?arrayParam[0][id]=1&arrayParam[0][name]=foo&arrayParam[1][id]=2&arrayParam[1][name]=bar')
+            ->assertValidRequest();
+    }
+
     public function test_handles_query_parameters_int(): void
     {
         Spectator::using('Test.v1.json');
