@@ -101,5 +101,27 @@ paths:
       responses:
         '204':
           description: No Content
+  /parameter-as-array-of-objects:
+    parameters:
+      - name: arrayParam
+        in: query
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+            required:
+              - id
+              - name
+    get:
+      summary: Get arrays of objects
+      tags: [ ]
+      responses:
+        '204':
+          description: No Content
 components:
   schemas: {}

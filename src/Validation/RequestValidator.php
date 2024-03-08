@@ -107,25 +107,9 @@ class RequestValidator extends AbstractValidator
                 }
 
                 if ($parameterValue) {
-                    if (isset($expectedParameterSchema->type) && gettype($parameterValue) !== $expectedParameterSchema->type) {
-                        $expectedType = $expectedParameterSchema->type;
+                    $parameterValue = $this->castParameterValue($parameterValue, $expectedParameterSchema);
 
-                        $expectedType = match ($expectedType) {
-                            'integer' => 'int',
-                            'number' => 'float',
-                            default => $expectedType,
-                        };
-
-                        if (is_numeric($parameterValue)) {
-                            $parameterValue = match ($expectedType) {
-                                'int' => (int) $parameterValue,
-                                'float' => (float) $parameterValue,
-                                default => $parameterValue,
-                            };
-                        }
-                    }
-
-                    $result = $validator->validate($parameterValue, $expectedParameterSchema);
+                    $result = $validator->validate($this->toObject($parameterValue), $expectedParameterSchema);
 
                     // If the result is not valid, then display failure reason.
                     if ($result->isValid() === false) {
@@ -213,8 +197,33 @@ class RequestValidator extends AbstractValidator
         return $this->toObject($body);
     }
 
+    private function castParameterValue(mixed $parameterValue, ?stdClass $expectedSchema): mixed
+    {
+        if ($expectedSchema === null || ! isset($expectedSchema->type)) {
+            return $parameterValue;
+        }
+
+        if ($expectedSchema->type === 'integer' && is_numeric($parameterValue)) {
+            return (int) $parameterValue;
+        } elseif ($expectedSchema->type === 'number' && is_numeric($parameterValue)) {
+            return (float) $parameterValue;
+        } elseif ($expectedSchema->type === 'object' && Arr::isAssoc($parameterValue)) {
+            return Arr::map(
+                $parameterValue,
+                fn (mixed $value, string $key) => $this->castParameterValue($value, $expectedSchema->properties?->{$key})
+            );
+        } elseif ($expectedSchema->type === 'array' && is_array($parameterValue)) {
+            return Arr::map(
+                $parameterValue,
+                fn (mixed $value) => $this->castParameterValue($value, $expectedSchema->items)
+            );
+        }
+
+        return $parameterValue;
+    }
+
     /**
-     * @return ($data is array<string, mixed> ? object : ($data is array<int, mixed> ? array<int, mixed> : mixed))
+     * @return ($data is array<string, mixed> ? \stdClass : ($data is array<int, mixed> ? array<int, mixed> : mixed))
      */
     private function toObject(mixed $data): mixed
     {
