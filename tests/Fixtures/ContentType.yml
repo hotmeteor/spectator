@@ -1,0 +1,36 @@
+openapi: 3.0.0
+info:
+  title: ContentType
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /partial-match:
+    get:
+      summary: Get object
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/*:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
+  /joker:
+    get:
+      summary: Get string
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string

@@ -241,6 +241,28 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('All array items must match schema');
     }
 
+    public function test_with_partial_content_type_matching()
+    {
+        Spectator::using('ContentType.yml');
+        Route::get('/partial-match', function () {
+            return [
+                'id' => 1,
+                'name' => 'Jim',
+                'email' => 'test@test.test',
+            ];
+        })->middleware(Middleware::class);
+
+        $this->getJson('/partial-match')
+            ->assertValidResponse(200);
+
+        Route::get('/joker', function () {
+            return response('Hello world!', 200, ['Content-Type' => 'text/html']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/joker')
+            ->assertValidResponse(200);
+    }
+
     public function test_validates_problem_json_response_using_components()
     {
         $this->withoutExceptionHandling([NotFoundHttpException::class]);

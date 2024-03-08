@@ -5,6 +5,7 @@ namespace Spectator\Validation;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Response;
 use cebe\openapi\spec\Schema;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Opis\JsonSchema\Validator;
 use Spectator\Exceptions\ResponseValidationException;
@@ -51,34 +52,20 @@ class ResponseValidator extends AbstractValidator
     protected function parseResponse(Response $response): void
     {
         $contentType = $this->contentType();
-
-        // This is a bit hacky, but will allow resolving other JSON responses like application/problem+json
-        // when returning standard JSON responses from frameworks (See hotmeteor/spectator#114)
-
-        $specTypes = array_combine(
-            array_keys($response->content),
-            array_map(
-                fn ($type) => $contentType === 'application/json' && Str::endsWith($type, '+json')
-                    ? 'application/json'
-                    : $type,
-                array_keys($response->content)
-            )
-        );
+        $specTypes = array_keys($response->content);
 
         // Does the response match any of the specified media types?
-        if (! in_array($contentType, $specTypes)) {
+        $matchingType = $this->findMatchingType($contentType, $specTypes);
+        if ($matchingType === null) {
             $message = 'Response did not match any specified content type.';
-            $message .= PHP_EOL.PHP_EOL.'  Expected: '.implode(', ', array_values($specTypes));
+            $message .= PHP_EOL.PHP_EOL.'  Expected: '.implode(', ', $specTypes);
             $message .= PHP_EOL.'  Actual: '.$contentType;
             $message .= PHP_EOL.PHP_EOL.'  ---';
 
             throw new ResponseValidationException($message);
         }
 
-        // Lookup the content type specified in the spec that match the application/json content type
-        $contentType = array_flip($specTypes)[$contentType];
-
-        $schema = $response->content[$contentType]->schema;
+        $schema = $response->content[$matchingType]->schema;
 
         $this->validateResponse(
             $schema,
@@ -155,7 +142,7 @@ class ResponseValidator extends AbstractValidator
         $body = $this->responseContent();
 
         if (in_array($schemaType, ['object', 'array', 'allOf', 'anyOf', 'oneOf'], true)) {
-            if (in_array($contentType, ['application/json', 'application/vnd.api+json', 'application/problem+json'], true)) {
+            if ($this->isJsonContentType($contentType)) {
                 return json_decode($body);
             } else {
                 throw new ResponseValidationException("Unable to map [{$contentType}] to schema type [object].");
@@ -185,5 +172,39 @@ class ResponseValidator extends AbstractValidator
         ob_end_clean();
 
         return $content;
+    }
+
+    /**
+     * @param  array<int, string>  $specTypes
+     */
+    private function findMatchingType(?string $contentType, array $specTypes): ?string
+    {
+        if ($contentType === null) {
+            return null;
+        }
+        if ($this->isJsonContentType($contentType)) {
+            $contentType = 'application/json';
+        }
+
+        // This is a bit hacky, but will allow resolving other JSON responses like application/problem+json
+        // when returning standard JSON responses from frameworks (See hotmeteor/spectator#114)
+
+        $normalizedSpecTypes = Collection::make($specTypes)->mapWithKeys(fn (string $type) => [
+            $type => $this->isJsonContentType($type) ? 'application/json' : $type,
+        ])->all();
+
+        $matchingTypes = [$contentType, Str::before($contentType, '/').'/*', '*/*'];
+        foreach ($matchingTypes as $matchingType) {
+            if (in_array($matchingType, $normalizedSpecTypes, true)) {
+                return array_flip($normalizedSpecTypes)[$matchingType];
+            }
+        }
+
+        return null;
+    }
+
+    private function isJsonContentType(string $contentType): bool
+    {
+        return $contentType === 'application/json' || Str::endsWith($contentType, '+json');
     }
 }
