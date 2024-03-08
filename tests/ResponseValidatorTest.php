@@ -173,6 +173,23 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(422);
     }
 
+    public function test_validates_valid_response_with_charset()
+    {
+        Route::get('/users', function () {
+            return response()->json([
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ], 422, ['Content-Type' => 'application/json; charset=utf-8']);
+        })->middleware(Middleware::class);
+
+        $this->getJson('/users')
+            ->assertValidRequest()
+            ->assertValidResponse(422);
+    }
+
     public function test_validates_invalid_content_type(): void
     {
         Route::get('/users', static function () {
