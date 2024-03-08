@@ -124,7 +124,9 @@ class ResponseValidator extends AbstractValidator
 
     protected function contentType(): ?string
     {
-        return $this->response->headers->get('Content-Type');
+        return $this->response->headers->get('Content-Type') !== null
+            ? Str::before($this->response->headers->get('Content-Type'), ';')
+            : null;
     }
 
     protected function schemaType(Schema $schema): ?string
