@@ -115,7 +115,7 @@ While _functional_ tests are ensuring that your request validation, controller b
 
 ### Writing Tests
 
-Spectator introduces a few simple tools to the compliment existing Laravel testing toolbox.
+Spectator introduces a few simple tools to compliment the existing Laravel testing toolbox.
 
 Here's an example of a typical JSON API test:
 
