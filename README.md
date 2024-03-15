@@ -317,6 +317,33 @@ class ExampleTestCase
 }
 ```
 
+### Deactivating Spectator
+
+If you want to deactivate Spectator for a specific test, you can use the `Spectator::reset` method:
+
+```php
+<?php
+
+use Spectator\Spectator;
+
+class ExampleTest extends TestCase
+{
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        Spectator::using('Api.v1.json');
+    }
+
+    public function testWithoutSpectator()
+    {
+        Spectator::reset();
+        
+        // Run your test without Spectator
+    }
+}
+```
+
 ## Core Concepts
 
 ### Approach
