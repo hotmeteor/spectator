@@ -12,8 +12,8 @@ Write tests that verify your API spec doesn't drift from your implementation.
 
 ## Requirements
 
-- PHP 8.1
-- Laravel 10
+- PHP 8.1+
+- Laravel 10+
 
 ## Installation
 
