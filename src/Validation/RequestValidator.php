@@ -156,6 +156,10 @@ class RequestValidator extends AbstractValidator
             && in_array($contentType, ['application/json', 'application/vnd.api+json'])
         ) {
             $actualBodySchema = json_decode($this->request->getContent());
+
+            if ($actualBodySchema === [] && $expectedBodyRawSchema->type === 'object') {
+                $actualBodySchema = (object) [];
+            }
         } else {
             $actualBodySchema = $this->parseBodySchema();
         }
