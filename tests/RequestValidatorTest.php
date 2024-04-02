@@ -192,6 +192,36 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
+    public function test_empty_request_body_as_object(): void
+    {
+        Spectator::using('EmptyRequestBodyAsObject.yml');
+
+        Route::patch('/pets', function () {
+            return [
+                'id' => 1,
+                'name' => 'My Pet',
+            ];
+        })->middleware([Middleware::class]);
+
+        $this->patchJson('/pets')
+            ->assertValidRequest();
+    }
+
+    public function test_empty_request_body_as_array(): void
+    {
+        Spectator::using('EmptyRequestBodyAsArray.yml');
+
+        Route::patch('/pets', function () {
+            return [
+                'id' => 1,
+                'name' => 'My Pet',
+            ];
+        })->middleware([Middleware::class]);
+
+        $this->patchJson('/pets')
+            ->assertValidRequest();
+    }
+
     /**
      * @dataProvider nullableProvider
      */
