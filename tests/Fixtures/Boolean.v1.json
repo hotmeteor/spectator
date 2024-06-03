@@ -103,44 +103,13 @@
         "operationId": "get-users",
         "parameters": [
           {
-            "name": "page",
+            "name": "boolParam",
             "in": "query",
             "description": "",
-            "example": 1,
+            "example": "true",
             "schema": {
-              "type": "number",
-              "minimum": 1
+              "type": "boolean"
             }
-          },
-          {
-            "name": "per_page",
-            "in": "query",
-            "description": "",
-            "example": 10,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "float_param",
-            "in": "query",
-            "description": "",
-            "example": "4.54",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "in": "query",
-            "name": "order",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "name",
-                "email"
-              ]
-            },
-            "allowEmptyValue": true
           }
         ]
       }

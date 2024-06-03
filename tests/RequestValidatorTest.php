@@ -519,6 +519,10 @@ class RequestValidatorTest extends TestCase
             ->assertValidationMessage('The data should match one item from enum')
             ->assertInvalidRequest();
 
+        $this->get('/users?order=0')
+            ->assertValidationMessage('The data should match one item from enum')
+            ->assertInvalidRequest();
+
         $this->get('/users?order=')
             ->assertValidRequest();
 
@@ -719,6 +723,57 @@ class RequestValidatorTest extends TestCase
             ->assertStatus(200)
             ->assertValidRequest()
             ->assertValidResponse();
+
+        $this->getJson('/users?page=0&per_page=10&float_param=3.14')
+            ->assertStatus(200)
+            ->assertInvalidRequest()
+            ->assertValidResponse();
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function test_boolean_values($value, $isValid)
+    {
+        Spectator::using('Boolean.v1.json');
+
+        Route::get('/users', function () {
+            return [
+                [
+                    'id' => 1,
+                    'name' => 'Jim',
+                    'email' => 'test@test.test',
+                ],
+            ];
+        })
+            ->middleware(Middleware::class);
+
+        $response = $this->getJson('/users?boolParam='.$value);
+        if ($isValid) {
+            $response->assertValidRequest();
+        } else {
+            $response->assertInvalidRequest();
+        }
+        $response->assertValidResponse(200);
+
+    }
+
+    public static function booleanProvider(): array
+    {
+        return [
+            ['true', true],
+            ['false', true],
+            ['1', true],
+            ['0', true],
+            ['yes', true],
+            ['no', true],
+            ['on', true],
+            ['off', true],
+            ['', true],
+            ['null', false],
+            ['invalid', false],
+
+        ];
     }
 
     public function test_comma_separated_values()
