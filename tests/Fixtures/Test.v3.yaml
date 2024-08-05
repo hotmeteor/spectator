@@ -1,0 +1,63 @@
+openapi: 3.0.0
+info:
+  title: Test.v3
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /cars/electric:
+    patch:
+      summary: Update car charging status
+      tags: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - charging
+              properties:
+                charging:
+                  type: boolean
+                  description: Update charging status
+                  example: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+
+  /cars/ice:
+    patch:
+      summary: Update car refilling status
+      tags: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refill
+              properties:
+                refill:
+                  type: boolean
+                  description: Update refill status
+                  example: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+      
+components:
+  schemas: {}
