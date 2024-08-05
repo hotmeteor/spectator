@@ -903,6 +903,23 @@ class RequestValidatorTest extends TestCase
         $this->getJson('/users/1')
             ->assertValidRequest();
     }
+
+    public function test_static_url_parameter_decoupling(): void
+    {
+        Spectator::using('Test.v3.yaml');
+
+        Route::patch('/cars/{name}', function ($name) {
+            return [
+                'name' => $name,
+            ];
+        })->middleware([SubstituteBindings::class, Middleware::class]);
+
+        $this->patchJson('/cars/electric', ['charging' => true])
+            ->assertValidRequest();
+
+        $this->patchJson('/cars/ice', ['refill' => true])
+            ->assertValidRequest();
+    }
 }
 
 class TestUser extends Model

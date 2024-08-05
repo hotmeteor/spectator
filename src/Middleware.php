@@ -46,7 +46,7 @@ class Middleware
         try {
             /** @var \Illuminate\Routing\Route $route */
             $route = $request->route();
-            [$specPath, $pathItem] = $this->pathItem($route, $request->method());
+            [$specPath, $pathItem] = $this->pathItem($route, $request->method(), $request->path());
         } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {
             $this->spectator->captureRequestValidation($exception);
             $this->spectator->captureResponseValidation($exception);
@@ -117,7 +117,7 @@ class Middleware
      * @throws IOException
      * @throws InvalidJsonPointerSyntaxException
      */
-    protected function pathItem(Route $route, string $requestMethod): array
+    protected function pathItem(Route $route, string $requestMethod, string $requestUrlPath): array
     {
         $requestPath = Str::start($route->uri(), '/');
 
@@ -142,7 +142,14 @@ class Middleware
 
             if (Str::match($route->getCompiled()->getRegex(), $resolvedPath) !== '') {
                 $pathMatches = true;
-                if (in_array(strtolower($requestMethod), $methods, true)) {
+                $requestUrlPath = '/'.ltrim($requestUrlPath, '/');
+                $regExPattern = preg_replace('/\{[^}]+\}/', '.+', $resolvedPath);
+                $regExPattern = str_replace('/', '\/', $regExPattern);
+
+                $matchedMethod = in_array(strtolower($requestMethod), $methods, true);
+                $matchRequestUrl = preg_match('/^'.$regExPattern.'$/', $requestUrlPath) !== 0;
+
+                if ($matchedMethod && $matchRequestUrl) {
                     $partialMatch = [$resolvedPath, $pathItem];
                 }
             }
