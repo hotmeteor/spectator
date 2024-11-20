@@ -22,6 +22,7 @@ trait HasExpectations
                     $throwable->getMessage(),
                 );
             } else {
+                // @phpstan-ignore staticMethod.impossibleType
                 PHPUnit::assertFalse(false);
             }
         };
@@ -41,6 +42,7 @@ trait HasExpectations
                     $throwable->getMessage(),
                 );
             } else {
+                // @phpstan-ignore staticMethod.impossibleType
                 PHPUnit::assertTrue(false, $message);
             }
         };
