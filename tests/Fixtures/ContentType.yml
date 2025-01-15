@@ -34,3 +34,13 @@ paths:
             '*/*':
               schema:
                 type: string
+  /users:
+    get:
+      summary: Get streamed
+      responses:
+        '200':
+          description: OK
+          content:
+            text/csv:
+              schema:
+                type: string

@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Spectator\Middleware;
 use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ResponseValidatorTest extends TestCase
@@ -38,6 +39,39 @@ class ResponseValidatorTest extends TestCase
         $this->getJson('/users')
             ->assertValidRequest()
             ->assertValidResponse();
+    }
+
+    /**
+     * @dataProvider streamedContentTypeProvider
+     */
+    public function test_returns_streamed_response(string $contentType): void
+    {
+        Spectator::using('ContentType.yml');
+        Route::get('/users', static function () use ($contentType) {
+            return response()->stream(function () {
+                $fileHandler = fopen('php://output', 'wb');
+                fputcsv($fileHandler, [
+                    1,
+                    'Jim',
+                    'test@test.test',
+                ]);
+                fclose($fileHandler);
+            }, Response::HTTP_OK, ['Content-Type' => $contentType]);
+        })->middleware(Middleware::class);
+        $response = $this->get('/users', ['Accept' => 'text/csv'])
+            ->assertValidRequest();
+        // skip assertValidResponse because text/html is not defined as content type for this endpoint
+        // but used to show the test passes with undefined content type
+        // https://github.com/hotmeteor/spectator/issues/202
+        $this->assertEquals('1,Jim,test@test.test', trim($response->streamedContent()));
+    }
+
+    public static function streamedContentTypeProvider(): array
+    {
+        return [
+            'Present in specification' => ['text/csv'],
+            'Missing from specification' => ['text/html'],
+        ];
     }
 
     public function test_validates_invalid_json_response(): void
