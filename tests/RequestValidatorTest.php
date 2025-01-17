@@ -18,7 +18,7 @@ use Spectator\SpectatorServiceProvider;
  */
 class RequestValidatorTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -296,7 +296,7 @@ class RequestValidatorTest extends TestCase
      * @dataProvider oneOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_oneOf($payload, $isValid): void
+    public function test_handles_one_of($payload, $isValid): void
     {
         Spectator::using('OneOf.v1.yml');
 
@@ -356,7 +356,7 @@ class RequestValidatorTest extends TestCase
      * @dataProvider anyOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_anyOf($payload, $isValid): void
+    public function test_handles_any_of($payload, $isValid): void
     {
         Spectator::using('AnyOf.v1.yml');
 
@@ -414,7 +414,7 @@ class RequestValidatorTest extends TestCase
      * @dataProvider allOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_allOf($payload, $isValid): void
+    public function test_handles_all_of($payload, $isValid): void
     {
         Spectator::using('AllOf.v1.yml');
 
@@ -909,7 +909,7 @@ class TestUser extends Model
 {
     public function resolveRouteBinding($value, $field = null)
     {
-        return new TestUser();
+        return new TestUser;
     }
 }
 

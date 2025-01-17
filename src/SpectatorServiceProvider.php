@@ -44,7 +44,7 @@ class SpectatorServiceProvider extends ServiceProvider
 
     protected function decorateTestResponse(): void
     {
-        TestResponse::mixin(new Assertions());
+        TestResponse::mixin(new Assertions);
     }
 
     protected function getConfigPath(): string
