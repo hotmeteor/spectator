@@ -81,7 +81,7 @@ class ResponseValidator extends AbstractValidator
     {
         $expectedSchema = $this->prepareData($schema, 'read');
 
-        $validator = new Validator();
+        $validator = new Validator;
         $result = $validator->validate($body, $expectedSchema);
 
         if ($result->isValid() === false) {

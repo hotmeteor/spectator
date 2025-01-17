@@ -32,7 +32,7 @@ abstract class AbstractValidator
         $data = $this->migrateNullableTo31Style($data);
 
         if ($this->shouldHaveProperties($data)) {
-            $data->properties ??= new stdClass();
+            $data->properties ??= new stdClass;
         }
 
         match (true) {
@@ -105,7 +105,7 @@ abstract class AbstractValidator
             )
         );
 
-        //Filter out properties from schema's properties.
+        // Filter out properties from schema's properties.
         foreach ($filterProperties as $property) {
             unset($data->properties->$property);
         }

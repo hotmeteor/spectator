@@ -14,7 +14,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ResponseValidatorTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -288,7 +288,7 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(404);
     }
 
-    public function test_fallback_to_request_uri_if_operationId_not_given(): void
+    public function test_fallback_to_request_uri_if_operation_id_not_given(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -568,7 +568,7 @@ class ResponseValidatorTest extends TestCase
      * @dataProvider oneOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_oneOf($response, $valid): void
+    public function test_handles_one_of($response, $valid): void
     {
         Spectator::using('OneOf.v1.yml');
 
@@ -633,7 +633,7 @@ class ResponseValidatorTest extends TestCase
      * @dataProvider anyOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_anyOf($response, $isValid): void
+    public function test_handles_any_of($response, $isValid): void
     {
         Spectator::using('AnyOf.v1.yml');
 
@@ -695,7 +695,7 @@ class ResponseValidatorTest extends TestCase
      * @dataProvider allOfSchemaProvider
      */
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_allOf($response, $isValid): void
+    public function test_handles_all_of($response, $isValid): void
     {
         Spectator::using('AllOf.v1.yml');
 
@@ -766,7 +766,7 @@ class ResponseValidatorTest extends TestCase
     /**
      * @dataProvider allOfWithNullableProvider
      */
-    public function test_handles_allOf_with_nullable($payload, $isValid): void
+    public function test_handles_all_of_with_nullable($payload, $isValid): void
     {
         Spectator::using('AllOf.v1.yml');
 

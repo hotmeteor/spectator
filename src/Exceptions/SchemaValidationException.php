@@ -20,7 +20,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
     {
         $instance = new static($message);
 
-        $formatter = new ErrorFormatter();
+        $formatter = new ErrorFormatter;
 
         $instance->errors = $formatter->formatFlat($error);
 
@@ -113,7 +113,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
      */
     public static function formatValidationError(ValidationError $validationError, bool $flat = false): array
     {
-        $formatter = new ErrorFormatter();
+        $formatter = new ErrorFormatter;
 
         return ($flat) ? $formatter->formatFlat($validationError) :
             $formatter->formatOutput($validationError, 'basic');
