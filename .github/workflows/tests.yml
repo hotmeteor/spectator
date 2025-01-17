@@ -30,7 +30,8 @@ jobs:
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - PU${{ matrix.phpunit }}
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Validate composer.json and composer.lock
       run: composer validate
