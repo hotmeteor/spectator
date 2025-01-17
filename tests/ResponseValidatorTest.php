@@ -44,7 +44,7 @@ class ResponseValidatorTest extends TestCase
     /**
      * @dataProvider streamedContentTypeProvider
      */
-    public function test_returns_streamed_response(string $contentType): void
+    public function test_returns_streamed_response(string $contentType, bool $valid): void
     {
         Spectator::using('ContentType.yml');
         Route::get('/users', static function () use ($contentType) {
@@ -60,17 +60,21 @@ class ResponseValidatorTest extends TestCase
         })->middleware(Middleware::class);
         $response = $this->get('/users', ['Accept' => 'text/csv'])
             ->assertValidRequest();
-        // skip assertValidResponse because text/html is not defined as content type for this endpoint
-        // but used to show the test passes with undefined content type
-        // https://github.com/hotmeteor/spectator/issues/202
+
+        if ($valid) {
+            $response->assertValidResponse();
+        } else {
+            $response->assertInvalidResponse();
+        }
+
         $this->assertEquals('1,Jim,test@test.test', trim($response->streamedContent()));
     }
 
     public static function streamedContentTypeProvider(): array
     {
         return [
-            'Present in specification' => ['text/csv'],
-            'Missing from specification' => ['text/html'],
+            'Present in specification' => ['text/csv', true],
+            'Missing from specification' => ['text/html', false],
         ];
     }
 

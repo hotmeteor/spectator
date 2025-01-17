@@ -159,6 +159,8 @@ class ResponseValidator extends AbstractValidator
 
     protected function streamedContent(): string
     {
+        assert($this->response instanceof StreamedResponse);
+
         $content = '';
 
         ob_start(function (string $buffer) use (&$content): string {
@@ -167,7 +169,7 @@ class ResponseValidator extends AbstractValidator
             return '';
         });
 
-        $this->response->sendContent();
+        ($this->response->getCallback()?? fn() => null)();
 
         ob_end_clean();
 
