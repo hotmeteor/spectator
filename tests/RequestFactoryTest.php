@@ -13,7 +13,7 @@ class RequestFactoryTest extends TestCase
     {
         $name = 'Test.v1.json';
 
-        $factory = new RequestFactory();
+        $factory = new RequestFactory;
 
         $factory->using($name);
 
@@ -24,7 +24,7 @@ class RequestFactoryTest extends TestCase
     {
         $name = 'Test.v1.json';
 
-        $factory = new RequestFactory();
+        $factory = new RequestFactory;
 
         $factory->using($name);
 
@@ -37,7 +37,7 @@ class RequestFactoryTest extends TestCase
     {
         $name = 'Test.v1.yaml';
 
-        $factory = new RequestFactory();
+        $factory = new RequestFactory;
 
         $factory->using($name);
 
@@ -51,7 +51,7 @@ class RequestFactoryTest extends TestCase
     {
         $name = 'Test.v1.yml';
 
-        $factory = new RequestFactory();
+        $factory = new RequestFactory;
 
         $factory->using($name);
 
@@ -65,7 +65,7 @@ class RequestFactoryTest extends TestCase
     {
         $name = 'Test.v1.json';
 
-        $factory = new RequestFactory();
+        $factory = new RequestFactory;
 
         $factory->using($name);
 
@@ -84,7 +84,7 @@ class RequestFactoryTest extends TestCase
 
         $name = 'Test.v1.json';
 
-        $factory = new RequestFactory();
+        $factory = new RequestFactory;
 
         $factory->using($name);
 
@@ -96,7 +96,7 @@ class RequestFactoryTest extends TestCase
         $this->expectException(MissingSpecException::class);
         $this->expectExceptionMessage('Cannot resolve schema with missing or invalid spec.');
 
-        $factory = new RequestFactory();
+        $factory = new RequestFactory;
 
         $factory->resolve();
     }
@@ -108,7 +108,7 @@ class RequestFactoryTest extends TestCase
 
         $name = 'Missing.v1.json';
 
-        $factory = new RequestFactory();
+        $factory = new RequestFactory;
 
         $factory->using($name);
 
@@ -122,7 +122,7 @@ class RequestFactoryTest extends TestCase
 
         $name = 'Invalid.v1.txt';
 
-        $factory = new RequestFactory();
+        $factory = new RequestFactory;
 
         $factory->using($name);
 

@@ -81,7 +81,7 @@ class RequestValidator extends AbstractValidator
         foreach ($parameters as $parameter) {
             // Validate schemas, if provided.
             if ($parameter->schema) {
-                $validator = new Validator();
+                $validator = new Validator;
                 $expectedParameterSchema = $parameter->schema->getSerializableData();
                 $result = null;
                 $parameterValue = null;
@@ -168,7 +168,7 @@ class RequestValidator extends AbstractValidator
         $expectedBodySchema = $this->prepareData($expectedBodyRawSchema, 'write');
 
         // Run validation.
-        $validator = new Validator();
+        $validator = new Validator;
         $result = $validator->validate($actualBodySchema, $expectedBodySchema);
 
         // If the result is not valid, then display failure reason.
