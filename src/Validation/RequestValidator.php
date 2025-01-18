@@ -106,7 +106,7 @@ class RequestValidator extends AbstractValidator
                     $parameterValue = $this->request->cookies->get($parameter->name);
                 }
 
-                if ($parameterValue) {
+                if ($parameterValue !== null) {
                     $parameterValue = $this->castParameterValue($parameterValue, $expectedParameterSchema);
 
                     $result = $validator->validate($this->toObject($parameterValue), $expectedParameterSchema);
@@ -221,6 +221,9 @@ class RequestValidator extends AbstractValidator
                 $parameterValue,
                 fn (mixed $value) => $this->castParameterValue($value, $expectedSchema->items)
             );
+        } elseif ($expectedSchema->type === 'boolean') {
+            $asBool = filter_var($parameterValue, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            return $asBool === null ? $parameterValue : $asBool;
         }
 
         return $parameterValue;
