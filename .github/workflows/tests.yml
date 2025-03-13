@@ -32,6 +32,8 @@ jobs:
             php: 8.1
           - laravel: 12.*
             php: 8.1
+          - laravel: 12.*
+            phpunit: 10.*
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - PU${{ matrix.phpunit }}
 
