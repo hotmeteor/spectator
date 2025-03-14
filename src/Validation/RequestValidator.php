@@ -223,6 +223,7 @@ class RequestValidator extends AbstractValidator
             );
         } elseif ($expectedSchema->type === 'boolean') {
             $asBool = filter_var($parameterValue, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
             return $asBool === null ? $parameterValue : $asBool;
         }
 
