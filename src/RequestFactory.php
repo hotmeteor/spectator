@@ -25,7 +25,7 @@ class RequestFactory
     protected ?string $pathPrefix = null;
 
     /** @var array<string, \cebe\openapi\spec\OpenApi> */
-    private array $cachedSpecs = [];
+    private static array $cachedSpecs = [];
 
     /**
      * Set the file name of the spec.
@@ -93,17 +93,17 @@ class RequestFactory
         if ($this->specName) {
             $file = $this->getFile();
 
-            if ($this->cachedSpecs[$file] ?? null) {
-                return $this->cachedSpecs[$file];
+            if (self::$cachedSpecs[$file] ?? null) {
+                return self::$cachedSpecs[$file];
             }
 
             try {
                 switch (strtolower(pathinfo($this->specName, PATHINFO_EXTENSION))) {
                     case 'json':
-                        return $this->cachedSpecs[$file] = Reader::readFromJsonFile($file);
+                        return self::$cachedSpecs[$file] = Reader::readFromJsonFile($file);
                     case 'yml':
                     case 'yaml':
-                        return $this->cachedSpecs[$file] = Reader::readFromYamlFile($file);
+                        return self::$cachedSpecs[$file] = Reader::readFromYamlFile($file);
                 }
             } catch (TypeErrorException) {
                 throw new MalformedSpecException('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
