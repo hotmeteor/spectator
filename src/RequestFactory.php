@@ -79,7 +79,6 @@ class RequestFactory
      *
      *
      * @throws \cebe\openapi\exceptions\IOException
-     * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \cebe\openapi\json\InvalidJsonPointerSyntaxException
      * @throws MalformedSpecException
