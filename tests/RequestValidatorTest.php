@@ -1005,6 +1005,24 @@ class RequestValidatorTest extends TestCase
         $this->patchJson('/cars/ice', ['refill' => true])
             ->assertValidRequest();
     }
+
+    public function test_route_with_parameters_on_name_mismatch_non_string(): void
+    {
+        Config::set('spectator.path_prefix', 'v1');
+
+        Spectator::using('ParametersNameMismatch.v1.yml');
+
+        Route::get('/v1/testing/{idx}', function (int $idx) {
+            return [
+                'id' => $idx,
+                'name' => 'Testing',
+            ];
+        })->whereNumber('idx')->middleware(Middleware::class);
+
+        $this->getJson('/v1/testing/100')
+            ->assertValidRequest()
+            ->assertValidResponse(200);
+    }
 }
 
 class TestUser extends Model

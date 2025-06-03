@@ -128,7 +128,10 @@ class RequestValidator extends AbstractValidator
         /** @var \Illuminate\Routing\Route $route */
         $route = $this->request->route();
 
-        preg_match($route->getCompiled()->getRegex(), $this->specPath, $matches);
+        $route->wheres = [];
+        $regex = $route->toSymfonyRoute()->compile()->getRegex();
+
+        preg_match($regex, $this->specPath, $matches);
 
         return Collection::make($matches)
             ->filter(fn (string $value, int|string $key) => is_string($key))
