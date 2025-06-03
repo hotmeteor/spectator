@@ -128,6 +128,9 @@ class Middleware
         $pathMatches = false;
         $partialMatch = null;
 
+        $route->wheres = [];
+        $pathMatchRegex = $route->toSymfonyRoute()->compile()->getRegex();
+
         foreach ($openapi->paths as $path => $pathItem) {
             $resolvedPath = $this->resolvePath($path);
             $methods = array_keys($pathItem->getOperations());
@@ -140,7 +143,7 @@ class Middleware
                 }
             }
 
-            if (Str::match($route->getCompiled()->getRegex(), $resolvedPath) !== '') {
+            if (Str::match($pathMatchRegex, $resolvedPath) !== '') {
                 $pathMatches = true;
                 $requestUrlPath = '/'.ltrim($requestUrlPath, '/');
                 $regExPattern = preg_replace('/\{[^}]+\}/', '.+', $resolvedPath);
