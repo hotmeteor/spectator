@@ -102,6 +102,10 @@ class RequestValidator extends AbstractValidator
                     }
                 } elseif ($parameter->in === 'header' && $this->request->headers->has($parameter->name)) {
                     $parameterValue = $this->request->headers->get($parameter->name);
+
+                    if ($parameter->explode === false && $parameter->schema->type === 'array') {
+                        $parameterValue = explode(',', $parameterValue);
+                    }
                 } elseif ($parameter->in === 'cookie' && $this->request->cookies->has($parameter->name)) {
                     $parameterValue = $this->request->cookies->get($parameter->name);
                 }
