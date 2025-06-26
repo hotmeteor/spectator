@@ -115,6 +115,17 @@
                 "enum": ["foo", "bar"]
               }
             }
+          },
+          {
+            "name": "X-Include",
+            "in": "header",
+            "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["foo", "bar"]
+                }
+            }
           }
         ]
       }

@@ -791,7 +791,9 @@ class RequestValidatorTest extends TestCase
         })
             ->middleware(Middleware::class);
 
-        $this->getJson('/users?include=foo,bar')
+        $this
+            ->withHeader('X-Include', 'foo,bar')
+            ->getJson('/users?include=foo,bar')
             ->assertStatus(200)
             ->assertValidRequest()
             ->assertValidResponse();
