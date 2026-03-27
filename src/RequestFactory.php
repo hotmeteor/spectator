@@ -2,7 +2,10 @@
 
 namespace Spectator;
 
+use cebe\openapi\exceptions\IOException;
 use cebe\openapi\exceptions\TypeErrorException;
+use cebe\openapi\exceptions\UnresolvableReferenceException;
+use cebe\openapi\json\InvalidJsonPointerSyntaxException;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use Illuminate\Support\Arr;
@@ -24,7 +27,7 @@ class RequestFactory
 
     protected ?string $pathPrefix = null;
 
-    /** @var array<string, \cebe\openapi\spec\OpenApi> */
+    /** @var array<string, OpenApi> */
     private static array $cachedSpecs = [];
 
     /**
@@ -78,9 +81,9 @@ class RequestFactory
      * Resolve and parse the spec.
      *
      *
-     * @throws \cebe\openapi\exceptions\IOException
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
-     * @throws \cebe\openapi\json\InvalidJsonPointerSyntaxException
+     * @throws IOException
+     * @throws UnresolvableReferenceException
+     * @throws InvalidJsonPointerSyntaxException
      * @throws MalformedSpecException
      * @throws MissingSpecException
      */

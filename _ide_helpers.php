@@ -5,8 +5,10 @@
 /** @noinspection PhpUnusedAliasInspection */
 
 namespace Illuminate\Testing {
+    use Spectator\Assertions;
+
     /**
-     * @see \Spectator\Assertions
+     * @see Assertions
      *
      * @method $this assertValidRequest()
      * @method $this assertInvalidRequest()

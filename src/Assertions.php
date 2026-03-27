@@ -6,6 +6,7 @@ use cebe\openapi\exceptions\TypeErrorException;
 use cebe\openapi\exceptions\UnresolvableReferenceException;
 use Closure;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Assert as PHPUnit;
 use PHPUnit\Framework\ExpectationFailedException;
 use Spectator\Concerns\HasExpectations;
@@ -16,7 +17,7 @@ use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\ResponseValidationException;
 
 /**
- * @mixin \Illuminate\Testing\TestResponse
+ * @mixin TestResponse
  */
 class Assertions
 {

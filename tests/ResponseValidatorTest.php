@@ -881,7 +881,7 @@ class ResponseValidatorTest extends TestCase
 
         Route::get('/', fn () => 'ok')->middleware(Middleware::class);
 
-        $this->expectException(\ErrorException::class);
+        $this->expectException(ErrorException::class);
         $this->expectExceptionMessage('The spec file is invalid. Please lint it using spectral (https://github.com/stoplightio/spectral) before trying again.');
 
         $this->getJson('/')

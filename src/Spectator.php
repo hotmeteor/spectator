@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \stdClass resolve() Resolve the spec into an object.
  * @method bool shouldValidateRequest() Indicate if request should be validated.
  *
- * @see \Spectator\RequestFactory
+ * @see RequestFactory
  */
 class Spectator extends Facade
 {
