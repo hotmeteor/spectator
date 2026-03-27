@@ -44,7 +44,7 @@ class Middleware
         }
 
         try {
-            /** @var \Illuminate\Routing\Route $route */
+            /** @var Route $route */
             $route = $request->route();
             [$specPath, $pathItem] = $this->pathItem($route, $request->method(), $request->path());
         } catch (InvalidPathException|MalformedSpecException|MissingSpecException|TypeErrorException|UnresolvableReferenceException $exception) {

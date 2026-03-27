@@ -5,12 +5,17 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: write
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
 
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: "laravel-pint"
         uses: aglipanci/laravel-pint-action@2.3.1
@@ -21,4 +26,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: PHP Linting (Pint)
-          skip_fetch: true
+          skip_fetch: false

@@ -7,6 +7,7 @@ use cebe\openapi\spec\PathItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Opis\JsonSchema\Validator;
@@ -55,7 +56,7 @@ class RequestValidator extends AbstractValidator
      */
     protected function validateParameters(): void
     {
-        /** @var \Illuminate\Routing\Route $route */
+        /** @var Route $route */
         $route = $this->request->route();
 
         $parameters = array_merge(
@@ -125,7 +126,7 @@ class RequestValidator extends AbstractValidator
 
     protected function translateParameterName(string $parameter): string
     {
-        /** @var \Illuminate\Routing\Route $route */
+        /** @var Route $route */
         $route = $this->request->route();
 
         $route->wheres = [];
@@ -234,7 +235,7 @@ class RequestValidator extends AbstractValidator
     }
 
     /**
-     * @return ($data is array<string, mixed> ? \stdClass : ($data is array<int, mixed> ? array<int, mixed> : mixed))
+     * @return ($data is array<string, mixed> ? stdClass : ($data is array<int, mixed> ? array<int, mixed> : mixed))
      */
     private function toObject(mixed $data): mixed
     {
