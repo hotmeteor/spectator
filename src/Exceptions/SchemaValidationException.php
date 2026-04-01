@@ -257,8 +257,10 @@ abstract class SchemaValidationException extends \Exception implements Exception
                         $schemaMap[$locationCurrent] = self::indentedDisplayString($displayString, $indentLevel);
 
                         // create entry for array's items
-                        $nextSchema = $schema['items'];
-                        $schemaMap = array_merge($schemaMap, self::formatSchema($nextSchema, $locationCurrent.'/items', '', [], ++$indentLevel));
+                        if (isset($schema['items'])) {
+                            $nextSchema = $schema['items'];
+                            $schemaMap = array_merge($schemaMap, self::formatSchema($nextSchema, $locationCurrent.'/items', '', [], ++$indentLevel));
+                        }
 
                         break;
                     default:
