@@ -1018,6 +1018,29 @@ class ResponseValidatorTest extends TestCase
         $this->assertSame(['#' => 'object++'], $schemaMap);
     }
 
+    public function test_supports_array_schema_without_items(): void
+    {
+        $previousErrorReporting = error_reporting(E_ALL);
+        set_error_handler(static function (int $severity, string $message, string $file, int $line): void {
+            throw new ErrorException($message, 0, $severity, $file, $line);
+        });
+
+        try {
+            $schemaMap = ResponseValidationException::formatSchema(
+                ['type' => 'array'],
+                '#',
+                '',
+                [],
+                0
+            );
+        } finally {
+            restore_error_handler();
+            error_reporting($previousErrorReporting);
+        }
+
+        $this->assertSame(['#' => 'array'], $schemaMap);
+    }
+
     #[DataProvider('arrayOfStringsProvider')]
     public function test_array_of_strings(mixed $payload, bool $isValid): void
     {
