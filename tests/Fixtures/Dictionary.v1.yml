@@ -38,5 +38,22 @@ paths:
                     nullable: true
                     additionalProperties:
                       type: integer
+  /nullable-value-dictionary:
+    get:
+      summary: Get dictionary with nullable string values
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      nullable: true
 components:
   schemas: {}

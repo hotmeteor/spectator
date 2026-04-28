@@ -59,6 +59,12 @@ abstract class AbstractValidator
             default => null
         };
 
+        // additionalProperties can coexist with properties/items/etc., so handle it separately.
+        // Only recurse when it's a Schema object (not a boolean true/false).
+        if (isset($data->additionalProperties) && is_object($data->additionalProperties)) {
+            $data->additionalProperties = $this->prepareProperty($data->additionalProperties, $mode);
+        }
+
         return $data;
     }
 
