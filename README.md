@@ -2,360 +2,474 @@
 
 # Spectator
 
-Spectator provides light-weight OpenAPI testing tools you can use within your existing Laravel test suite.
+Spectator provides light-weight OpenAPI contract testing tools that work within your existing Laravel test suite.
 
-Write tests that verify your API spec doesn't drift from your implementation.
+Write tests that guarantee your API spec never drifts from your implementation.
 
 ![Tests](https://github.com/hotmeteor/spectator/workflows/Tests/badge.svg)
 [![Latest Version on Packagist](https://img.shields.io/packagist/vpre/hotmeteor/spectator.svg?style=flat-square)](https://packagist.org/packages/hotmeteor/spectator)
 ![PHP from Packagist](https://img.shields.io/packagist/php-v/hotmeteor/spectator)
 
+---
+
+## What's New in v3
+
+- **PHP 8.3+ and Laravel 12+** — minimum requirements raised to track the modern PHP ecosystem.
+- **New artisan commands** — `spectator:validate` lints your spec file; `spectator:coverage` lists every operation defined in the spec; `spectator:routes` cross-references spec operations against Laravel routes; `spectator:stubs` generates skeleton test classes from a spec. All commands support `--format=json` for machine-readable output.
+- **PHPUnit coverage extension** — `SpectatorExtension` tracks which spec operations are exercised during a test run and can enforce a minimum coverage threshold in CI.
+- **Machine-readable JSON errors** — set `SPECTATOR_ERROR_FORMAT=json` (or call `Spectator::useJsonErrors()`) to get structured `{"errors": [...]}` output from failed assertions instead of ANSI-coloured text.
+- **Modern PHP internals** — enums replace string/class constants; first-class callables, `readonly` properties, and `match` expressions throughout.
+- **Remote & GitHub spec sources verified** — remote HTTP and private GitHub spec fetching work reliably out of the box.
+- **Fluent path-prefix API** — `Spectator::withPathPrefix('v1')` as an alternative to the config key.
+
+---
+
 ## Requirements
 
-- PHP 8.1+
-- Laravel 10+
+- PHP 8.3+
+- Laravel 12+
+
+---
 
 ## Installation
-
-You can install the package through Composer.
 
 ```bash
 composer require hotmeteor/spectator --dev
 ```
 
-Then, publish the config file of this package with this command:
+Publish the config file:
 
 ```bash
 php artisan vendor:publish --provider="Spectator\SpectatorServiceProvider"
 ```
 
-The config file will be published in `config/spectator.php`.
-
-### Upgrading from v1 to v2
-
-**Important:** Spectator v2 requires PHP 8.1 and Laravel 10. If you are using an older version of PHP or Laravel, you should not upgrade to v2.
-
-While this should typically be a straightforward upgrade, you should be aware of some of the changes that have been made.
-
-Please read the [UPGRADE.md](UPGRADE.md) file for more information.
+---
 
 ## Configuration
 
-### Sources
+The published config lives at `config/spectator.php`. The most important setting is the spec **source**, which tells Spectator where to find your OpenAPI spec files.
 
-**Sources** are references to where your API spec lives. Depending on the way you or your team works, or where your spec lives, you may want to configure different sources for different environments.
+### Local
 
-As you can see from the config, there's three source types available: `local`, `remote`, and `github`. Each source requires the folder where your spec lives to be defined, not the spec file itself. This provides flexibility when working with multiple APIs in one project, or an API fragmented across multiple spec files.
-
----
-
-#### Local
+Specs are read from the local filesystem.
 
 ```env
-## Spectator config
-
 SPEC_SOURCE=local
-SPEC_PATH=/spec/reference
+SPEC_PATH=/path/to/specs
 ```
 
----
+### Remote
 
-#### Remote
-
-_This is using the raw access link from Github, but any remote source can be specified. The SPEC_URL_PARAMS can be used to append any additional parameters required for the remote url._
+Specs are fetched over HTTP. Useful for remote-hosted specs or raw GitHub file URLs.
 
 ```env
-## Spectator config
-
-SPEC_PATH="https://raw.githubusercontent.com/path/to/repo"
-SPEC_URL_PARAMS="?token=ABEDC3E5AQ3HMUBPPCDTTMDAFPMSM"
+SPEC_SOURCE=remote
+SPEC_PATH=https://raw.githubusercontent.com/org/repo/main/specs
+SPEC_URL_PARAMS="?token=abc123"   # optional query params appended to the URL
 ```
 
----
+### GitHub
 
-#### Github
-
-_This uses the Github Personal Access Token which allows you access to a remote repo containing your contract._
-
-You can view instructions on how to obtain your Personal Access Token from Github at [this link](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) .
-
-**Important to note than the SPEC_GITHUB_PATH must included the branch (ex: main) and then the path to the directory containing your contract.**
+Specs are fetched from a private GitHub repository using a Personal Access Token.
 
 ```env
-## Spectator config
+SPEC_SOURCE=github
+SPEC_GITHUB_REPO=org/repo
+SPEC_GITHUB_PATH=main/specs       # branch + path to the directory
+SPEC_GITHUB_TOKEN=ghp_yourtoken
+```
 
-SPEC_GITHUB_PATH='main/contracts'
-SPEC_GITHUB_REPO='orgOruser/repo'
-SPEC_GITHUB_TOKEN='your personal access token'
+### Path Prefix
+
+If your API is mounted under a prefix (e.g. `/v1`), configure it here so Spectator strips it before matching spec paths.
+
+```env
+SPECTATOR_PATH_PREFIX=v1
+```
+
+Or set it at runtime:
+
+```php
+Spectator::withPathPrefix('v1');
+```
+
+### Error Format
+
+By default, validation errors are rendered as human-readable, coloured terminal output. For CI pipelines and LLM toolchains that parse test output programmatically, switch to JSON:
+
+```env
+SPECTATOR_ERROR_FORMAT=json
+```
+
+Or toggle it per test:
+
+```php
+Spectator::useJsonErrors();   // emit {"errors": [...]}
+Spectator::useTextErrors();   // revert to coloured text
 ```
 
 ---
 
-### Specifying the Target Spec File
+## Writing Contract Tests
 
-In your tests you will declare the spec file you want to test against:
+### What contract testing is
 
-```php
-public function testBasicExample()
-{
-    Spectator::using('Api.v1.json');
+**Functional tests** verify that your application behaves correctly — validation passes, controllers respond, events fire.
 
-    // ...
-```
+**Contract tests** verify that your requests and responses conform to your OpenAPI spec. The data doesn't have to be real; the shape does.
 
-## Testing
+The two test types complement each other. Keep them in separate test classes.
 
-### Paradigm Shift
+### Pointing to a spec
 
-**Now, on to the good stuff.**
-
-At first, spec testing, or contract testing, may seem counter-intuitive, especially when compared with "feature" or "functional" testing as supported by Laravel's [HTTP Tests](https://laravel.com/docs/8.x/http-tests). 
-
-While _functional_ tests are ensuring that your request validation, controller behavior, events, responses, etc. all behave the way you expect when people interact with your API, _contract_ tests are ensuring that **requests and responses are spec-compliant** - _and that's it_. The data itself could be wrong, but that's outside the scope of a contract test.
-
-### Writing Tests
-
-Spectator introduces a few simple tools to compliment the existing Laravel testing toolbox.
-
-Here's an example of a typical JSON API test:
+Call `Spectator::using()` with the spec filename before making any requests. You can call it once in `setUp()` or per test.
 
 ```php
-<?php
-
-class ExampleTest extends TestCase
-{
-    /**
-     * A basic functional test example.
-     *
-     * @return void
-     */
-    public function testBasicExample()
-    {
-        $response = $this->postJson('/user', ['name' => 'Sally']);
-
-        $response
-            ->assertStatus(201)
-            ->assertJson([
-                'created' => true,
-            ]);
-    }
-}
-```
-
-And here's an example of a contract test:
-
-```php
-<?php
-
 use Spectator\Spectator;
 
-class ExampleTest extends TestCase
+class UserApiTest extends TestCase
 {
-    /**
-     * A basic functional test example.
-     *
-     * @return void
-     */
-    public function testBasicExample()
-    {
-        Spectator::using('Api.v1.json');
-
-        $response = $this->postJson('/user', ['name' => 'Sally']);
-
-        $response
-            ->assertValidRequest()
-            ->assertValidResponse(201);
-    }
-}
-```
-
-The test is verifying that both the request and the response are valid according to the spec, in this case located in `Api.v1.json`. This type of testing promotes TDD: you can write endpoint contract tests against your endpoints _first_, and then ensure your spec and implementation are aligned.
-
-Within your spec, each possible response should be documented. For example, a single `POST` endpoint may result in a `2xx`, `4xx`, or even `5xx` code response. Additionally, your endpoints will likely have particular parameter validation that needs to be adhered to. 
-
-This is what makes contract testing different from functional testing:
-
-- in **functional testing**, successful and failed responses are tested for outcomes
-- in **contract testing**, requests and responses are tested for conformity and outcomes don't matter.
-
-### Debugging
-
-For certain validation errors, a special exception message is thrown which shows error message(s) displayed alongside the expected schema. For example:
-
-```
-  ---
-
-The properties must match schema: data
-All array items must match schema
-The required properties (name) are missing
-
-object++ <== The properties must match schema: data
-    status*: string
-    data*: array <== All array items must match schema
-        object <== The required properties (name) are missing
-            id*: string
-            name*: string
-            slug: string?
-
-  ---
-```
-
-A few custom symbols are used:
-
-- "++": Object supports `additionalProperties`
-- "\*": Item is `required`
-- "?": Item can be `nullable`
-
-## Usage
-
-### Providing a Spec
-
-Define the spec file to test against. This can be defined in your `setUp()` method or in a specific test method.
-
-```php
-<?php
-
-use Spectator\Spectator;
-
-class ExampleTest extends TestCase
-{
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
-        Spectator::using('Api.v1.json');
+        Spectator::using('Api.v1.yml');
     }
 
-    public function testApiEndpoint()
+    #[Test]
+    public function test_using_different_spec(): void
     {
-        // Test request and response...
-    }
-
-    public function testDifferentApiEndpoint()
-    {
-        Spectator::using('Other.v1.json');
-
-        // Test request and response...
+        Spectator::using('OtherApi.v1.yml');
+        // ...
     }
 }
 ```
 
-### Testing Requests
+### Making assertions
 
-When testing endpoints, there are a few new methods:
+Spectator adds these methods to Laravel's `TestResponse`:
+
+| Method | Description |
+|---|---|
+| `assertValidRequest()` | Assert the request matches the spec. |
+| `assertInvalidRequest()` | Assert the request does **not** match the spec. |
+| `assertValidResponse(?int $status)` | Assert the response matches the spec (optionally at a specific status code). |
+| `assertInvalidResponse(?int $status)` | Assert the response does **not** match the spec. |
+| `assertValidationMessage(string $message)` | Assert the validation error message contains the given string. |
+| `assertErrorsContain(string\|array $errors)` | Assert one or more strings appear in the validation errors. |
+| `assertPathExists()` | Assert the requested path exists in the spec. |
+| `dumpSpecErrors()` | Dump current spec errors without failing (useful for debugging). |
+
+### A typical contract test
 
 ```php
-$this->assertValidRequest();
-$this->assertValidResponse($status = null);
-$this->assertValidationMessage('Expected validation message');
-$this->assertErrorsContain('Check for single error');
-$this->assertErrorsContain(['Check for', 'Multiple Errors']);
+use Spectator\Spectator;
+
+class UserApiTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Spectator::using('Api.v1.yml');
+    }
+
+    #[Test]
+    public function test_create_user(): void
+    {
+        $this->postJson('/users', ['name' => 'Alice', 'email' => 'alice@example.com'])
+            ->assertValidRequest()
+            ->assertValidResponse(201);
+    }
+
+    #[Test]
+    public function test_missing_required_field_is_invalid(): void
+    {
+        $this->postJson('/users', ['name' => 'Alice'])   // missing email
+            ->assertInvalidRequest()
+            ->assertValidationMessage('required');
+    }
+}
 ```
 
-Of course, you can continue to use all existing HTTP test methods:
+### Mixing with functional tests
+
+You can chain Spectator assertions with Laravel's built-in assertions, but keeping concerns separate is cleaner:
 
 ```php
-$this
-    ->actingAs($user)
-    ->postJson('/comments', [
-        'message' => 'Just over here spectating',
-    ])
+// Works, but mixes concerns
+$this->actingAs($user)
+    ->postJson('/posts', ['title' => 'Hello'])
     ->assertCreated()
-    ->assertValidRequest()
-    ->assertValidResponse();
-```
-
-That said, mixing functional and contract testing may become more difficult to manage and read later. It's strongly advised to keep the two types of tests separate.
-
-### Testing Responses
-
-Instead of using the built-in `->assertStatus($status)` method, you may also verify the response that is valid is actually the response you want to check. For example, you may receive a `200` **or** a `202` from a single endpoint, and you want to ensure you're validating the correct response.
-
-```php
-$this
-    ->actingAs($user)
-    ->postJson('/comments', [
-        'message' => 'Just over here spectating',
-    ])
     ->assertValidRequest()
     ->assertValidResponse(201);
 ```
 
-When exceptions are thrown that are not specific to this package's purpose, e.g. typos or missing imports, the output will be formatted by default with a rather short message and no stack trace.
-This can be changed by disabling Laravel's built-in validation handler which allows for easier debugging when running tests.
-
-This can be done in a few different ways:
+### Deactivating Spectator for a test
 
 ```php
-class ExampleTestCase
+Spectator::reset();
+```
+
+### Debugging errors
+
+When a validation fails, Spectator renders the schema with errors annotated inline:
+
+```
+---
+
+The properties must match schema: data
+
+object++ <== The properties must match schema: data
+    status*: string
+    data*: array
+        object <== The required properties (name) are missing
+            id*: string
+            name*: string
+            email: string?
+
+---
+```
+
+Symbol legend:
+- `++` — object allows `additionalProperties`
+- `*` — property is `required`
+- `?` — property is `nullable`
+
+Use `dumpSpecErrors()` to inspect errors without failing the test:
+
+```php
+$this->postJson('/users', $payload)
+    ->dumpSpecErrors()
+    ->assertValidRequest();
+```
+
+---
+
+## Artisan Commands
+
+### `spectator:validate`
+
+Validate that a spec file parses without errors. Useful as a pre-test lint gate in CI.
+
+```bash
+php artisan spectator:validate --spec=Api.v1.yml
+php artisan spectator:validate --spec=Api.v1.yml --format=json
+```
+
+Text output:
+
+```
+✔ Api.v1.yml is valid.
+```
+
+JSON output (`--format=json`):
+
+```json
 {
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        Spectator::using('Api.v1.json');
-
-        // Disable exception handling for all tests in this file
-        $this->withoutExceptionHandling();
-    }
-
-    // ...
+    "valid": true,
+    "spec": "Api.v1.yml",
+    "errors": []
 }
 ```
 
-```php
-class ExampleTestCase
+Returns exit code `0` on success, `1` on failure.
+
+### `spectator:coverage`
+
+List every operation defined in the spec. Useful for auditing coverage gaps.
+
+```bash
+php artisan spectator:coverage --spec=Api.v1.yml
+php artisan spectator:coverage --spec=Api.v1.yml --format=json
+```
+
+Text output:
+
+```
+Operations in Api.v1.yml:
+
+ ────── ─────────────── 
+  GET    /users
+  POST   /users
+  GET    /users/{id}
+ ────── ─────────────── 
+
+3 operations
+```
+
+JSON output (`--format=json`):
+
+```json
 {
-    public function test_some_contract_test_example(): void
-    {
-        // Only disable exception handling for this test
-        $this->withouthExceptionHandling();
-
-        // Test request and response ...
-
-    }
+    "spec": "Api.v1.yml",
+    "operations": [
+        { "method": "GET", "path": "/users" },
+        { "method": "POST", "path": "/users" },
+        { "method": "GET", "path": "/users/{id}" }
+    ]
 }
 ```
 
-### Deactivating Spectator
+### `spectator:routes`
 
-If you want to deactivate Spectator for a specific test, you can use the `Spectator::reset` method:
+Cross-references spec operations against registered Laravel routes. Surfaces which operations are matched, which are missing from the app, and which routes have no spec entry.
+
+```bash
+php artisan spectator:routes --spec=Api.v1.yml
+php artisan spectator:routes --spec=Api.v1.yml --format=json
+```
+
+Text output:
+
+```
+Routes in Api.v1.yml:
+
+ ──────── ──────── ─────────────────── 
+  Status   Method   Path
+ ──────── ──────── ─────────────────── 
+  ✔        GET      /users
+  ✔        POST     /users
+  ✗        DELETE   /users/{id}
+  ⚠        GET      /internal
+ ──────── ──────── ─────────────────── 
+
+Matched: 2  |  Unimplemented: 1  |  Undocumented: 1
+```
+
+- `✔ matched` — in spec and a Laravel route exists
+- `✗ unimplemented` — in spec, no matching Laravel route
+- `⚠ undocumented` — Laravel route exists, not in spec
+
+### `spectator:stubs`
+
+Generates skeleton test classes from a spec. Groups operations by tag (fallback: first path segment) and creates one class per group with one `test_` method per operation. Each method body calls `$this->markTestIncomplete(...)` so the generated file is immediately runnable.
+
+```bash
+php artisan spectator:stubs --spec=Api.v1.yml
+php artisan spectator:stubs --spec=Api.v1.yml --output=tests/Contract --namespace="Tests\\Contract"
+php artisan spectator:stubs --spec=Api.v1.yml --force
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `--spec` | — | Spec filename (required). |
+| `--output` | `tests/Contract` | Directory to write generated classes to. |
+| `--namespace` | `Tests\Contract` | PHP namespace for generated classes. |
+| `--base-class` | `Tests\TestCase` | Parent class for generated test classes. |
+| `--force` | `false` | Overwrite existing files. |
+
+Example generated class:
 
 ```php
-<?php
+namespace Tests\Contract;
 
 use Spectator\Spectator;
+use Tests\TestCase;
 
-class ExampleTest extends TestCase
+class UsersContractTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
-
-        Spectator::using('Api.v1.json');
+        Spectator::using('Api.v1.yml');
     }
 
-    public function testWithoutSpectator()
+    public function test_get_users(): void
     {
-        Spectator::reset();
-        
-        // Run your test without Spectator
+        $this->markTestIncomplete('Implement: GET /users');
+    }
+
+    public function test_post_users(): void
+    {
+        $this->markTestIncomplete('Implement: POST /users');
     }
 }
 ```
+
+---
+
+## CI & AI Integration
+
+### Validating specs in CI
+
+Add `spectator:validate` as an early CI step to catch malformed specs before tests run:
+
+```yaml
+# GitHub Actions example
+- name: Validate OpenAPI spec
+  run: php artisan spectator:validate --spec=Api.v1.yml --format=json
+```
+
+### Machine-readable error output
+
+Set `SPECTATOR_ERROR_FORMAT=json` in your CI environment to make validation errors parseable by log aggregators and LLM agents:
+
+```env
+SPECTATOR_ERROR_FORMAT=json
+```
+
+With this setting, a failed assertion produces a JSON error body instead of ANSI-coloured text:
+
+```json
+{
+    "errors": [
+        "The data (null) must match the type: string"
+    ]
+}
+```
+
+### Feeding errors to an LLM
+
+The JSON error format is designed for toolchains that analyse test output programmatically. Parse `{"errors": [...]}` from test output and pass it directly to your LLM workflow for root-cause analysis or spec repair suggestions.
+
+### Contract coverage tracking
+
+`SpectatorExtension` is a PHPUnit 11 extension that tracks which spec operations are exercised during a test run and prints a coverage summary when the suite finishes.
+
+Enable it in `phpunit.xml`:
+
+```xml
+<extensions>
+    <bootstrap class="Spectator\Coverage\SpectatorExtension">
+        <!-- Fail the suite if coverage drops below 80% -->
+        <parameter name="min_coverage" value="80"/>
+        <!-- Optional: json | text (default: text) -->
+        <parameter name="format" value="text"/>
+    </bootstrap>
+</extensions>
+```
+
+Example output at suite end:
+
+```
+Spectator Coverage
+──────────────────────────────────────────
+ Spec          Operations   Covered   %
+──────────────────────────────────────────
+ Api.v1.yml    6            5         83%
+──────────────────────────────────────────
+```
+
+When `min_coverage` is set and not met, the extension causes PHPUnit to exit with code `1`, failing the CI job.
+
+---
+
+## Upgrading
+
+Please read [UPGRADE.md](UPGRADE.md) for a full list of breaking changes between versions.
+
+---
 
 ## Core Concepts
 
-### Approach
+Spectator registers a middleware that intercepts every test request, matches it against the loaded spec's `PathItem`, and validates both the request and the response. Captured exceptions are stored on the `RequestFactory` singleton so assertions can read them after the response is returned.
 
-Spectator works by registering a custom middleware that performs request and response validation against a spec.
+### Key dependencies
 
-### Dependencies
+- [`cebe/php-openapi`](https://github.com/cebe/php-openapi) — parses OpenAPI 3.x specs into typed objects
+- [`opis/json-schema`](https://github.com/opis/json-schema) — validates request/response data against JSON Schema
 
-For those interested in contributing to Spectator, it is worth familiarizing yourself with the core dependencies used for spec testing:
-
-- `cebe/php-openapi`: Used to parse specs into usable arrays
-- `opis/json-schema`: Used to perform validation of an object/array against a spec
+---
 
 ## Sponsors
 
@@ -370,8 +484,8 @@ If you'd like to become a sponsor, please [see here for more information](https:
 - Inspired by [Laravel OpenAPI](https://github.com/mdwheele/laravel-openapi) package by [Dustin Wheeler](https://github.com/mdwheele)
 - [All Contributors](../../contributors)
 
-<a href = "https://github.com/hotmeteor/spectator/graphs/contributors">
-  <img src = "https://contrib.rocks/image?repo=hotmeteor/spectator"/>
+<a href="https://github.com/hotmeteor/spectator/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=hotmeteor/spectator"/>
 </a>
 
 Made with [contributors-img](https://contrib.rocks).
@@ -379,3 +493,4 @@ Made with [contributors-img](https://contrib.rocks).
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+

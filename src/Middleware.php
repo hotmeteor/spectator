@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
+use Spectator\Coverage\CoverageTracker;
 use Spectator\Exceptions\InvalidPathException;
 use Spectator\Exceptions\MalformedSpecException;
 use Spectator\Exceptions\MissingSpecException;
@@ -80,6 +81,11 @@ class Middleware
 
     protected function validate(Request $request, Closure $next, string $specPath, PathItem $pathItem): mixed
     {
+        $specName = $this->spectator->getSpec();
+        if ($specName !== null) {
+            CoverageTracker::record($specName, $request->method(), $specPath);
+        }
+
         try {
             RequestValidator::validate(
                 $request,
@@ -124,6 +130,19 @@ class Middleware
         $openapi = $this->spectator->resolve();
 
         $this->version = $openapi->openapi;
+
+        $specName = $this->spectator->getSpec();
+        if ($specName !== null) {
+            $ops = [];
+            foreach ($openapi->paths as $specItemPath => $specItem) {
+                foreach (['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'] as $method) {
+                    if ($specItem->{$method} !== null) {
+                        $ops[] = ['method' => strtoupper($method), 'path' => $specItemPath];
+                    }
+                }
+            }
+            CoverageTracker::recordSpec($specName, $ops);
+        }
 
         $pathMatches = false;
         $partialMatch = null;

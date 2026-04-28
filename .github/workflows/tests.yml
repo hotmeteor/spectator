@@ -15,37 +15,15 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        laravel: ['10.*', '11.*', '12.*', '13.*']
-        php: [8.1, 8.2, 8.3, 8.4]
-        phpunit: [ '10.*', '11.*']
+        laravel: ['12.*', '13.*']
+        php: [8.3, 8.4]
         include:
-          - laravel: 10.*
-            testbench: 8.*
-          - laravel: 11.*
-            testbench: 9.*
           - laravel: 12.*
             testbench: 10.*
           - laravel: 13.*
             testbench: 11.*
-        exclude:
-          - laravel: 10.*
-            phpunit: 11.*
-          - laravel: 10.*
-            php: 8.4
-          - laravel: 11.*
-            php: 8.1
-          - laravel: 12.*
-            php: 8.1
-          - laravel: 12.*
-            phpunit: 10.*
-          - laravel: 13.*
-            php: 8.1
-          - laravel: 13.*
-            php: 8.2
-          - laravel: 13.*
-            phpunit: 10.*
 
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - PU${{ matrix.phpunit }}
+    name: P${{ matrix.php }} - L${{ matrix.laravel }}
 
     steps:
       - uses: actions/checkout@v4
@@ -63,8 +41,8 @@ jobs:
       - name: Install dependencies
         run: |
           composer remove --dev laravel/pint --no-interaction --no-update
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "phpunit/phpunit:${{ matrix.phpunit }}" --no-interaction --no-update
-          composer update --prefer-dist --no-progress --no-suggest
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer update --prefer-dist --no-progress
 
       - name: Run test suite
         run: composer run-script test

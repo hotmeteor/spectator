@@ -1283,4 +1283,45 @@ class ResponseValidatorTest extends TestCase
             ],
         ];
     }
+
+    #[DataProvider('nullableValueDictionaryProvider')]
+    #[Test]
+    public function nullable_value_dictionary(mixed $payload, bool $isValid): void
+    {
+        Spectator::using('Dictionary.v1.yml');
+
+        Route::get('/nullable-value-dictionary', static function () use ($payload) {
+            return ['data' => $payload];
+        })->middleware(Middleware::class);
+
+        if ($isValid) {
+            $this->getJson('/nullable-value-dictionary')
+                ->assertValidResponse();
+        } else {
+            $this->getJson('/nullable-value-dictionary')
+                ->assertInvalidResponse();
+        }
+    }
+
+    public static function nullableValueDictionaryProvider(): array
+    {
+        return [
+            'valid as string values' => [
+                ['foo' => 'hello', 'bar' => 'world'],
+                true,
+            ],
+            'valid as null values' => [
+                ['foo' => null, 'bar' => null],
+                true,
+            ],
+            'valid mixed null and string' => [
+                ['foo' => 'hello', 'bar' => null],
+                true,
+            ],
+            'invalid as integer values' => [
+                ['foo' => 1, 'bar' => 2],
+                false,
+            ],
+        ];
+    }
 }

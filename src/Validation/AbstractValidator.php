@@ -5,6 +5,9 @@ namespace Spectator\Validation;
 use cebe\openapi\spec\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Opis\JsonSchema\Validator;
+use Spectator\Enums\ValidationMode;
+use Spectator\Exceptions\SchemaValidationException;
 use stdClass;
 
 abstract class AbstractValidator
@@ -13,15 +16,13 @@ abstract class AbstractValidator
 
     /**
      * Check if properties exist, and if so, prepare them based on version.
-     *
-     * @param  'read'|'write'|null  $mode
      */
-    protected function prepareData(Schema $schema, ?string $mode = null): stdClass
+    protected function prepareData(Schema $schema, ?ValidationMode $mode = null): stdClass
     {
         return $this->prepareProperty($schema->getSerializableData(), $mode);
     }
 
-    private function prepareProperty(stdClass $data, ?string $mode): stdClass
+    private function prepareProperty(stdClass $data, ?ValidationMode $mode): stdClass
     {
         // Does this object contain an unresolved "$ref"? This occurs when `cebe\openapi\Reader`
         // encounters a cyclical reference. Skip it.
@@ -58,6 +59,12 @@ abstract class AbstractValidator
             default => null
         };
 
+        // additionalProperties can coexist with properties/items/etc., so handle it separately.
+        // Only recurse when it's a Schema object (not a boolean true/false).
+        if (isset($data->additionalProperties) && is_object($data->additionalProperties)) {
+            $data->additionalProperties = $this->prepareProperty($data->additionalProperties, $mode);
+        }
+
         return $data;
     }
 
@@ -80,14 +87,12 @@ abstract class AbstractValidator
 
     /**
      * Filters out readonly|writeonly properties.
-     *
-     * @param  string|null  $mode  Access mode 'read' or 'write'
      */
-    private function filterProperties(stdClass $data, ?string $mode): stdClass
+    private function filterProperties(stdClass $data, ?ValidationMode $mode): stdClass
     {
         $filterBy = match ($mode) {
-            'read' => 'writeOnly',
-            'write' => 'readOnly',
+            ValidationMode::Read => 'writeOnly',
+            ValidationMode::Write => 'readOnly',
             default => null,
         };
 
@@ -145,5 +150,23 @@ abstract class AbstractValidator
         }
 
         return $data;
+    }
+
+    /**
+     * Run schema validation, throwing the given exception class on failure.
+     *
+     * @param  class-string<SchemaValidationException>  $exceptionClass
+     *
+     * @throws SchemaValidationException
+     */
+    protected function runValidation(mixed $data, stdClass $schema, string $exceptionClass): void
+    {
+        $result = (new Validator)->validate($data, $schema);
+
+        if (! $result->isValid()) {
+            $message = $exceptionClass::validationErrorMessage($schema, $result->error());
+
+            throw $exceptionClass::withError($message, $result->error());
+        }
     }
 }

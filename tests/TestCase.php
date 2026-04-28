@@ -3,6 +3,7 @@
 namespace Spectator\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
+use Spectator\RequestFactory;
 
 abstract class TestCase extends Orchestra
 {
@@ -26,5 +27,7 @@ abstract class TestCase extends Orchestra
         parent::setUp();
 
         $this->withoutExceptionHandling();
+
+        RequestFactory::clearCache();
     }
 }
