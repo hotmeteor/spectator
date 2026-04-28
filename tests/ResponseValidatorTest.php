@@ -7,6 +7,8 @@ use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Middleware;
 use Spectator\Spectator;
 use Spectator\SpectatorServiceProvider;
@@ -41,9 +43,7 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    /**
-     * @dataProvider streamedContentTypeProvider
-     */
+    #[DataProvider('streamedContentTypeProvider')]
     public function test_returns_streamed_response(string $contentType, bool $valid): void
     {
         Spectator::using('ContentType.yml');
@@ -383,9 +383,7 @@ class ResponseValidatorTest extends TestCase
         $this->fail('Failed asserting an exception was thrown');
     }
 
-    /**
-     * @dataProvider nullableProvider
-     */
+    #[DataProvider('nullableProvider')]
     public function test_handle_nullables($version, $state, $isValid): void
     {
         Spectator::using("Nullable.$version.json");
@@ -528,9 +526,7 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    /**
-     * @dataProvider nullableArrayOfNullableStringsProvider
-     */
+    #[DataProvider('nullableArrayOfNullableStringsProvider')]
     public function test_nullable_array_of_nullable_strings($version, $payload, $isValid): void
     {
         Spectator::using("Nullable.$version.json");
@@ -602,9 +598,7 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider oneOfSchemaProvider
-     */
+    #[DataProvider('oneOfSchemaProvider')]
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
     public function test_handles_one_of($response, $valid): void
     {
@@ -667,9 +661,7 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider anyOfSchemaProvider
-     */
+    #[DataProvider('anyOfSchemaProvider')]
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
     public function test_handles_any_of($response, $isValid): void
     {
@@ -729,9 +721,7 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider allOfSchemaProvider
-     */
+    #[DataProvider('allOfSchemaProvider')]
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
     public function test_handles_all_of($response, $isValid): void
     {
@@ -801,9 +791,7 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider allOfWithNullableProvider
-     */
+    #[DataProvider('allOfWithNullableProvider')]
     public function test_handles_all_of_with_nullable($payload, $isValid): void
     {
         Spectator::using('AllOf.v1.yml');
@@ -1009,9 +997,51 @@ class ResponseValidatorTest extends TestCase
             ]);
     }
 
-    /**
-     * @dataProvider arrayOfStringsProvider
-     */
+    public function test_supports_object_schema_without_properties(): void
+    {
+        set_error_handler(static function (int $severity, string $message, string $file, int $line): void {
+            throw new ErrorException($message, 0, $severity, $file, $line);
+        });
+
+        try {
+            $schemaMap = ResponseValidationException::formatSchema(
+                ['type' => 'object'],
+                '#',
+                '',
+                [],
+                0
+            );
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame(['#' => 'object++'], $schemaMap);
+    }
+
+    public function test_supports_array_schema_without_items(): void
+    {
+        $previousErrorReporting = error_reporting(E_ALL);
+        set_error_handler(static function (int $severity, string $message, string $file, int $line): void {
+            throw new ErrorException($message, 0, $severity, $file, $line);
+        });
+
+        try {
+            $schemaMap = ResponseValidationException::formatSchema(
+                ['type' => 'array'],
+                '#',
+                '',
+                [],
+                0
+            );
+        } finally {
+            restore_error_handler();
+            error_reporting($previousErrorReporting);
+        }
+
+        $this->assertSame(['#' => 'array'], $schemaMap);
+    }
+
+    #[DataProvider('arrayOfStringsProvider')]
     public function test_array_of_strings(mixed $payload, bool $isValid): void
     {
         Spectator::using('Arrays.v1.yml');
@@ -1064,9 +1094,7 @@ class ResponseValidatorTest extends TestCase
         $response->assertValidResponse();
     }
 
-    /**
-     * @dataProvider requiredWriteOnlySchemaProvider
-     */
+    #[DataProvider('requiredWriteOnlySchemaProvider')]
     public function test_required_writeonly(
         $payload,
         $is_valid
@@ -1138,9 +1166,7 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider objectAsDictionaryProvider
-     */
+    #[DataProvider('objectAsDictionaryProvider')]
     public function test_object_as_dictionary(mixed $payload, bool $isValid): void
     {
         Spectator::using('Dictionary.v1.yml');
@@ -1180,9 +1206,7 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider nullableObjectAsDictionaryProvider
-     */
+    #[DataProvider('nullableObjectAsDictionaryProvider')]
     public function test_nullable_object_as_dictionary(mixed $payload, bool $isValid): void
     {
         Spectator::using('Dictionary.v1.yml');
