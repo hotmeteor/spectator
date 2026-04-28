@@ -57,7 +57,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Middleware Groups
+    | Error Format
+    |--------------------------------------------------------------------------
+    |
+    | Controls the format of schema validation error messages in test output.
+    | Use 'text' (default) for human-readable coloured terminal output, or
+    | 'json' for machine-readable output suited to CI log parsers and LLMs.
+    |
+    | You can also call Spectator::useJsonErrors() / useTextErrors() per-test.
+    |
+    */
+
+    'error_format' => env('SPECTATOR_ERROR_FORMAT', 'text'),
+
+    /*
     |--------------------------------------------------------------------------
     |
     | Specify the groups that spectator's middleware should be prepended to.

@@ -51,6 +51,12 @@ abstract class SchemaValidationException extends \Exception
      */
     public static function validationErrorMessage(stdClass $schema, ValidationError $validationError): string
     {
+        if (config('spectator.error_format', 'text') === 'json') {
+            return json_encode([
+                'errors' => self::formatValidationError($validationError, true),
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        }
+
         // Capture the validation error as a map containing each (sub)error's location, keyword, and message.
         $errorFormatted = self::formatValidationError($validationError, false);
 
@@ -85,18 +91,18 @@ abstract class SchemaValidationException extends \Exception
 
         foreach ($schemaFormatted as $key => $schemaItem) {
             if (isset($errorLocationMap[$key])) {
-                $schemaItem = self::colorize($schemaItem, Format::TEXT_LIGHT_GREY);
-                $strings[] = $schemaItem.' <== '.self::colorize($errorLocationMap[$key]['error'], Format::TEXT_RED);
+                $schemaItem = self::colorize($schemaItem, Format::TextLightGrey);
+                $strings[] = $schemaItem.' <== '.self::colorize($errorLocationMap[$key]['error'], Format::TextRed);
             } elseif (isset($errorKeywordLocationMap[$key])) {
-                $schemaItem = self::colorize($schemaItem, Format::TEXT_LIGHT_GREY);
-                $strings[] = $schemaItem.' <== '.self::colorize($errorKeywordLocationMap[$key]['error'], Format::TEXT_RED);
+                $schemaItem = self::colorize($schemaItem, Format::TextLightGrey);
+                $strings[] = $schemaItem.' <== '.self::colorize($errorKeywordLocationMap[$key]['error'], Format::TextRed);
             } else {
-                $strings[] = self::colorize($schemaItem, Format::TEXT_GREEN);
+                $strings[] = self::colorize($schemaItem, Format::TextGreen);
             }
         }
 
         // Display the validation error alongside the expected schema with each (sub)error mapped over it.
-        $errorFlat = self::colorize(implode("\n", self::formatValidationError($validationError, true)), Format::TEXT_LIGHT_GREY, Format::STYLE_ITALIC);
+        $errorFlat = self::colorize(implode("\n", self::formatValidationError($validationError, true)), Format::TextLightGrey, Format::StyleItalic);
 
         return "---\n\n".$errorFlat."\n\n".implode("\n", $strings)."\n\n";
     }
@@ -301,8 +307,10 @@ abstract class SchemaValidationException extends \Exception
     /**
      * Colorize text.
      */
-    protected static function colorize(string $text, string $textColor, string $style = ''): string
+    protected static function colorize(string $text, Format $color, ?Format $style = null): string
     {
-        return "\e[{$textColor};{$style}m{$text}\e[0m";
+        $codes = array_filter([$color->value, $style?->value]);
+
+        return "\e[".implode(';', $codes)."m{$text}\e[0m";
     }
 }

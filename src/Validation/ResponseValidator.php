@@ -7,7 +7,7 @@ use cebe\openapi\spec\Response;
 use cebe\openapi\spec\Schema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Opis\JsonSchema\Validator;
+use Spectator\Enums\ValidationMode;
 use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Exceptions\SchemaValidationException;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -79,16 +79,9 @@ class ResponseValidator extends AbstractValidator
      */
     protected function validateResponse(Schema $schema, mixed $body): void
     {
-        $expectedSchema = $this->prepareData($schema, 'read');
+        $expectedSchema = $this->prepareData($schema, ValidationMode::Read);
 
-        $validator = new Validator;
-        $result = $validator->validate($body, $expectedSchema);
-
-        if ($result->isValid() === false) {
-            $message = ResponseValidationException::validationErrorMessage($expectedSchema, $result->error());
-
-            throw ResponseValidationException::withError($message, $result->error());
-        }
+        $this->runValidation($body, $expectedSchema, ResponseValidationException::class);
     }
 
     /**

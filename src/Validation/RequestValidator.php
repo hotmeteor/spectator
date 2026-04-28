@@ -11,6 +11,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Opis\JsonSchema\Validator;
+use Spectator\Enums\ValidationMode;
 use Spectator\Exceptions\RequestValidationException;
 use Spectator\Exceptions\SchemaValidationException;
 use stdClass;
@@ -175,18 +176,9 @@ class RequestValidator extends AbstractValidator
             throw new RequestValidationException('Request body required!');
         }
 
-        $expectedBodySchema = $this->prepareData($expectedBodyRawSchema, 'write');
+        $expectedBodySchema = $this->prepareData($expectedBodyRawSchema, ValidationMode::Write);
 
-        // Run validation.
-        $validator = new Validator;
-        $result = $validator->validate($actualBodySchema, $expectedBodySchema);
-
-        // If the result is not valid, then display failure reason.
-        if ($result->isValid() === false) {
-            $message = RequestValidationException::validationErrorMessage($expectedBodySchema, $result->error());
-
-            throw RequestValidationException::withError($message, $result->error());
-        }
+        $this->runValidation($actualBodySchema, $expectedBodySchema, RequestValidationException::class);
     }
 
     protected function operation(): Operation
@@ -244,9 +236,9 @@ class RequestValidator extends AbstractValidator
         if (! is_array($data)) {
             return $data;
         } elseif (Arr::isAssoc($data)) {
-            return (object) array_map([$this, 'toObject'], $data);
+            return (object) array_map($this->toObject(...), $data);
         } else {
-            return array_map([$this, 'toObject'], $data);
+            return array_map($this->toObject(...), $data);
         }
     }
 

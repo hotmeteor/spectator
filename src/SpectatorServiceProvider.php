@@ -6,6 +6,8 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Testing\TestResponse;
+use Spectator\Console\CoverageCommand;
+use Spectator\Console\ValidateSpecCommand;
 
 class SpectatorServiceProvider extends ServiceProvider
 {
@@ -15,6 +17,10 @@ class SpectatorServiceProvider extends ServiceProvider
             $this->publishConfig();
             $this->registerMiddleware();
             $this->decorateTestResponse();
+            $this->commands([
+                ValidateSpecCommand::class,
+                CoverageCommand::class,
+            ]);
         }
     }
 

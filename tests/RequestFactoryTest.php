@@ -4,7 +4,9 @@ namespace Spectator\Tests;
 
 use cebe\openapi\spec\OpenApi;
 use Illuminate\Support\Facades\Config;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use ReflectionMethod;
 use Spectator\Exceptions\MissingSpecException;
 use Spectator\RequestFactory;
 
@@ -212,5 +214,193 @@ class RequestFactoryTest extends TestCase
         Config::set('spectator.path_prefix', null);
 
         $this->assertSame('', $factory->getPathPrefix());
+    }
+
+    // -------------------------------------------------------------------------
+    // Remote source
+    // -------------------------------------------------------------------------
+
+    #[Test]
+    public function resolves_json_spec_from_remote_source(): void
+    {
+        $fixturesPath = realpath(__DIR__.'/Fixtures');
+
+        Config::set('spectator.default', 'remote');
+        Config::set('spectator.sources.remote', [
+            'source' => 'remote',
+            'base_path' => $fixturesPath,
+            'params' => '',
+        ]);
+
+        $factory = new RequestFactory;
+        $factory->using('Test.v1.json');
+
+        $spec = $factory->resolve();
+
+        $this->assertInstanceOf(OpenApi::class, $spec);
+        $this->assertSame('Test.v1', $spec->info->title);
+    }
+
+    #[Test]
+    public function resolves_yaml_spec_from_remote_source(): void
+    {
+        $fixturesPath = realpath(__DIR__.'/Fixtures');
+
+        Config::set('spectator.default', 'remote');
+        Config::set('spectator.sources.remote', [
+            'source' => 'remote',
+            'base_path' => $fixturesPath,
+            'params' => '',
+        ]);
+
+        $factory = new RequestFactory;
+        $factory->using('Test.v1.yml');
+
+        $spec = $factory->resolve();
+
+        $this->assertInstanceOf(OpenApi::class, $spec);
+        $this->assertSame('Test.v1', $spec->info->title);
+    }
+
+    #[Test]
+    public function remote_source_constructs_url_with_params(): void
+    {
+        $factory = new RequestFactory;
+
+        $method = new ReflectionMethod($factory, 'getRemotePath');
+
+        $url = $method->invoke($factory, [
+            'source' => 'remote',
+            'base_path' => 'https://example.com/specs',
+            'params' => '?token=abc123',
+        ], 'Api.v1.yml');
+
+        $this->assertSame('https://example.com/specs/Api.v1.yml?token=abc123', $url);
+    }
+
+    #[Test]
+    public function remote_source_constructs_url_without_params(): void
+    {
+        $factory = new RequestFactory;
+
+        $method = new ReflectionMethod($factory, 'getRemotePath');
+
+        $url = $method->invoke($factory, [
+            'source' => 'remote',
+            'base_path' => 'https://example.com/specs',
+            'params' => '',
+        ], 'Api.v1.yml');
+
+        $this->assertSame('https://example.com/specs/Api.v1.yml', $url);
+    }
+
+    #[Test]
+    public function remote_source_adds_trailing_slash_to_base_path(): void
+    {
+        $factory = new RequestFactory;
+
+        $method = new ReflectionMethod($factory, 'getRemotePath');
+
+        $urlWithSlash = $method->invoke($factory, ['source' => 'remote', 'base_path' => 'https://example.com/specs/', 'params' => ''], 'Api.v1.yml');
+        $urlWithoutSlash = $method->invoke($factory, ['source' => 'remote', 'base_path' => 'https://example.com/specs', 'params' => ''], 'Api.v1.yml');
+
+        $this->assertSame($urlWithSlash, $urlWithoutSlash);
+    }
+
+    // -------------------------------------------------------------------------
+    // GitHub source
+    // -------------------------------------------------------------------------
+
+    #[Test]
+    public function github_source_constructs_correct_url(): void
+    {
+        $factory = new RequestFactory;
+
+        $method = new ReflectionMethod($factory, 'getGithubPath');
+
+        $url = $method->invoke($factory, [
+            'source' => 'github',
+            'token' => 'ghp_mytoken',
+            'repo' => 'org/my-repo',
+            'base_path' => 'main/specs',
+        ], 'Api.v1.yml');
+
+        $this->assertSame('https://ghp_mytoken@raw.githubusercontent.com/org/my-repo/main/specs/Api.v1.yml', $url);
+    }
+
+    #[Test]
+    public function github_source_trims_trailing_slash_from_base_path(): void
+    {
+        $factory = new RequestFactory;
+
+        $method = new ReflectionMethod($factory, 'getGithubPath');
+
+        $urlWithSlash = $method->invoke($factory, [
+            'source' => 'github',
+            'token' => 'ghp_mytoken',
+            'repo' => 'org/my-repo',
+            'base_path' => 'main/specs/',
+        ], 'Api.v1.yml');
+
+        $urlWithoutSlash = $method->invoke($factory, [
+            'source' => 'github',
+            'token' => 'ghp_mytoken',
+            'repo' => 'org/my-repo',
+            'base_path' => 'main/specs',
+        ], 'Api.v1.yml');
+
+        $this->assertSame($urlWithoutSlash, $urlWithSlash);
+        $this->assertStringNotContainsString('//', str_replace('https://', '', $urlWithSlash));
+    }
+
+    #[Test]
+    public function github_source_trims_leading_slash_from_base_path(): void
+    {
+        $factory = new RequestFactory;
+
+        $method = new ReflectionMethod($factory, 'getGithubPath');
+
+        $url = $method->invoke($factory, [
+            'source' => 'github',
+            'token' => 'ghp_mytoken',
+            'repo' => 'org/my-repo',
+            'base_path' => '/main/specs',
+        ], 'Api.v1.yml');
+
+        $this->assertSame('https://ghp_mytoken@raw.githubusercontent.com/org/my-repo/main/specs/Api.v1.yml', $url);
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function specFileProvider(): array
+    {
+        return [
+            'json file' => ['Test.v1.json', 'Test.v1'],
+            'yml file' => ['Test.v1.yml', 'Test.v1'],
+            'yaml file' => ['Test.v1.yaml', 'Test.v1'],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('specFileProvider')]
+    public function resolves_spec_from_remote_source_for_different_formats(string $specFile, string $expectedTitle): void
+    {
+        $fixturesPath = realpath(__DIR__.'/Fixtures');
+
+        Config::set('spectator.default', 'remote');
+        Config::set('spectator.sources.remote', [
+            'source' => 'remote',
+            'base_path' => $fixturesPath,
+            'params' => '',
+        ]);
+
+        $factory = new RequestFactory;
+        $factory->using($specFile);
+
+        $spec = $factory->resolve();
+
+        $this->assertInstanceOf(OpenApi::class, $spec);
+        $this->assertSame($expectedTitle, $spec->info->title);
     }
 }

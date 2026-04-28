@@ -11,6 +11,7 @@ use cebe\openapi\spec\OpenApi;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
+use Spectator\Enums\SpecSource;
 use Spectator\Exceptions\MalformedSpecException;
 use Spectator\Exceptions\MissingSpecException;
 use Throwable;
@@ -64,6 +65,36 @@ class RequestFactory
     public function getPathPrefix(): string
     {
         return $this->pathPrefix ?? config('spectator.path_prefix') ?? '';
+    }
+
+    /**
+     * Fluent alias for setPathPrefix.
+     */
+    public function withPathPrefix(?string $pathPrefix): self
+    {
+        return $this->setPathPrefix($pathPrefix);
+    }
+
+    /**
+     * Configure validation errors to be emitted as machine-readable JSON.
+     *
+     * Useful for CI pipelines and LLM toolchains that parse test output.
+     */
+    public function useJsonErrors(): self
+    {
+        config()->set('spectator.error_format', 'json');
+
+        return $this;
+    }
+
+    /**
+     * Configure validation errors to be emitted as human-readable coloured text (default).
+     */
+    public function useTextErrors(): self
+    {
+        config()->set('spectator.error_format', 'text');
+
+        return $this;
     }
 
     /**
@@ -149,10 +180,10 @@ class RequestFactory
 
         $file = $this->standardizeFileName($this->specName);
 
-        return match ($source['source']) {
-            'local' => $this->getLocalPath($source, $file),
-            'remote' => $this->getRemotePath($source, $file),
-            'github' => $this->getGithubPath($source, $file),
+        return match (SpecSource::tryFrom($source['source'])) {
+            SpecSource::Local => $this->getLocalPath($source, $file),
+            SpecSource::Remote => $this->getRemotePath($source, $file),
+            SpecSource::Github => $this->getGithubPath($source, $file),
             default => throw new MissingSpecException('Cannot resolve schema with missing or invalid spec.'),
         };
     }
@@ -198,7 +229,9 @@ class RequestFactory
      */
     protected function getGithubPath(array $source, string $file): string
     {
-        return "https://{$source['token']}@raw.githubusercontent.com/{$source['repo']}/{$source['base_path']}/{$file}";
+        $basePath = trim($source['base_path'], '/');
+
+        return "https://{$source['token']}@raw.githubusercontent.com/{$source['repo']}/{$basePath}/{$file}";
     }
 
     /**
