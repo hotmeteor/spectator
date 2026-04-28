@@ -34,6 +34,10 @@ The package is built around a middleware-driven validation loop:
 6. **`SpectatorServiceProvider`** — registers the singleton, merges config, but only registers middleware and the `TestResponse` mixin when `App::runningInConsole()` (i.e., during tests). Also registers artisan commands inside this guard.
 7. **`Console/ValidateSpecCommand`** — `spectator:validate --spec=<file> [--format=json]`. Validates that a spec file parses without errors.
 8. **`Console/CoverageCommand`** — `spectator:coverage --spec=<file> [--format=json]`. Lists every operation (method + path) defined in the spec.
+9. **`Console/RoutesCommand`** — `spectator:routes --spec=<file> [--format=json]`. Cross-references spec operations against registered Laravel routes (matched / unimplemented / undocumented). Uses `Route::getRoutes()->getRoutes()` for PHPStan-safe iteration.
+10. **`Console/StubsCommand`** — `spectator:stubs --spec=<file> [--output] [--namespace] [--base-class] [--force]`. Generates skeleton test classes from a spec. **Path handling note:** uses `str_starts_with($output, DIRECTORY_SEPARATOR)` to detect absolute paths and use them as-is; otherwise resolves relative to `base_path()`.
+11. **`Coverage/CoverageTracker`** — static process-level registry (`array<string, true>` set semantics) that records which spec operations are exercised. `recordSpec()` is idempotent (guarded with `isset()`). Called from `Middleware`: `recordSpec()` in `pathItem()`, `record()` in `validate()` before validators run.
+12. **`Coverage/SpectatorExtension`** — PHPUnit 11 `Extension` implementation. Subscribes to `ExecutionFinished` via anonymous class. Reads `CoverageTracker::getBySpec()`, prints coverage table. `min_coverage` parameter uses `register_shutdown_function(fn () => exit(1))` to override PHPUnit's exit code for CI failure (direct exit from `ExecutionFinished` subscriber is not supported by PHPUnit).
 
 ## Key Conventions
 
@@ -49,6 +53,13 @@ The package is built around a middleware-driven validation loop:
 - **Do not** use `expectsOutput()` with multi-line strings; it matches a single `doWrite` call and will fail.
 - JSON output uses `foreach (explode(PHP_EOL, json_encode(..., JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) as $line) { $this->line($line); }` so each line is a separate `doWrite` call.
 - Command helper methods must not be named `fail()` — `Illuminate\Console\Command` already declares `fail()`.
+- `RoutesCommand` and `StubsCommand` tests register inline routes with `Route::get(...)` inside the test method before calling `$this->artisan(...)`.
+- `StubsCommand` tests use `sys_get_temp_dir().'/spectator-stubs-test-'.uniqid()` as `--output` (absolute path). The command detects absolute paths via `str_starts_with($output, DIRECTORY_SEPARATOR)` and uses them as-is.
+
+### Coverage tracking
+- `CoverageTracker` is a **process-level static registry** — data accumulates across all test methods in a PHPUnit run. Never call `CoverageTracker::reset()` in `tearDown()`; only call it in unit tests that need isolation or at suite start.
+- The tracker uses `array<string, true>` set semantics (not append-only arrays) to prevent double-counting. Keys are `"METHOD /path"` strings.
+- `SpectatorExtension` subscribes to `ExecutionFinished` (not `RunFinished`). To fail the PHPUnit process when `min_coverage` is not met, use `register_shutdown_function(static fn () => exit(1))` — this overrides PHPUnit's own exit code since PHPUnit calls `exit()` after all subscribers run.
 
 ### Spec fixtures
 - Named like `FeatureName.v1.yml` or `FeatureName.v1.json`.

@@ -15,7 +15,8 @@ Write tests that guarantee your API spec never drifts from your implementation.
 ## What's New in v3
 
 - **PHP 8.3+ and Laravel 12+** — minimum requirements raised to track the modern PHP ecosystem.
-- **New artisan commands** — `spectator:validate` lints your spec file; `spectator:coverage` lists every operation defined in the spec. Both support `--format=json` for machine-readable output.
+- **New artisan commands** — `spectator:validate` lints your spec file; `spectator:coverage` lists every operation defined in the spec; `spectator:routes` cross-references spec operations against Laravel routes; `spectator:stubs` generates skeleton test classes from a spec. All commands support `--format=json` for machine-readable output.
+- **PHPUnit coverage extension** — `SpectatorExtension` tracks which spec operations are exercised during a test run and can enforce a minimum coverage threshold in CI.
 - **Machine-readable JSON errors** — set `SPECTATOR_ERROR_FORMAT=json` (or call `Spectator::useJsonErrors()`) to get structured `{"errors": [...]}` output from failed assertions instead of ANSI-coloured text.
 - **Modern PHP internals** — enums replace string/class constants; first-class callables, `readonly` properties, and `match` expressions throughout.
 - **Remote & GitHub spec sources verified** — remote HTTP and private GitHub spec fetching work reliably out of the box.
@@ -309,6 +310,82 @@ JSON output (`--format=json`):
 }
 ```
 
+### `spectator:routes`
+
+Cross-references spec operations against registered Laravel routes. Surfaces which operations are matched, which are missing from the app, and which routes have no spec entry.
+
+```bash
+php artisan spectator:routes --spec=Api.v1.yml
+php artisan spectator:routes --spec=Api.v1.yml --format=json
+```
+
+Text output:
+
+```
+Routes in Api.v1.yml:
+
+ ──────── ──────── ─────────────────── 
+  Status   Method   Path
+ ──────── ──────── ─────────────────── 
+  ✔        GET      /users
+  ✔        POST     /users
+  ✗        DELETE   /users/{id}
+  ⚠        GET      /internal
+ ──────── ──────── ─────────────────── 
+
+Matched: 2  |  Unimplemented: 1  |  Undocumented: 1
+```
+
+- `✔ matched` — in spec and a Laravel route exists
+- `✗ unimplemented` — in spec, no matching Laravel route
+- `⚠ undocumented` — Laravel route exists, not in spec
+
+### `spectator:stubs`
+
+Generates skeleton test classes from a spec. Groups operations by tag (fallback: first path segment) and creates one class per group with one `test_` method per operation. Each method body calls `$this->markTestIncomplete(...)` so the generated file is immediately runnable.
+
+```bash
+php artisan spectator:stubs --spec=Api.v1.yml
+php artisan spectator:stubs --spec=Api.v1.yml --output=tests/Contract --namespace="Tests\\Contract"
+php artisan spectator:stubs --spec=Api.v1.yml --force
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `--spec` | — | Spec filename (required). |
+| `--output` | `tests/Contract` | Directory to write generated classes to. |
+| `--namespace` | `Tests\Contract` | PHP namespace for generated classes. |
+| `--base-class` | `Tests\TestCase` | Parent class for generated test classes. |
+| `--force` | `false` | Overwrite existing files. |
+
+Example generated class:
+
+```php
+namespace Tests\Contract;
+
+use Spectator\Spectator;
+use Tests\TestCase;
+
+class UsersContractTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Spectator::using('Api.v1.yml');
+    }
+
+    public function test_get_users(): void
+    {
+        $this->markTestIncomplete('Implement: GET /users');
+    }
+
+    public function test_post_users(): void
+    {
+        $this->markTestIncomplete('Implement: POST /users');
+    }
+}
+```
+
 ---
 
 ## CI & AI Integration
@@ -344,6 +421,36 @@ With this setting, a failed assertion produces a JSON error body instead of ANSI
 ### Feeding errors to an LLM
 
 The JSON error format is designed for toolchains that analyse test output programmatically. Parse `{"errors": [...]}` from test output and pass it directly to your LLM workflow for root-cause analysis or spec repair suggestions.
+
+### Contract coverage tracking
+
+`SpectatorExtension` is a PHPUnit 11 extension that tracks which spec operations are exercised during a test run and prints a coverage summary when the suite finishes.
+
+Enable it in `phpunit.xml`:
+
+```xml
+<extensions>
+    <bootstrap class="Spectator\Coverage\SpectatorExtension">
+        <!-- Fail the suite if coverage drops below 80% -->
+        <parameter name="min_coverage" value="80"/>
+        <!-- Optional: json | text (default: text) -->
+        <parameter name="format" value="text"/>
+    </bootstrap>
+</extensions>
+```
+
+Example output at suite end:
+
+```
+Spectator Coverage
+──────────────────────────────────────────
+ Spec          Operations   Covered   %
+──────────────────────────────────────────
+ Api.v1.yml    6            5         83%
+──────────────────────────────────────────
+```
+
+When `min_coverage` is set and not met, the extension causes PHPUnit to exit with code `1`, failing the CI job.
 
 ---
 

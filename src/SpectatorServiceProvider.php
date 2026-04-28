@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Testing\TestResponse;
 use Spectator\Console\CoverageCommand;
+use Spectator\Console\RoutesCommand;
+use Spectator\Console\StubsCommand;
 use Spectator\Console\ValidateSpecCommand;
 
 class SpectatorServiceProvider extends ServiceProvider
@@ -20,6 +22,8 @@ class SpectatorServiceProvider extends ServiceProvider
             $this->commands([
                 ValidateSpecCommand::class,
                 CoverageCommand::class,
+                RoutesCommand::class,
+                StubsCommand::class,
             ]);
         }
     }

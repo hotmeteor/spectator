@@ -27,6 +27,17 @@ If you extend Spectator's validator classes, the following internal types have c
 
 These are internal implementation details. If you only use the public facade and test assertions, no changes are required.
 
+### New features (additive, no action required)
+
+The following are new capabilities added in v3. They do not change existing behaviour.
+
+- **`spectator:validate`** — lints a spec file from the CLI.
+- **`spectator:coverage`** — lists all operations defined in a spec.
+- **`spectator:routes`** — cross-references spec operations against Laravel routes.
+- **`spectator:stubs`** — generates skeleton test classes from a spec.
+- **`SpectatorExtension`** — PHPUnit 11 extension for end-of-run coverage reporting. Opt in via `phpunit.xml`.
+- **JSON error format** — `SPECTATOR_ERROR_FORMAT=json` or `Spectator::useJsonErrors()`.
+
 ---
 
 ## From v1 to v2
