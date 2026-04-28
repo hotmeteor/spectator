@@ -12,6 +12,17 @@ Write tests that guarantee your API spec never drifts from your implementation.
 
 ---
 
+## What's New in v3
+
+- **PHP 8.3+ and Laravel 12+** — minimum requirements raised to track the modern PHP ecosystem.
+- **New artisan commands** — `spectator:validate` lints your spec file; `spectator:coverage` lists every operation defined in the spec. Both support `--format=json` for machine-readable output.
+- **Machine-readable JSON errors** — set `SPECTATOR_ERROR_FORMAT=json` (or call `Spectator::useJsonErrors()`) to get structured `{"errors": [...]}` output from failed assertions instead of ANSI-coloured text.
+- **Modern PHP internals** — enums replace string/class constants; first-class callables, `readonly` properties, and `match` expressions throughout.
+- **Remote & GitHub spec sources verified** — remote HTTP and private GitHub spec fetching work reliably out of the box.
+- **Fluent path-prefix API** — `Spectator::withPathPrefix('v1')` as an alternative to the config key.
+
+---
+
 ## Requirements
 
 - PHP 8.3+
