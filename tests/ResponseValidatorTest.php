@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Spectator\Exceptions\ResponseValidationException;
 use Spectator\Middleware;
 use Spectator\Spectator;
-use Spectator\SpectatorServiceProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -21,12 +21,11 @@ class ResponseValidatorTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->register(SpectatorServiceProvider::class);
-
         Spectator::using('Test.v1.json');
     }
 
-    public function test_validates_valid_json_response(): void
+    #[Test]
+    public function validates_valid_json_response(): void
     {
         Route::get('/users', static function () {
             return [
@@ -44,7 +43,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     #[DataProvider('streamedContentTypeProvider')]
-    public function test_returns_streamed_response(string $contentType, bool $valid): void
+    #[Test]
+    public function returns_streamed_response(string $contentType, bool $valid): void
     {
         Spectator::using('ContentType.yml');
         Route::get('/users', static function () use ($contentType) {
@@ -78,7 +78,8 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    public function test_validates_invalid_json_response(): void
+    #[Test]
+    public function validates_invalid_json_response(): void
     {
         Route::get('/users', static function () {
             return [
@@ -108,7 +109,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('All array items must match schema');
     }
 
-    public function test_fails_to_invalidate_valid_json_response(): void
+    #[Test]
+    public function fails_to_invalidate_valid_json_response(): void
     {
         Route::get('/users', static function () {
             return [
@@ -128,7 +130,8 @@ class ResponseValidatorTest extends TestCase
             ->assertInvalidResponse();
     }
 
-    public function test_validates_valid_streamed_json_response(): void
+    #[Test]
+    public function validates_valid_streamed_json_response(): void
     {
         Route::get('/users', static function () {
             return response()->stream(function () {
@@ -147,7 +150,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    public function test_validates_valid_empty_response(): void
+    #[Test]
+    public function validates_valid_empty_response(): void
     {
         Spectator::using('EmptyResponse.yml');
 
@@ -160,7 +164,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function test_validates_invalid_empty_response(): void
+    #[Test]
+    public function validates_invalid_empty_response(): void
     {
         Spectator::using('EmptyResponse.yml');
 
@@ -174,7 +179,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('Response body is expected to be empty.');
     }
 
-    public function test_validates_status_code(): void
+    #[Test]
+    public function validates_status_code(): void
     {
         $this->expectException(ErrorException::class);
         $this->expectExceptionMessage('Expected response status code [200] but received 201.');
@@ -194,7 +200,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function test_validates_valid_problem_json_response()
+    #[Test]
+    public function validates_valid_problem_json_response()
     {
         Route::get('/users', function () {
             return response()->json([
@@ -211,7 +218,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(422);
     }
 
-    public function test_validates_valid_response_with_charset()
+    #[Test]
+    public function validates_valid_response_with_charset()
     {
         Route::get('/users', function () {
             return response()->json([
@@ -228,7 +236,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(422);
     }
 
-    public function test_validates_invalid_content_type(): void
+    #[Test]
+    public function validates_invalid_content_type(): void
     {
         Route::get('/users', static function () {
             return response('ok', 200, ['Content-Type' => 'application/xml']);
@@ -249,7 +258,8 @@ class ResponseValidatorTest extends TestCase
             );
     }
 
-    public function test_validates_invalid_problem_json_response()
+    #[Test]
+    public function validates_invalid_problem_json_response()
     {
         Route::get('/users', function () {
             return response()->json([
@@ -279,7 +289,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidationMessage('All array items must match schema');
     }
 
-    public function test_with_partial_content_type_matching()
+    #[Test]
+    public function with_partial_content_type_matching()
     {
         Spectator::using('ContentType.yml');
         Route::get('/partial-match', function () {
@@ -301,7 +312,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function test_validates_problem_json_response_using_components()
+    #[Test]
+    public function validates_problem_json_response_using_components()
     {
         $this->withoutExceptionHandling([NotFoundHttpException::class]);
 
@@ -326,7 +338,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(404);
     }
 
-    public function test_fallback_to_request_uri_if_operation_id_not_given(): void
+    #[Test]
+    public function fallback_to_request_uri_if_operation_id_not_given(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -341,7 +354,8 @@ class ResponseValidatorTest extends TestCase
             ->assertInvalidResponse();
     }
 
-    public function test_cannot_locate_path_without_path_prefix(): void
+    #[Test]
+    public function cannot_locate_path_without_path_prefix(): void
     {
         Spectator::using('Test.v2.json');
 
@@ -366,7 +380,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    public function test_uncaught_exceptions_are_thrown_when_exception_handling_is_disabled(): void
+    #[Test]
+    public function uncaught_exceptions_are_thrown_when_exception_handling_is_disabled(): void
     {
         Route::get('/users', static function () {
             throw new Exception('Something went wrong in the codebase!');
@@ -384,7 +399,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     #[DataProvider('nullableProvider')]
-    public function test_handle_nullables($version, $state, $isValid): void
+    #[Test]
+    public function handle_nullables($version, $state, $isValid): void
     {
         Spectator::using("Nullable.$version.json");
 
@@ -509,7 +525,8 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    public function test_array_of_objects_with_nullable(): void
+    #[Test]
+    public function array_of_objects_with_nullable(): void
     {
         Spectator::using('Nullable.3.0.json');
 
@@ -527,7 +544,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     #[DataProvider('nullableArrayOfNullableStringsProvider')]
-    public function test_nullable_array_of_nullable_strings($version, $payload, $isValid): void
+    #[Test]
+    public function nullable_array_of_nullable_strings($version, $payload, $isValid): void
     {
         Spectator::using("Nullable.$version.json");
 
@@ -600,7 +618,8 @@ class ResponseValidatorTest extends TestCase
 
     #[DataProvider('oneOfSchemaProvider')]
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_one_of($response, $valid): void
+    #[Test]
+    public function handles_one_of($response, $valid): void
     {
         Spectator::using('OneOf.v1.yml');
 
@@ -663,7 +682,8 @@ class ResponseValidatorTest extends TestCase
 
     #[DataProvider('anyOfSchemaProvider')]
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_any_of($response, $isValid): void
+    #[Test]
+    public function handles_any_of($response, $isValid): void
     {
         Spectator::using('AnyOf.v1.yml');
 
@@ -723,7 +743,8 @@ class ResponseValidatorTest extends TestCase
 
     #[DataProvider('allOfSchemaProvider')]
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_all_of($response, $isValid): void
+    #[Test]
+    public function handles_all_of($response, $isValid): void
     {
         Spectator::using('AllOf.v1.yml');
 
@@ -792,7 +813,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     #[DataProvider('allOfWithNullableProvider')]
-    public function test_handles_all_of_with_nullable($payload, $isValid): void
+    #[Test]
+    public function handles_all_of_with_nullable($payload, $isValid): void
     {
         Spectator::using('AllOf.v1.yml');
 
@@ -863,7 +885,8 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    public function test_handles_invalid_spec(): void
+    #[Test]
+    public function handles_invalid_spec(): void
     {
         Spectator::using('Malformed.v1.yml');
 
@@ -877,7 +900,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     // https://swagger.io/docs/specification/data-models/inheritance-and-polymorphism/
-    public function test_handles_inheritance(): void
+    #[Test]
+    public function handles_inheritance(): void
     {
         Spectator::using('Components.v1.json');
 
@@ -905,7 +929,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     // https://www.loom.com/share/63191fee2b45421db266dcd012579cb3
-    public function test_response_example(): void
+    #[Test]
+    public function response_example(): void
     {
         Spectator::using('Test.v2.json');
 
@@ -933,7 +958,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function test_errors_contain(): void
+    #[Test]
+    public function errors_contain(): void
     {
         Route::get('/users', static function () {
             return [
@@ -954,7 +980,8 @@ class ResponseValidatorTest extends TestCase
             ]);
     }
 
-    public function test_response_succeeds_with_empty_array(): void
+    #[Test]
+    public function response_succeeds_with_empty_array(): void
     {
         Spectator::using('Arrays.v1.yml');
 
@@ -973,7 +1000,8 @@ class ResponseValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    public function test_response_fails_with_invalid_array(): void
+    #[Test]
+    public function response_fails_with_invalid_array(): void
     {
         Spectator::using('Arrays.v1.yml');
 
@@ -997,7 +1025,8 @@ class ResponseValidatorTest extends TestCase
             ]);
     }
 
-    public function test_supports_object_schema_without_properties(): void
+    #[Test]
+    public function supports_object_schema_without_properties(): void
     {
         set_error_handler(static function (int $severity, string $message, string $file, int $line): void {
             throw new ErrorException($message, 0, $severity, $file, $line);
@@ -1018,7 +1047,8 @@ class ResponseValidatorTest extends TestCase
         $this->assertSame(['#' => 'object++'], $schemaMap);
     }
 
-    public function test_supports_array_schema_without_items(): void
+    #[Test]
+    public function supports_array_schema_without_items(): void
     {
         $previousErrorReporting = error_reporting(E_ALL);
         set_error_handler(static function (int $severity, string $message, string $file, int $line): void {
@@ -1042,7 +1072,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     #[DataProvider('arrayOfStringsProvider')]
-    public function test_array_of_strings(mixed $payload, bool $isValid): void
+    #[Test]
+    public function array_of_strings(mixed $payload, bool $isValid): void
     {
         Spectator::using('Arrays.v1.yml');
 
@@ -1077,7 +1108,8 @@ class ResponseValidatorTest extends TestCase
         ];
     }
 
-    public function test_array_any_of(): void
+    #[Test]
+    public function array_any_of(): void
     {
         Spectator::using('ArrayAnyOf.v1.yml');
 
@@ -1095,8 +1127,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     #[DataProvider('requiredWriteOnlySchemaProvider')]
-    public function test_required_writeonly(
-        $payload,
+    #[Test]
+    public function required_writeonly($payload,
         $is_valid
     ): void {
         Spectator::using('RequiredWriteOnly.v1.yml');
@@ -1167,7 +1199,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     #[DataProvider('objectAsDictionaryProvider')]
-    public function test_object_as_dictionary(mixed $payload, bool $isValid): void
+    #[Test]
+    public function object_as_dictionary(mixed $payload, bool $isValid): void
     {
         Spectator::using('Dictionary.v1.yml');
 
@@ -1207,7 +1240,8 @@ class ResponseValidatorTest extends TestCase
     }
 
     #[DataProvider('nullableObjectAsDictionaryProvider')]
-    public function test_nullable_object_as_dictionary(mixed $payload, bool $isValid): void
+    #[Test]
+    public function nullable_object_as_dictionary(mixed $payload, bool $isValid): void
     {
         Spectator::using('Dictionary.v1.yml');
 

@@ -177,6 +177,10 @@ class Assertions
     protected function runAssertion(): Closure
     {
         return function (Closure $closure) {
+            // Capture the caller's location for more useful failure messages.
+            // Frame 0 = debug_backtrace call, 1 = this closure, 2 = call() in TestResponse,
+            // 3 = the assertion method (e.g. assertValidRequest), 4 = __call in TestResponse,
+            // 5 = the test method that called the assertion.
             $original = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 6)[5];
 
             try {

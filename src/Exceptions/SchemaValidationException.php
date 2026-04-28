@@ -6,9 +6,8 @@ use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Errors\ValidationError;
 use Spectator\Support\Format;
 use stdClass;
-use Symfony\Component\Console\Exception\ExceptionInterface;
 
-abstract class SchemaValidationException extends \Exception implements ExceptionInterface
+abstract class SchemaValidationException extends \Exception
 {
     /** @var array<int, string> */
     protected array $errors = [];
@@ -20,9 +19,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
     {
         $instance = new static($message);
 
-        $formatter = new ErrorFormatter;
-
-        $instance->errors = $formatter->formatFlat($error);
+        $instance->errors = self::formatValidationError($error, true);
 
         return $instance;
     }
@@ -155,14 +152,10 @@ abstract class SchemaValidationException extends \Exception implements Exception
      */
     public static function formatSchema(array $schema, string $locationCurrent, string $keyCurrent, array $keysRequired, int $indentLevel): array
     {
-        $keysAtLocation = array_flip(array_keys($schema));
         $schemaMap = [];
 
         // is this a polymorphic schema?
-        $polymorphicKeys = array_filter($keysAtLocation, function ($key) {
-            return $key == 'allOf' || $key == 'anyOf' || $key == 'oneOf';
-        }, ARRAY_FILTER_USE_KEY);
-        $polymorphicKeys = array_values(array_flip($polymorphicKeys));
+        $polymorphicKeys = array_values(array_intersect(array_keys($schema), ['allOf', 'anyOf', 'oneOf']));
 
         if (! empty($polymorphicKeys)) { // first, check for a polymorphic schema...
             $polymorphicKey = $polymorphicKeys[0];
@@ -172,9 +165,9 @@ abstract class SchemaValidationException extends \Exception implements Exception
             $displayString = self::schemaItemDisplayString($polymorphicKey, '', $keyCurrent, '');
             $schemaMap[$locationCurrent] = self::indentedDisplayString($displayString, $indentLevel);
 
-            $indentLevel = ++$indentLevel;
+            $indentLevel++;
             foreach ($schema[$polymorphicKey] as $index => $nextSchema) {
-                $schemaMap = array_merge($schemaMap, self::formatSchema($nextSchema, $locationCurrent.'/'.$index, $keyCurrent, [], $indentLevel));
+                $schemaMap += self::formatSchema($nextSchema, $locationCurrent.'/'.$index, $keyCurrent, [], $indentLevel);
             }
 
             return $schemaMap;
@@ -189,7 +182,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
             // is "null" an included type? if so, make note of it and remove it from the types array
             $nullable = false;
             $nullIndex = array_search('null', $types);
-            if ($nullIndex) {
+            if ($nullIndex !== false) {
                 $nullable = true;
                 unset($types[$nullIndex]);
             }
@@ -241,12 +234,12 @@ abstract class SchemaValidationException extends \Exception implements Exception
 
                         if (isset($schema['properties'])) {
                             // create entries for all object properties
-                            $indentLevel = ++$indentLevel;
+                            $indentLevel++;
                             foreach ($schema['properties'] as $key => $nextSchema) {
                                 if (isset($schema['required'])) {
-                                    $schemaMap = array_merge($schemaMap, self::formatSchema($nextSchema, $locationCurrent, $key, $schema['required'], $indentLevel));
+                                    $schemaMap += self::formatSchema($nextSchema, $locationCurrent, $key, $schema['required'], $indentLevel);
                                 } else {
-                                    $schemaMap = array_merge($schemaMap, self::formatSchema($nextSchema, $locationCurrent, $key, [], $indentLevel));
+                                    $schemaMap += self::formatSchema($nextSchema, $locationCurrent, $key, [], $indentLevel);
                                 }
                             }
                         }
@@ -259,7 +252,7 @@ abstract class SchemaValidationException extends \Exception implements Exception
                         // create entry for array's items
                         if (isset($schema['items'])) {
                             $nextSchema = $schema['items'];
-                            $schemaMap = array_merge($schemaMap, self::formatSchema($nextSchema, $locationCurrent.'/items', '', [], ++$indentLevel));
+                            $schemaMap += self::formatSchema($nextSchema, $locationCurrent.'/items', '', [], ++$indentLevel);
                         }
 
                         break;

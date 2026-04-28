@@ -4,11 +4,13 @@ namespace Spectator\Tests;
 
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
+use PHPUnit\Framework\Attributes\Test;
 use Spectator\Middleware;
 
 class ServiceProviderTest extends TestCase
 {
-    public function test_middleware_is_registered()
+    #[Test]
+    public function middleware_is_registered()
     {
         $kernel = App::make(Kernel::class);
 

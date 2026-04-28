@@ -78,6 +78,17 @@ class RequestFactory
     }
 
     /**
+     * Clear the parsed spec cache.
+     *
+     * Useful when you need to force re-parsing of spec files,
+     * for example after modifying a fixture file during a test run.
+     */
+    public static function clearCache(): void
+    {
+        self::$cachedSpecs = [];
+    }
+
+    /**
      * Resolve and parse the spec.
      *
      *

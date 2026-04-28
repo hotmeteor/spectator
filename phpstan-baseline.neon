@@ -43,7 +43,7 @@ parameters:
 			path: src/Assertions.php
 
 		-
-			message: '#^Parameter \#2 \$array of function implode expects array\|null, Closure given\.$#'
+			message: '#^Parameter \#2 \$array of function implode expects array(\|null)?, Closure given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Assertions.php

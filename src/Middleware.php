@@ -128,8 +128,10 @@ class Middleware
         $pathMatches = false;
         $partialMatch = null;
 
+        $originalWheres = $route->wheres;
         $route->wheres = [];
         $pathMatchRegex = $route->toSymfonyRoute()->compile()->getRegex();
+        $route->wheres = $originalWheres;
 
         foreach ($openapi->paths as $path => $pathItem) {
             $resolvedPath = $this->resolvePath($path);

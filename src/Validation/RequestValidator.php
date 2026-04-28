@@ -129,8 +129,10 @@ class RequestValidator extends AbstractValidator
         /** @var Route $route */
         $route = $this->request->route();
 
+        $originalWheres = $route->wheres;
         $route->wheres = [];
         $regex = $route->toSymfonyRoute()->compile()->getRegex();
+        $route->wheres = $originalWheres;
 
         preg_match($regex, $this->specPath, $matches);
 
@@ -156,7 +158,7 @@ class RequestValidator extends AbstractValidator
         // Capture schemas for validation.
         $expectedBodyRawSchema = $expectedBody->content[$contentType]->schema;
         if (
-            ($expectedBodyRawSchema->type === 'object' || $expectedBodyRawSchema->type === 'array' || $expectedBodyRawSchema->oneOf || $expectedBodyRawSchema->anyOf)
+            ($expectedBodyRawSchema->type === 'object' || $expectedBodyRawSchema->type === 'array' || $expectedBodyRawSchema->oneOf || $expectedBodyRawSchema->anyOf || $expectedBodyRawSchema->allOf)
             && in_array($contentType, ['application/json', 'application/vnd.api+json'])
         ) {
             $actualBodySchema = json_decode($this->request->getContent());

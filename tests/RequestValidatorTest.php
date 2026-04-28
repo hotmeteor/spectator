@@ -8,9 +8,10 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Spectator\Middleware;
 use Spectator\Spectator;
-use Spectator\SpectatorServiceProvider;
 
 /**
  * This TestCase makes use of data providers. Follow the link for more details:
@@ -21,11 +22,10 @@ class RequestValidatorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->app->register(SpectatorServiceProvider::class);
     }
 
-    public function test_cannot_resolve_prefixed_path(): void
+    #[Test]
+    public function cannot_resolve_prefixed_path(): void
     {
         Spectator::using('Versioned.v1.json');
 
@@ -44,7 +44,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidationMessage('Path [GET /v1/users] not found in spec.');
     }
 
-    public function test_resolves_prefixed_path_from_config(): void
+    #[Test]
+    public function resolves_prefixed_path_from_config(): void
     {
         Spectator::using('Versioned.v1.json');
         Config::set('spectator.path_prefix', 'v1');
@@ -63,7 +64,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_uses_global_path_via_inline_setting(): void
+    #[Test]
+    public function uses_global_path_via_inline_setting(): void
     {
         Spectator::setPathPrefix('v1')->using('Versioned.v1.json');
 
@@ -81,7 +83,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_uses_global_path_through_config(): void
+    #[Test]
+    public function uses_global_path_through_config(): void
     {
         Config::set('spectator.path_prefix', 'v1');
 
@@ -102,7 +105,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function test_uses_global_path_with_route_prefix(): void
+    #[Test]
+    public function uses_global_path_with_route_prefix(): void
     {
         Config::set('spectator.path_prefix', 'v1');
 
@@ -125,7 +129,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidResponse(200);
     }
 
-    public function test_resolve_route_model_binding(): void
+    #[Test]
+    public function resolve_route_model_binding(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -141,7 +146,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_resolve_route_model_explicit_binding(): void
+    #[Test]
+    public function resolve_route_model_explicit_binding(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -158,7 +164,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_cannot_resolve_route_model_explicit_binding_with_invalid_format(): void
+    #[Test]
+    public function cannot_resolve_route_model_explicit_binding_with_invalid_format(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -175,7 +182,8 @@ class RequestValidatorTest extends TestCase
             ->assertInvalidRequest();
     }
 
-    public function test_resolve_route_model_binding_with_multiple_parameters(): void
+    #[Test]
+    public function resolve_route_model_binding_with_multiple_parameters(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -192,7 +200,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_empty_request_body_as_object(): void
+    #[Test]
+    public function empty_request_body_as_object(): void
     {
         Spectator::using('EmptyRequestBodyAsObject.yml');
 
@@ -207,7 +216,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_empty_request_body_as_array(): void
+    #[Test]
+    public function empty_request_body_as_array(): void
     {
         Spectator::using('EmptyRequestBodyAsArray.yml');
 
@@ -222,10 +232,9 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    /**
-     * @dataProvider nullableProvider
-     */
-    public function test_handle_nullables($version, $state, $isValid): void
+    #[DataProvider('nullableProvider')]
+    #[Test]
+    public function handle_nullables($version, $state, $isValid): void
     {
         Spectator::using("Nullable.$version.json");
 
@@ -322,11 +331,10 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider oneOfSchemaProvider
-     */
+    #[DataProvider('oneOfSchemaProvider')]
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_one_of($payload, $isValid): void
+    #[Test]
+    public function handles_one_of($payload, $isValid): void
     {
         Spectator::using('OneOf.v1.yml');
 
@@ -382,11 +390,10 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider anyOfSchemaProvider
-     */
+    #[DataProvider('anyOfSchemaProvider')]
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_any_of($payload, $isValid): void
+    #[Test]
+    public function handles_any_of($payload, $isValid): void
     {
         Spectator::using('AnyOf.v1.yml');
 
@@ -440,11 +447,10 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider allOfSchemaProvider
-     */
+    #[DataProvider('allOfSchemaProvider')]
     // https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
-    public function test_handles_all_of($payload, $isValid): void
+    #[Test]
+    public function handles_all_of($payload, $isValid): void
     {
         Spectator::using('AllOf.v1.yml');
 
@@ -506,7 +512,8 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    public function test_handles_query_parameters(): void
+    #[Test]
+    public function handles_query_parameters(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -553,7 +560,8 @@ class RequestValidatorTest extends TestCase
             ->assertValid();
     }
 
-    public function test_handles_array_query_parameters(): void
+    #[Test]
+    public function handles_array_query_parameters(): void
     {
         Spectator::using('Arrays.v1.yml');
 
@@ -570,7 +578,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_handles_array_of_object_query_parameters(): void
+    #[Test]
+    public function handles_array_of_object_query_parameters(): void
     {
         Spectator::using('Arrays.v1.yml');
 
@@ -586,7 +595,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_handles_query_parameters_int(): void
+    #[Test]
+    public function handles_query_parameters_int(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -602,7 +612,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_handles_form_data(): void
+    #[Test]
+    public function handles_form_data(): void
     {
         Spectator::using('BinaryString.v1.json');
 
@@ -642,7 +653,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_handles_form_data_with_multiple_files(): void
+    #[Test]
+    public function handles_form_data_with_multiple_files(): void
     {
         Spectator::using('BinaryString.v1.json');
 
@@ -682,10 +694,9 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    /**
-     * @dataProvider nullableObjectProvider
-     */
-    public function test_nullable_object($payload, $isValid): void
+    #[DataProvider('nullableObjectProvider')]
+    #[Test]
+    public function nullable_object($payload, $isValid): void
     {
         Spectator::using('Nullable-Object.yml');
 
@@ -704,7 +715,8 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    public function test_numeric_values()
+    #[Test]
+    public function numeric_values()
     {
         Spectator::using('Numbers.v1.json');
 
@@ -730,10 +742,9 @@ class RequestValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    /**
-     * @dataProvider booleanProvider
-     */
-    public function test_boolean_values($value, $isValid)
+    #[DataProvider('booleanProvider')]
+    #[Test]
+    public function boolean_values($value, $isValid)
     {
         Spectator::using('Boolean.v1.json');
 
@@ -776,7 +787,8 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    public function test_comma_separated_values()
+    #[Test]
+    public function comma_separated_values()
     {
         Spectator::using('CommaSeparatedString.v1.json');
 
@@ -806,7 +818,8 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    public function test_ignores_request_validation_if_not_asserted(): void
+    #[Test]
+    public function ignores_request_validation_if_not_asserted(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -836,11 +849,9 @@ class RequestValidatorTest extends TestCase
             ->assertValidResponse();
     }
 
-    /**
-     * @dataProvider requiredReadOnlySchemaProvider
-     */
-    public function test_required_readonly(
-        $payload,
+    #[DataProvider('requiredReadOnlySchemaProvider')]
+    #[Test]
+    public function required_readonly($payload,
         $is_valid
     ): void {
         Spectator::using('RequiredReadOnly.v1.yml');
@@ -907,10 +918,9 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider enumProvider
-     */
-    public function test_enum_in_path(string $type, bool $isValid): void
+    #[DataProvider('enumProvider')]
+    #[Test]
+    public function enum_in_path(string $type, bool $isValid): void
     {
         Spectator::using('Enum.yml');
 
@@ -927,10 +937,9 @@ class RequestValidatorTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider enumProvider
-     */
-    public function test_enum_in_path_via_reference(string $type, bool $isValid): void
+    #[DataProvider('enumProvider')]
+    #[Test]
+    public function enum_in_path_via_reference(string $type, bool $isValid): void
     {
         Spectator::using('Enum.yml');
 
@@ -961,7 +970,8 @@ class RequestValidatorTest extends TestCase
         ];
     }
 
-    public function test_validates_upload_file(): void
+    #[Test]
+    public function validates_upload_file(): void
     {
         Spectator::using('Upload.yml');
 
@@ -973,7 +983,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_parameter_decoupling(): void
+    #[Test]
+    public function parameter_decoupling(): void
     {
         Spectator::using('Test.v1.json');
 
@@ -989,7 +1000,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_static_url_parameter_decoupling(): void
+    #[Test]
+    public function static_url_parameter_decoupling(): void
     {
         Spectator::using('Test.v3.yaml');
 
@@ -1006,7 +1018,8 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
-    public function test_route_with_parameters_on_name_mismatch_non_string(): void
+    #[Test]
+    public function route_with_parameters_on_name_mismatch_non_string(): void
     {
         Config::set('spectator.path_prefix', 'v1');
 
