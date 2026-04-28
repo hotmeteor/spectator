@@ -19,14 +19,14 @@
         "php": "^8.3",
         "ext-json": "*",
         "devizzent/cebe-php-openapi": "^1.0",
-        "laravel/framework": "^12.0",
+        "laravel/framework": ">=12.0",
         "opis/json-schema": "^2.3"
     },
     "require-dev": {
-        "larastan/larastan": "^3.0",
+        "larastan/larastan": ">=3.0",
         "laravel/pint": "^1.13",
-        "nunomaduro/collision": "^8.0",
-        "orchestra/testbench": "^10.0",
+        "nunomaduro/collision": ">=8.0",
+        "orchestra/testbench": ">=10.0",
         "phpunit/phpunit": "^11.0"
     },
     "autoload": {
