@@ -2,4 +2,6 @@
 
 namespace Spectator\Exceptions;
 
-class MalformedSpecException extends \Exception {}
+class MalformedSpecException extends \Exception
+{
+}

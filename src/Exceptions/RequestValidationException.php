@@ -2,4 +2,6 @@
 
 namespace Spectator\Exceptions;
 
-class RequestValidationException extends SchemaValidationException {}
+class RequestValidationException extends SchemaValidationException
+{
+}

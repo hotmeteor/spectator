@@ -2,4 +2,6 @@
 
 namespace Spectator\Exceptions;
 
-class MissingSpecException extends \Exception {}
+class MissingSpecException extends \Exception
+{
+}
