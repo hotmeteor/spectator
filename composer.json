@@ -18,7 +18,7 @@
     "require": {
         "php": "^8.3",
         "ext-json": "*",
-        "devizzent/cebe-php-openapi": "^1.0",
+        "cebe/php-openapi": "^1.8",
         "laravel/framework": ">=12.0",
         "opis/json-schema": "^2.3"
     },
