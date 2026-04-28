@@ -1,4 +1,4 @@
-<p align="center"><img src="https://spectator.s3.us-east-2.amazonaws.com/spectator-logo.png" width="300"></p>
+<p align="center"><img src="./art/spectator-logo.png" width="300"></p>
 
 # Spectator
 
