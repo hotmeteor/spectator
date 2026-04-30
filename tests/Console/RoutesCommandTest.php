@@ -249,4 +249,33 @@ class RoutesCommandTest extends TestCase
             ->assertExitCode(0)
             ->doesntExpectOutputToContain('Filters:');
     }
+
+    public function test_prefix_filter_does_not_match_partial_path_segment(): void
+    {
+        Route::get('/api/v2/things', fn () => [])->name('things.index');
+        Route::get('/api/v20/other', fn () => [])->name('other');
+
+        $this->artisan('spectator:routes', [
+            '--spec' => 'Test.v1.yml',
+            '--prefix' => 'api/v2',
+            '--format' => 'json',
+        ])
+            ->assertExitCode(0)
+            ->doesntExpectOutputToContain('/api/v20/other');
+    }
+
+    public function test_middleware_filter_matches_parameterized_middleware(): void
+    {
+        Route::get('/users', fn () => [])->middleware('throttle:60,1')->name('users.index');
+        Route::get('/admin/things', fn () => [])->name('admin.things');
+
+        $this->artisan('spectator:routes', [
+            '--spec' => 'Test.v1.yml',
+            '--middleware' => 'throttle',
+            '--format' => 'json',
+        ])
+            ->assertExitCode(0)
+            ->expectsOutputToContain('"status": "matched"')
+            ->doesntExpectOutputToContain('"path": "/admin/things"');
+    }
 }

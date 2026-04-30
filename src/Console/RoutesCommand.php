@@ -52,8 +52,10 @@ class RoutesCommand extends Command
             return self::FAILURE;
         }
 
+        $normalisedPrefix = ($prefix !== null && trim($prefix, '/') !== '') ? trim($prefix, '/') : null;
+
         // Build a normalised set of all Laravel route keys: "METHOD /path/{_}"
-        $laravelRoutes = $this->collectLaravelRoutes($prefix, $middleware);
+        $laravelRoutes = $this->collectLaravelRoutes($normalisedPrefix, $middleware);
 
         // Enumerate spec operations
         $specOps = [];
@@ -86,7 +88,7 @@ class RoutesCommand extends Command
         sort($undocumented);
 
         $filters = array_filter([
-            'prefix' => $prefix,
+            'prefix' => $normalisedPrefix,
             'middleware' => $middleware,
         ], fn (?string $value) => $value !== null && $value !== '');
 
@@ -104,10 +106,9 @@ class RoutesCommand extends Command
      *
      * @return array<string, string>
      */
-    private function collectLaravelRoutes(?string $prefix, ?string $middleware): array
+    private function collectLaravelRoutes(?string $normalisedPrefix, ?string $middleware): array
     {
         $routes = [];
-        $normalisedPrefix = $prefix !== null && $prefix !== '' ? trim($prefix, '/') : null;
 
         /** @var Route $route */
         foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
@@ -150,7 +151,23 @@ class RoutesCommand extends Command
             // Checking both lets users filter by either the alias they wrote or a fully-qualified class.
             $gathered = method_exists($route, 'gatherMiddleware') ? $route->gatherMiddleware() : [];
 
-            if (! in_array($middleware, $declared, true) && ! in_array($middleware, $gathered, true)) {
+            // Match by exact string or by base name before ':' to support parameterized
+            // middleware like 'throttle:60,1' when the user filters by 'throttle'.
+            $hasMiddleware = static function (array $list) use ($middleware): bool {
+                foreach ($list as $entry) {
+                    if ($entry === $middleware) {
+                        return true;
+                    }
+                    $colonPos = strpos($entry, ':');
+                    if ($colonPos !== false && substr($entry, 0, $colonPos) === $middleware) {
+                        return true;
+                    }
+                }
+
+                return false;
+            };
+
+            if (! $hasMiddleware($declared) && ! $hasMiddleware($gathered)) {
                 return false;
             }
         }
