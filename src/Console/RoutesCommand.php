@@ -135,7 +135,11 @@ class RoutesCommand extends Command
     {
         if ($normalisedPrefix !== null) {
             $uri = ltrim($route->uri(), '/');
-            if ($normalisedPrefix !== '' && ! str_starts_with($uri, $normalisedPrefix)) {
+            if (
+                $normalisedPrefix !== ''
+                && $uri !== $normalisedPrefix
+                && ! str_starts_with($uri, $normalisedPrefix.'/')
+            ) {
                 return false;
             }
         }
