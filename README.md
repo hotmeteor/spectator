@@ -340,6 +340,21 @@ Matched: 2  |  Unimplemented: 1  |  Undocumented: 1
 - `✗ unimplemented` — in spec, no matching Laravel route
 - `⚠ undocumented` — Laravel route exists, not in spec
 
+#### Scoping the comparison
+
+If your spec only documents a subset of the app's routes (e.g. the public `/api/v2/*` surface), every internal admin/web/webhook route otherwise shows up as `undocumented` and drowns the signal. Two flags narrow the Laravel side of the comparison:
+
+- `--prefix=api/v2` — only consider routes whose URI starts with the given prefix. Leading/trailing slashes are normalised.
+- `--middleware=api` — only consider routes that have the given middleware. Both group aliases (`api`, `web`) and fully-qualified class names work.
+
+Both can be combined (AND) and only affect the Laravel-routes side — spec operations are still listed as you wrote them. If neither is set, behavior is unchanged.
+
+```bash
+php artisan spectator:routes --spec=Api.v1.yml --prefix=api/v2
+php artisan spectator:routes --spec=Api.v1.yml --middleware=api
+php artisan spectator:routes --spec=Api.v1.yml --prefix=api/v2 --middleware=api
+```
+
 ### `spectator:stubs`
 
 Generates skeleton test classes from a spec. Groups operations by tag (fallback: first path segment) and creates one class per group with one `test_` method per operation. Each method body calls `$this->markTestIncomplete(...)` so the generated file is immediately runnable.

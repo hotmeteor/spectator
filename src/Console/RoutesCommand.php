@@ -15,7 +15,9 @@ class RoutesCommand extends Command
 {
     protected $signature = 'spectator:routes
                             {--spec= : Spec file name (e.g. Api.v1.yml)}
-                            {--format=text : Output format: text or json}';
+                            {--format=text : Output format: text or json}
+                            {--prefix= : Only consider Laravel routes whose URI starts with this prefix (e.g. api/v2)}
+                            {--middleware= : Only consider Laravel routes that have this middleware (name or class)}';
 
     protected $description = 'Compare spec operations against registered Laravel routes.';
 
@@ -23,6 +25,8 @@ class RoutesCommand extends Command
     {
         $spec = $this->option('spec');
         $format = $this->option('format');
+        $prefix = $this->option('prefix');
+        $middleware = $this->option('middleware');
 
         if ($spec) {
             $factory->using($spec);
@@ -48,8 +52,10 @@ class RoutesCommand extends Command
             return self::FAILURE;
         }
 
+        $normalisedPrefix = ($prefix !== null && trim($prefix, '/') !== '') ? trim($prefix, '/') : null;
+
         // Build a normalised set of all Laravel route keys: "METHOD /path/{_}"
-        $laravelRoutes = $this->collectLaravelRoutes();
+        $laravelRoutes = $this->collectLaravelRoutes($normalisedPrefix, $middleware);
 
         // Enumerate spec operations
         $specOps = [];
@@ -81,11 +87,16 @@ class RoutesCommand extends Command
         }
         sort($undocumented);
 
+        $filters = array_filter([
+            'prefix' => $normalisedPrefix,
+            'middleware' => $middleware,
+        ], fn (?string $value) => $value !== null && $value !== '');
+
         if ($format === 'json') {
-            return $this->outputJson($specName, $specOps, $undocumented);
+            return $this->outputJson($specName, $specOps, $undocumented, $filters);
         }
 
-        return $this->outputText($specName, $specOps, $undocumented);
+        return $this->outputText($specName, $specOps, $undocumented, $filters);
     }
 
     /**
@@ -95,12 +106,16 @@ class RoutesCommand extends Command
      *
      * @return array<string, string>
      */
-    private function collectLaravelRoutes(): array
+    private function collectLaravelRoutes(?string $normalisedPrefix, ?string $middleware): array
     {
         $routes = [];
 
         /** @var Route $route */
         foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
+            if (! $this->routePassesFilters($route, $normalisedPrefix, $middleware)) {
+                continue;
+            }
+
             $uri = Str::start($route->uri(), '/');
 
             foreach ($route->methods() as $method) {
@@ -115,6 +130,49 @@ class RoutesCommand extends Command
         }
 
         return $routes;
+    }
+
+    private function routePassesFilters(Route $route, ?string $normalisedPrefix, ?string $middleware): bool
+    {
+        if ($normalisedPrefix !== null) {
+            $uri = ltrim($route->uri(), '/');
+            if (
+                $normalisedPrefix !== ''
+                && $uri !== $normalisedPrefix
+                && ! str_starts_with($uri, $normalisedPrefix.'/')
+            ) {
+                return false;
+            }
+        }
+
+        if ($middleware !== null && $middleware !== '') {
+            $declared = $route->middleware();
+            // gatherMiddleware() expands group aliases (e.g. 'api') into resolved class names.
+            // Checking both lets users filter by either the alias they wrote or a fully-qualified class.
+            $gathered = method_exists($route, 'gatherMiddleware') ? $route->gatherMiddleware() : [];
+
+            // Match by exact string or by base name before ':' to support parameterized
+            // middleware like 'throttle:60,1' when the user filters by 'throttle'.
+            $hasMiddleware = static function (array $list) use ($middleware): bool {
+                foreach ($list as $entry) {
+                    if ($entry === $middleware) {
+                        return true;
+                    }
+                    $colonPos = strpos($entry, ':');
+                    if ($colonPos !== false && substr($entry, 0, $colonPos) === $middleware) {
+                        return true;
+                    }
+                }
+
+                return false;
+            };
+
+            if (! $hasMiddleware($declared) && ! $hasMiddleware($gathered)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -146,10 +204,19 @@ class RoutesCommand extends Command
     /**
      * @param  array<array{method: string, path: string, resolved: string, normalised: string, matched: bool}>  $specOps
      * @param  array<string>  $undocumented
+     * @param  array<string, string>  $filters
      */
-    private function outputText(string $specName, array $specOps, array $undocumented): int
+    private function outputText(string $specName, array $specOps, array $undocumented, array $filters): int
     {
         $this->info("Route comparison for {$specName}:");
+
+        if ($filters !== []) {
+            $this->line('Filters:');
+            foreach ($filters as $key => $value) {
+                $this->line("  {$key}={$value}");
+            }
+        }
+
         $this->newLine();
 
         $rows = [];
@@ -186,11 +253,13 @@ class RoutesCommand extends Command
     /**
      * @param  array<array{method: string, path: string, resolved: string, normalised: string, matched: bool}>  $specOps
      * @param  array<string>  $undocumented
+     * @param  array<string, string>  $filters
      */
-    private function outputJson(string $specName, array $specOps, array $undocumented): int
+    private function outputJson(string $specName, array $specOps, array $undocumented, array $filters): int
     {
         $payload = [
             'spec' => $specName,
+            'filters' => (object) $filters,
             'spec_operations' => array_map(fn ($op) => [
                 'method' => $op['method'],
                 'path' => $op['path'],
