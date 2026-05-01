@@ -3,6 +3,7 @@
 namespace Spectator\Tests\Coverage;
 
 use Illuminate\Support\Facades\Route;
+use PHPUnit\Framework\Attributes\Test;
 use Spectator\Coverage\CoverageTracker;
 use Spectator\Middleware;
 use Spectator\Spectator;
@@ -17,6 +18,7 @@ class CoverageIntegrationTest extends TestCase
         CoverageTracker::reset();
     }
 
+    #[Test]
     public function test_middleware_records_spec_on_first_request(): void
     {
         Spectator::using('Test.v1.yml');
@@ -32,6 +34,7 @@ class CoverageIntegrationTest extends TestCase
         $this->assertGreaterThan(0, $data['Test.v1.yml']['total']);
     }
 
+    #[Test]
     public function test_middleware_records_covered_operation(): void
     {
         Spectator::using('Test.v1.yml');
@@ -52,6 +55,7 @@ class CoverageIntegrationTest extends TestCase
         $this->assertContains('GET /users', $coveredKeys);
     }
 
+    #[Test]
     public function test_middleware_records_spec_operations_only_once(): void
     {
         Spectator::using('Test.v1.yml');
@@ -70,6 +74,7 @@ class CoverageIntegrationTest extends TestCase
         $this->assertSame($afterFirst, $afterSecond);
     }
 
+    #[Test]
     public function test_noop_when_no_spec_set(): void
     {
         Spectator::using(null);

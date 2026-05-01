@@ -3,11 +3,13 @@
 namespace Spectator\Tests\Console;
 
 use Illuminate\Support\Facades\Route;
+use PHPUnit\Framework\Attributes\Test;
 use Spectator\Middleware;
 use Spectator\Tests\TestCase;
 
 class RoutesCommandTest extends TestCase
 {
+    #[Test]
     public function test_shows_matched_routes(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -18,6 +20,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('matched');
     }
 
+    #[Test]
     public function test_shows_unimplemented_when_route_missing(): void
     {
         // Deliberately register NO routes — all spec operations are unimplemented
@@ -26,6 +29,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('unimplemented');
     }
 
+    #[Test]
     public function test_shows_undocumented_when_route_not_in_spec(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -36,6 +40,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('undocumented');
     }
 
+    #[Test]
     public function test_json_format_contains_spec_operations(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -46,6 +51,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('"spec": "Test.v1.yml"');
     }
 
+    #[Test]
     public function test_json_format_contains_undocumented(): void
     {
         Route::get('/not-in-spec', fn () => [])->name('extra');
@@ -55,6 +61,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('"undocumented_routes"');
     }
 
+    #[Test]
     public function test_json_format_matched_status(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -65,6 +72,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('"status": "matched"');
     }
 
+    #[Test]
     public function test_json_format_unimplemented_status(): void
     {
         $this->artisan('spectator:routes', ['--spec' => 'Test.v1.yml', '--format' => 'json'])
@@ -72,6 +80,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('"status": "unimplemented"');
     }
 
+    #[Test]
     public function test_fails_when_no_spec_specified(): void
     {
         $this->artisan('spectator:routes')
@@ -79,12 +88,14 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('No spec file specified');
     }
 
+    #[Test]
     public function test_fails_for_nonexistent_spec(): void
     {
         $this->artisan('spectator:routes', ['--spec' => 'DoesNotExist.v1.yml'])
             ->assertExitCode(1);
     }
 
+    #[Test]
     public function test_summary_line_shown(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -94,6 +105,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('matched,');
     }
 
+    #[Test]
     public function test_no_filter_keeps_existing_behavior(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -105,6 +117,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('"path": "/admin/things"');
     }
 
+    #[Test]
     public function test_prefix_filter_excludes_routes_outside_prefix(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -123,6 +136,7 @@ class RoutesCommandTest extends TestCase
             ->doesntExpectOutputToContain('"path": "/internal/health"');
     }
 
+    #[Test]
     public function test_prefix_filter_with_no_matches_yields_empty_undocumented(): void
     {
         Route::get('/admin/things', fn () => [])->name('admin.things');
@@ -138,6 +152,7 @@ class RoutesCommandTest extends TestCase
             ->doesntExpectOutputToContain('"path": "/internal/health"');
     }
 
+    #[Test]
     public function test_prefix_filter_normalises_leading_and_trailing_slashes(): void
     {
         Route::get('/api/v2/things', fn () => [])->name('things.index');
@@ -153,6 +168,7 @@ class RoutesCommandTest extends TestCase
             ->doesntExpectOutputToContain('"path": "/admin/things"');
     }
 
+    #[Test]
     public function test_middleware_filter_keeps_only_routes_with_that_middleware(): void
     {
         Route::middleware('api')->group(function () {
@@ -171,6 +187,7 @@ class RoutesCommandTest extends TestCase
             ->doesntExpectOutputToContain('"path": "/admin/things"');
     }
 
+    #[Test]
     public function test_middleware_filter_accepts_fully_qualified_class_name(): void
     {
         Route::get('/users', fn () => [])->middleware(Middleware::class)->name('users.index');
@@ -187,6 +204,7 @@ class RoutesCommandTest extends TestCase
             ->doesntExpectOutputToContain('"path": "/admin/things"');
     }
 
+    #[Test]
     public function test_middleware_filter_with_no_matches(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -208,6 +226,7 @@ class RoutesCommandTest extends TestCase
             ->doesntExpectOutputToContain('"path": "/internal/health"');
     }
 
+    #[Test]
     public function test_prefix_and_middleware_combined(): void
     {
         Route::middleware('api')->group(function () {
@@ -228,6 +247,7 @@ class RoutesCommandTest extends TestCase
             ->doesntExpectOutputToContain('"path": "/other/api-but-wrong-prefix"');
     }
 
+    #[Test]
     public function test_filter_header_appears_in_text_output(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -241,6 +261,7 @@ class RoutesCommandTest extends TestCase
             ->expectsOutputToContain('prefix=users');
     }
 
+    #[Test]
     public function test_filter_header_omitted_when_no_filters(): void
     {
         Route::get('/users', fn () => [])->name('users.index');
@@ -250,6 +271,7 @@ class RoutesCommandTest extends TestCase
             ->doesntExpectOutputToContain('Filters:');
     }
 
+    #[Test]
     public function test_prefix_filter_does_not_match_partial_path_segment(): void
     {
         Route::get('/api/v2/things', fn () => [])->name('things.index');
@@ -264,6 +286,7 @@ class RoutesCommandTest extends TestCase
             ->doesntExpectOutputToContain('/api/v20/other');
     }
 
+    #[Test]
     public function test_middleware_filter_matches_parameterized_middleware(): void
     {
         Route::get('/users', fn () => [])->middleware('throttle:60,1')->name('users.index');

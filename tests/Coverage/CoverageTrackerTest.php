@@ -2,6 +2,7 @@
 
 namespace Spectator\Tests\Coverage;
 
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Spectator\Coverage\CoverageTracker;
 
@@ -12,6 +13,7 @@ class CoverageTrackerTest extends TestCase
         CoverageTracker::reset();
     }
 
+    #[Test]
     public function test_records_spec_operations(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', [
@@ -25,6 +27,7 @@ class CoverageTrackerTest extends TestCase
         $this->assertSame(0, $data['Api.v1.yml']['covered']);
     }
 
+    #[Test]
     public function test_records_covered_operation(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', [
@@ -39,6 +42,7 @@ class CoverageTrackerTest extends TestCase
         $this->assertSame(50.0, $data['Api.v1.yml']['percent']);
     }
 
+    #[Test]
     public function test_spec_recorded_only_once(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', [
@@ -55,6 +59,7 @@ class CoverageTrackerTest extends TestCase
         $this->assertSame(1, $data['Api.v1.yml']['total']);
     }
 
+    #[Test]
     public function test_covered_ops_use_set_semantics(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', [
@@ -69,6 +74,7 @@ class CoverageTrackerTest extends TestCase
         $this->assertSame(1, $data['Api.v1.yml']['covered']);
     }
 
+    #[Test]
     public function test_normalizes_method_to_uppercase(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', [
@@ -81,6 +87,7 @@ class CoverageTrackerTest extends TestCase
         $this->assertSame(1, $data['Api.v1.yml']['covered']);
     }
 
+    #[Test]
     public function test_reset_clears_all_data(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', [['method' => 'GET', 'path' => '/users']]);
@@ -91,6 +98,7 @@ class CoverageTrackerTest extends TestCase
         $this->assertEmpty(CoverageTracker::getBySpec());
     }
 
+    #[Test]
     public function test_tracks_multiple_specs_independently(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', [['method' => 'GET', 'path' => '/users']]);
@@ -103,6 +111,7 @@ class CoverageTrackerTest extends TestCase
         $this->assertSame(0.0, $data['Admin.v1.yml']['percent']);
     }
 
+    #[Test]
     public function test_percent_is_zero_for_empty_spec(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', []);
@@ -111,6 +120,7 @@ class CoverageTrackerTest extends TestCase
         $this->assertSame(0.0, $data['Api.v1.yml']['percent']);
     }
 
+    #[Test]
     public function test_operations_contain_covered_flag(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', [
@@ -131,6 +141,7 @@ class CoverageTrackerTest extends TestCase
         $this->assertFalse($postOp['covered']);
     }
 
+    #[Test]
     public function test_uncovered_ops_not_counted(): void
     {
         CoverageTracker::recordSpec('Api.v1.yml', [

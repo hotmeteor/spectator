@@ -149,7 +149,7 @@ class RoutesCommand extends Command
             $declared = $route->middleware();
             // gatherMiddleware() expands group aliases (e.g. 'api') into resolved class names.
             // Checking both lets users filter by either the alias they wrote or a fully-qualified class.
-            $gathered = method_exists($route, 'gatherMiddleware') ? $route->gatherMiddleware() : [];
+            $gathered = $route->gatherMiddleware();
 
             // Match by exact string or by base name before ':' to support parameterized
             // middleware like 'throttle:60,1' when the user filters by 'throttle'.

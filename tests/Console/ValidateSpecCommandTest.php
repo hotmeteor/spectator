@@ -2,10 +2,12 @@
 
 namespace Spectator\Tests\Console;
 
+use PHPUnit\Framework\Attributes\Test;
 use Spectator\Tests\TestCase;
 
 class ValidateSpecCommandTest extends TestCase
 {
+    #[Test]
     public function test_validates_valid_spec_text_format(): void
     {
         $this->artisan('spectator:validate', ['--spec' => 'Test.v1.yml'])
@@ -13,6 +15,7 @@ class ValidateSpecCommandTest extends TestCase
             ->expectsOutputToContain('is valid');
     }
 
+    #[Test]
     public function test_validates_valid_spec_json_format(): void
     {
         $this->artisan('spectator:validate', ['--spec' => 'Test.v1.yml', '--format' => 'json'])
@@ -24,6 +27,7 @@ class ValidateSpecCommandTest extends TestCase
             ->expectsOutputToContain('"spec": "Test.v1.yml"');
     }
 
+    #[Test]
     public function test_fails_when_no_spec_specified(): void
     {
         $this->artisan('spectator:validate')
@@ -31,6 +35,7 @@ class ValidateSpecCommandTest extends TestCase
             ->expectsOutputToContain('No spec file specified');
     }
 
+    #[Test]
     public function test_fails_when_no_spec_specified_json_format(): void
     {
         $this->artisan('spectator:validate', ['--format' => 'json'])
@@ -42,6 +47,7 @@ class ValidateSpecCommandTest extends TestCase
             ->expectsOutputToContain('"valid": false');
     }
 
+    #[Test]
     public function test_fails_for_nonexistent_spec(): void
     {
         $this->artisan('spectator:validate', ['--spec' => 'DoesNotExist.v1.yml'])
@@ -49,6 +55,7 @@ class ValidateSpecCommandTest extends TestCase
             ->expectsOutputToContain('DoesNotExist.v1.yml');
     }
 
+    #[Test]
     public function test_fails_for_nonexistent_spec_json_format(): void
     {
         $this->artisan('spectator:validate', ['--spec' => 'DoesNotExist.v1.yml', '--format' => 'json'])
@@ -56,6 +63,7 @@ class ValidateSpecCommandTest extends TestCase
             ->expectsOutputToContain('"valid": false');
     }
 
+    #[Test]
     public function test_validates_json_spec(): void
     {
         $this->artisan('spectator:validate', ['--spec' => 'Test.v1.json'])

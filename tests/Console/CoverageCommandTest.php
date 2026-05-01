@@ -2,10 +2,12 @@
 
 namespace Spectator\Tests\Console;
 
+use PHPUnit\Framework\Attributes\Test;
 use Spectator\Tests\TestCase;
 
 class CoverageCommandTest extends TestCase
 {
+    #[Test]
     public function test_lists_operations_text_format(): void
     {
         $this->artisan('spectator:coverage', ['--spec' => 'Test.v1.yml'])
@@ -15,6 +17,7 @@ class CoverageCommandTest extends TestCase
             ->expectsOutputToContain('/users');
     }
 
+    #[Test]
     public function test_lists_operations_json_format(): void
     {
         $this->artisan('spectator:coverage', ['--spec' => 'Test.v1.yml', '--format' => 'json'])
@@ -23,6 +26,7 @@ class CoverageCommandTest extends TestCase
             ->expectsOutputToContain('"operations"');
     }
 
+    #[Test]
     public function test_json_output_contains_operations(): void
     {
         $this->artisan('spectator:coverage', ['--spec' => 'Test.v1.yml', '--format' => 'json'])
@@ -31,6 +35,7 @@ class CoverageCommandTest extends TestCase
             ->expectsOutputToContain('"path": "/users"');
     }
 
+    #[Test]
     public function test_fails_when_no_spec_specified(): void
     {
         $this->artisan('spectator:coverage')
@@ -38,12 +43,14 @@ class CoverageCommandTest extends TestCase
             ->expectsOutputToContain('No spec file specified');
     }
 
+    #[Test]
     public function test_fails_for_nonexistent_spec(): void
     {
         $this->artisan('spectator:coverage', ['--spec' => 'DoesNotExist.v1.yml'])
             ->assertExitCode(1);
     }
 
+    #[Test]
     public function test_text_format_shows_operation_count(): void
     {
         $this->artisan('spectator:coverage', ['--spec' => 'Test.v1.yml'])
