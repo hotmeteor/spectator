@@ -232,6 +232,20 @@ class RequestValidatorTest extends TestCase
             ->assertValidRequest();
     }
 
+    #[Test]
+    public function empty_form_request_body_does_not_crash(): void
+    {
+        Spectator::using('EmptyFormRequestBody.yml');
+
+        Route::post('/shares', function () {
+            return [];
+        })->middleware([Middleware::class]);
+
+        $this->post('/shares', [], ['Content-Type' => 'application/x-www-form-urlencoded'])
+            ->assertInvalidRequest()
+            ->assertErrorsContain(['The required properties (file_id) are missing']);
+    }
+
     #[DataProvider('nullableProvider')]
     #[Test]
     public function handle_nullables($version, $state, $isValid): void

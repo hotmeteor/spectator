@@ -1,0 +1,26 @@
+openapi: 3.0.0
+info:
+  title: EmptyFormRequestBody
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /shares:
+    post:
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - file_id
+              properties:
+                file_id:
+                  type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
