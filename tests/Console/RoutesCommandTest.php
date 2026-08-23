@@ -287,6 +287,24 @@ class RoutesCommandTest extends TestCase
     }
 
     #[Test]
+    public function test_displayed_path_includes_configured_path_prefix(): void
+    {
+        config(['spectator.path_prefix' => 'api/v4']);
+
+        Route::get('/api/v4/users', fn () => [])->name('users.index');
+
+        $this->artisan('spectator:routes', [
+            '--spec' => 'Test.v1.yml',
+            '--prefix' => 'api/v4',
+            '--format' => 'json',
+        ])
+            ->assertExitCode(0)
+            ->expectsOutputToContain('"status": "matched"')
+            ->expectsOutputToContain('"path": "/api/v4/users"')
+            ->doesntExpectOutputToContain('"path": "/users"');
+    }
+
+    #[Test]
     public function test_middleware_filter_matches_parameterized_middleware(): void
     {
         Route::get('/users', fn () => [])->middleware('throttle:60,1')->name('users.index');

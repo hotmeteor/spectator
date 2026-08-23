@@ -225,7 +225,7 @@ class RoutesCommand extends Command
             $rows[] = [
                 $op['matched'] ? '<fg=green>matched</>' : '<fg=red>unimplemented</>',
                 $op['method'],
-                $op['path'],
+                $op['resolved'],
             ];
         }
 
@@ -262,7 +262,7 @@ class RoutesCommand extends Command
             'filters' => (object) $filters,
             'spec_operations' => array_map(fn ($op) => [
                 'method' => $op['method'],
-                'path' => $op['path'],
+                'path' => $op['resolved'],
                 'status' => $op['matched'] ? 'matched' : 'unimplemented',
             ], $specOps),
             'undocumented_routes' => array_values(array_map(function (string $key) {
