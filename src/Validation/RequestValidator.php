@@ -200,6 +200,10 @@ class RequestValidator extends AbstractValidator
             }
         });
 
+        if ($body === []) {
+            return new stdClass;
+        }
+
         return $this->toObject($body);
     }
 
