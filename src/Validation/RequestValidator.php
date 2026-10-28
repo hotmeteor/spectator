@@ -265,6 +265,9 @@ class RequestValidator extends AbstractValidator
 
     private function convertQueryParameterToDotted(string $parameterName): string
     {
+        // A trailing `[]` (e.g. `ids[]`) refers to the whole array, not to its first element.
+        $parameterName = preg_replace('/\[\]$/', '', $parameterName);
+
         parse_str($parameterName, $parsedParameterName);
 
         return key(Arr::dot($parsedParameterName));

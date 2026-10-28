@@ -593,6 +593,27 @@ class RequestValidatorTest extends TestCase
     }
 
     #[Test]
+    public function handles_array_query_parameters_with_brackets_in_name(): void
+    {
+        Spectator::using('Arrays.v1.yml');
+
+        Route::get('/parameter-as-array-with-brackets', function () {
+            return response()->noContent();
+        })->middleware(Middleware::class);
+
+        $this->get('/parameter-as-array-with-brackets?arrayParam=cc8936c7-d681-4c42-9410-c50488f43736')
+            ->assertValidationMessage('The data (string) must match the type: array')
+            ->assertInvalidRequest();
+
+        $this->get('/parameter-as-array-with-brackets?arrayParam[]=cc8936c7-d681-4c42-9410-c50488f43736&arrayParam[]=foo')
+            ->assertValidationMessage('The data must match the \'uuid\' format')
+            ->assertInvalidRequest();
+
+        $this->get('/parameter-as-array-with-brackets?arrayParam[]=cc8936c7-d681-4c42-9410-c50488f43736&arrayParam[]=0199f1c2-7c3a-7d4e-9b1a-2f3e4d5c6b7a')
+            ->assertValidRequest();
+    }
+
+    #[Test]
     public function handles_array_of_object_query_parameters(): void
     {
         Spectator::using('Arrays.v1.yml');

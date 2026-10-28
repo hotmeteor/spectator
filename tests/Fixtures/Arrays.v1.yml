@@ -101,6 +101,21 @@ paths:
       responses:
         '204':
           description: No Content
+  /parameter-as-array-with-brackets:
+    parameters:
+      - name: arrayParam[]
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+    get:
+      summary: Get arrays of string with the parameter name ending in brackets
+      tags: [ ]
+      responses:
+        '204':
+          description: No Content
   /parameter-as-array-of-objects:
     parameters:
       - name: arrayParam
